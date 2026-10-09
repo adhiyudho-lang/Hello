@@ -149,6 +149,39 @@ button { cursor: pointer; }
 .btn { background: var(--accent); color: #fff; border: 0; border-radius: 8px; padding: 8px 14px; font-weight: 600; }
 .btn.ghost { background: transparent; border: 1px solid var(--line); color: var(--fg); }
 .toast { position: fixed; left: 50%; bottom: calc(18px + env(safe-area-inset-bottom, 0px)); transform: translateX(-50%); background: var(--card); border: 1px solid var(--line); padding: 8px 14px; border-radius: 8px; font-size: 13px; z-index: 60; max-width: calc(100% - 32px); }
+/* views: live / riwayat / ringkasan */
+.tabs { display: flex; gap: 4px; border-bottom: 1px solid var(--line); overflow-x: auto; }
+.tab { background: transparent; border: 0; border-bottom: 2px solid transparent; padding: 8px 14px; color: var(--muted); font-weight: 600; white-space: nowrap; }
+.tab[aria-selected="true"] { color: var(--fg); border-bottom-color: var(--accent); }
+.view { display: grid; gap: 12px; min-width: 0; }
+.hctl { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+.hctl select, .hctl input { background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 7px 10px; min-width: 0; }
+.hctl label { display: inline-flex; gap: 6px; align-items: center; color: var(--muted); font-size: 12.5px; }
+.hstats { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 8px; }
+.hstats div { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 10px 12px; min-width: 0; }
+.hstats small { display: block; color: var(--muted); font-size: 11px; text-transform: uppercase; letter-spacing: .07em; }
+.hstats b { font-family: var(--font-mono); font-size: 18px; font-weight: 600; }
+.hstats span { font-size: 12px; color: var(--muted); }
+.hlist { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 460px), 1fr)); gap: 10px; align-items: start; }
+.outcome { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; font-size: 12px; }
+.outcome em { font-style: normal; color: var(--muted); font-size: 11px; text-transform: uppercase; letter-spacing: .07em; margin-right: 2px; }
+.oc { font-family: var(--font-mono); border-radius: 5px; padding: 2px 7px; background: rgba(133,147,165,.12); color: var(--muted); }
+.oc.ok { background: var(--buy-bg); color: var(--buy); }
+.oc.bad { background: var(--sell-bg); color: var(--sell); }
+.note { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 10px 12px; font-size: 12.5px; color: var(--muted); }
+.note b { color: var(--fg); }
+.tblwrap { overflow-x: auto; background: var(--panel); border: 1px solid var(--line); border-radius: 12px; }
+table.t { border-collapse: collapse; width: 100%; font-size: 13px; }
+table.t th { text-align: left; font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: .07em; font-weight: 600; padding: 10px 12px; border-bottom: 1px solid var(--line); white-space: nowrap; }
+table.t td { padding: 9px 12px; border-bottom: 1px solid var(--line); white-space: nowrap; font-variant-numeric: tabular-nums; }
+table.t tr:last-child td { border-bottom: 0; }
+table.t tbody tr.click { cursor: pointer; }
+table.t tbody tr.click:hover { background: var(--card); }
+table.t td.num, table.t th.num { text-align: right; font-family: var(--font-mono); }
+.minibar { display: flex; width: 110px; height: 6px; border-radius: 3px; overflow: hidden; background: var(--line); margin-top: 4px; }
+.minibar i { display: block; height: 100%; }
+h3.sec { margin: 6px 0 0; font-size: 14px; }
+.more { justify-self: center; }
 .disclaimer { font-size: 11.5px; color: var(--faint); text-align: center; }
 </style>
 </head>
@@ -174,6 +207,12 @@ button { cursor: pointer; }
 </header>
 
 <main class="wrap">
+  <nav class="tabs" role="tablist" aria-label="Tampilan">
+    <button class="tab" role="tab" data-view="live" aria-selected="true">Live</button>
+    <button class="tab" role="tab" data-view="hist" aria-selected="false">Riwayat</button>
+    <button class="tab" role="tab" data-view="sum" aria-selected="false">Ringkasan harian</button>
+  </nav>
+  <section class="view" id="view-live">
   <div class="filters" role="group" aria-label="Filter">
     <input type="search" id="fSearch" placeholder="Cari coin, mis. BTC" autocomplete="off">
     <button class="chip" data-ex="BF" aria-pressed="true">Binance Futures</button>
@@ -209,6 +248,47 @@ button { cursor: pointer; }
       <div class="panel-h"><span class="hash">#</span><h2 id="h4">fear-greed-index</h2><span class="count" id="cFng">alternative.me</span></div>
       <div class="fng" id="fngBox"><div class="empty">Memuat Fear &amp; Greed Index…</div></div>
     </article>
+  </section>
+  </section>
+
+  <section class="view" id="view-hist" hidden>
+    <div class="hctl" role="group" aria-label="Filter riwayat">
+      <select id="hDate" aria-label="Tanggal"><option>Memuat…</option></select>
+      <label for="hFrom">Jam <select id="hFrom"></select></label>
+      <label for="hTo">s/d <select id="hTo"></select></label>
+      <select id="hType" aria-label="Jenis sinyal">
+        <option value="all">Semua jenis</option>
+        <option value="whale">Whale sniper</option>
+        <option value="liq">Likuidasi</option>
+        <option value="signal">Pump / Dump</option>
+      </select>
+      <select id="hVerdict" aria-label="Saran">
+        <option value="all">Semua saran</option>
+        <option value="IKUT">IKUT</option>
+        <option value="TUNGGU">TUNGGU</option>
+        <option value="HINDARI">HINDARI</option>
+        <option value="INFO">INFO</option>
+      </select>
+      <select id="hEx" aria-label="Exchange">
+        <option value="all">Semua exchange</option>
+        <option value="BF">Binance Futures</option>
+        <option value="BS">Binance Spot</option>
+        <option value="OF">OKX Futures</option>
+        <option value="OS">OKX Spot</option>
+      </select>
+      <input type="search" id="hCoin" placeholder="Cari coin" autocomplete="off" aria-label="Cari coin">
+    </div>
+    <div class="hstats" id="hStats"></div>
+    <div class="note"><b>Hasil harga</b> = perubahan harga 1, 4 dan 24 jam setelah sinyal. ✓ artinya harga bergerak sesuai arah sinyal (naik untuk beli/pump/short terlikuidasi, turun untuk jual/dump/long terlikuidasi).</div>
+    <div class="hlist" id="hList"></div>
+  </section>
+
+  <section class="view" id="view-sum" hidden>
+    <div class="note" id="sumNote">Memuat ringkasan…</div>
+    <h3 class="sec">Seberapa tepat saran dashboard? (semua hari yang tersimpan)</h3>
+    <div class="tblwrap"><table class="t" id="accTbl"></table></div>
+    <h3 class="sec">Rekap per hari · klik baris untuk lihat riwayatnya</h3>
+    <div class="tblwrap"><table class="t" id="dayTbl"></table></div>
   </section>
 
   <p class="disclaimer">Saran dihitung otomatis dari aturan (profil konservatif) dan bukan nasihat keuangan. Selalu pakai stop loss dan risiko maks 1% modal per posisi.</p>
@@ -246,297 +326,23 @@ button { cursor: pointer; }
   </form>
 </div>
 
+<script src="engine.js"></script>
 <script>
 "use strict";
-/* ============ config & storage ============ */
-const DEFAULTS = {
-  bigMajor: 1000000, bigFut: 150000, bigSpot: 100000,
-  volMin: 200000, volMult: 8,
-  pumpPct: 4, pumpWin: 5,
-  liqMin: 30000, liqCluster: 500000, minVol24: 1000000, alertBig: 1000000
-};
-const EX = { BF: "Binance-Futures", BS: "Binance-Spot", OF: "OKX-Futures", OS: "OKX-Spot" };
-const STABLE = new Set(["USDC","FDUSD","TUSD","DAI","USDP","BUSD","EUR","USDE","PYUSD","USD1","XUSD","AEUR","EURI","BFUSD","RLUSD","USDS"]);
-const MAJORS = new Set(["BTC","ETH"]);
+/* ============ engine & storage ============ */
+const { DEFAULTS, EX, STABLE, MAJORS, wib, usd, px, pct, esc, clamp, tf, df } = WhaleEngine;
 const TOP_FUT = 40, TOP_SPOT = 30, MAX_ITEMS = 150;
-
 const store = {
   get(k, d) { try { const v = localStorage.getItem(k); return v ? JSON.parse(v) : d; } catch { return d; } },
   set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch {} }
 };
 let CFG = Object.assign({}, DEFAULTS, store.get("awt.cfg", {}));
 const UI = Object.assign({ sound: false, notif: false, ex: { BF: true, BS: true, OF: true, OS: true }, side: "all", min: "", ikut: false }, store.get("awt.ui", {}));
-
-/* ============ formatting ============ */
-const tf = new Intl.DateTimeFormat("id-ID", { timeZone: "Asia/Jakarta", hour: "2-digit", minute: "2-digit", second: "2-digit", hour12: false });
-const df = new Intl.DateTimeFormat("id-ID", { timeZone: "Asia/Jakarta", day: "numeric", month: "short" });
-const wib = t => tf.format(new Date(t)).replace(/:/g, ".") + " WIB";
-function usd(v) {
-  const a = Math.abs(v);
-  if (a >= 1e9) return "$" + (v / 1e9).toFixed(2) + " miliar";
-  if (a >= 1e6) return "$" + (v / 1e6).toFixed(2) + " juta";
-  if (a >= 1e3) return "$" + (v / 1e3).toFixed(1) + " ribu";
-  return "$" + v.toFixed(0);
-}
-function px(p) {
-  if (!isFinite(p)) return "--";
-  if (p >= 1000) return "$" + p.toLocaleString("en-US", { maximumFractionDigits: 1 });
-  if (p >= 1) return "$" + p.toFixed(p >= 100 ? 2 : 4);
-  const d = Math.min(10, Math.max(4, 3 - Math.floor(Math.log10(p)) + 2));
-  return "$" + p.toFixed(d);
-}
-const pct = (v, d = 2) => (v >= 0 ? "+" : "") + (v * 100).toFixed(d) + "%";
-const esc = s => String(s).replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
-const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
-
-/* ============ market state ============ */
-const M = { BF: new Map(), BS: new Map(), OF: new Map(), OS: new Map() };
-const funding = new Map();      // coin -> last funding rate (Binance futures)
-const okxCtVal = new Map();     // instId -> contract value in base coin
-const taker = { BF: new Map(), BS: new Map() }; // sym -> [{t, side, v}]
-const recent = [];              // recent signals for confluence: {coin, dir, t, kind, mk}
-const liqWin = [];              // {t, pos, v}
-const cooldown = new Map();
 let FNG = null, BTC_TREND = { dir: "flat", note: "memuat" };
-
-function rec(mk, coin) {
-  let r = M[mk].get(coin);
-  if (!r) { r = { p: 0, o: 0, q: 0, hist: [], vol: [] }; M[mk].set(coin, r); }
-  return r;
-}
-function coolOk(key, ms) {
-  const now = Date.now(), last = cooldown.get(key) || 0;
-  if (now - last < ms) return false;
-  cooldown.set(key, now); return true;
-}
-function vol24(coin) {
-  return Math.max(rec("BF", coin).q || 0, rec("BS", coin).q || 0, rec("OF", coin).q || 0, rec("OS", coin).q || 0);
-}
-
-/* ingest one ticker update */
-function onTick(mk, coin, price, open, qv, t) {
-  if (!coin || STABLE.has(coin) || !(price > 0)) return;
-  const r = rec(mk, coin);
-  r.p = price; r.o = open; r.q = qv;
-  const last = r.hist[r.hist.length - 1];
-  if (!last || t - last[0] >= 1000) r.hist.push([t, price]);
-  if (!r.vol.length || t - r.vol[r.vol.length - 1][0] >= 1000) r.vol.push([t, qv]);
-  const keep = t - (CFG.pumpWin * 60000 + 60000);
-  while (r.hist.length && r.hist[0][0] < keep) r.hist.shift();
-  while (r.vol.length && r.vol[0][0] < t - 130000) r.vol.shift();
-  if (qv < CFG.minVol24) return;
-  detectPump(mk, coin, r, t);
-  detectVolume(mk, coin, r, t);
-}
-
-function windowRange(r, ms, now) {
-  let lo = Infinity, hi = -Infinity;
-  for (const [t, p] of r.hist) if (t >= now - ms) { if (p < lo) lo = p; if (p > hi) hi = p; }
-  return { lo, hi };
-}
-
-function detectPump(mk, coin, r, now) {
-  if (r.hist.length < 2 || now - r.hist[0][0] < 60000) return;
-  const { lo, hi } = windowRange(r, CFG.pumpWin * 60000, now);
-  const thr = CFG.pumpPct / 100, p = r.p;
-  const up = p / lo - 1, down = p / hi - 1;
-  let dir = null, chg = 0;
-  if (up >= thr && p >= hi * 0.995) { dir = "up"; chg = up; }
-  else if (down <= -thr && p <= lo * 1.005) { dir = "down"; chg = down; }
-  if (!dir) return;
-  if (!coolOk(`pump:${mk}:${coin}:${dir}`, 15 * 60000)) return;
-  emit("signal", {
-    kind: "pump", mk, coin, dir, chg, price: p, t: now,
-    chg24: r.o ? p / r.o - 1 : 0, range: (hi - lo) / p
-  });
-}
-
-function takerFlow(mk, coin, now) {
-  const arr = taker[mk] && taker[mk].get(coin);
-  if (!arr) return null;
-  let b = 0, s = 0;
-  for (const x of arr) if (x.t >= now - 60000) { if (x.side === "buy") b += x.v; else s += x.v; }
-  return b + s > 0 ? { b, s } : null;
-}
-
-function detectVolume(mk, coin, r, now) {
-  if (!r.vol.length || now - r.vol[0][0] < 55000) return;
-  let base = r.vol[0];
-  for (const v of r.vol) { if (v[0] <= now - 60000) base = v; else break; }
-  const vol1m = r.q - base[1];
-  const avg1m = r.q / 1440;
-  if (!(vol1m >= CFG.volMin && vol1m >= CFG.volMult * avg1m)) return;
-  if (!coolOk(`vol:${mk}:${coin}`, 10 * 60000)) return;
-  // direction: taker flow if we stream trades for it, otherwise price move during the minute
-  let dir = "flat", how = "";
-  const flow = takerFlow(mk, coin, now);
-  if (flow && Math.abs(flow.b - flow.s) / (flow.b + flow.s) > 0.2) { dir = flow.b > flow.s ? "up" : "down"; how = `taker beli ${usd(flow.b)} vs jual ${usd(flow.s)}`; }
-  else {
-    let p0 = r.hist[0][1];
-    for (const h of r.hist) { if (h[0] <= now - 60000) p0 = h[1]; else break; }
-    const m = r.p / p0 - 1;
-    dir = m > 0.003 ? "up" : m < -0.003 ? "down" : "flat";
-    how = `harga ${pct(m)} dalam 1 menit`;
-  }
-  const { lo, hi } = windowRange(r, CFG.pumpWin * 60000, now);
-  emit("whale", {
-    kind: "volume", mk, coin, dir, value: vol1m, mult: vol1m / avg1m, how, price: r.p, t: now,
-    chg24: r.o ? r.p / r.o - 1 : 0, range: (hi - lo) / r.p
-  });
-}
-
-/* big single (or same-millisecond burst) trades from aggTrade */
-const bursts = new Map();
-function onTrade(mk, coin, price, qty, buyerMaker, t) {
-  const v = price * qty, side = buyerMaker ? "sell" : "buy";
-  let arr = taker[mk].get(coin);
-  if (!arr) { arr = []; taker[mk].set(coin, arr); }
-  arr.push({ t, side, v });
-  while (arr.length && arr[0].t < t - 65000) arr.shift();
-  const key = mk + ":" + coin;
-  const b = bursts.get(key);
-  if (b && b.side === side && t - b.last <= 100) { b.v += v; b.last = t; b.p = price; return; }
-  if (b) flushBurst(key, b);
-  bursts.set(key, { mk, coin, side, v, first: t, last: t, p0: price, p: price });
-}
-function flushBurst(key, b) {
-  bursts.delete(key);
-  const thr = MAJORS.has(b.coin) ? CFG.bigMajor : (b.mk === "BF" ? CFG.bigFut : CFG.bigSpot);
-  if (b.v < thr) return;
-  if (!coolOk(`big:${b.mk}:${b.coin}:${b.side}`, 20000)) return;
-  const r = rec(b.mk, b.coin);
-  if (r.q && r.q < CFG.minVol24) return;
-  const { lo, hi } = windowRange(r, CFG.pumpWin * 60000, Date.now());
-  emit("whale", {
-    kind: "trade", mk: b.mk, coin: b.coin, dir: b.side === "buy" ? "up" : "down", value: b.v,
-    price: b.p, t: b.first, chg24: r.o ? b.p / r.o - 1 : 0, range: isFinite(lo) ? (hi - lo) / b.p : 0
-  });
-}
-setInterval(() => { const now = Date.now(); for (const [k, b] of bursts) if (now - b.last > 250) flushBurst(k, b); }, 300);
-
-/* liquidations */
-function onLiq(mk, coin, pos, price, value, t) {
-  if (!coin || !(value > 0)) return;
-  liqWin.push({ t, pos, v: value });
-  const now = Date.now();
-  while (liqWin.length && liqWin[0].t < now - 3600000) liqWin.shift();
-  if (value < CFG.liqMin) return;
-  const dir = pos === "LONG" ? "down" : "up"; // pressure on price
-  let cluster = 0;
-  for (const x of recent) if (x.kind === "liq" && x.coin === coin && x.pos === pos && x.t >= now - 300000) cluster += x.value;
-  cluster += value;
-  const r = rec(mk, coin);
-  const { lo, hi } = windowRange(r, CFG.pumpWin * 60000, now);
-  emit("liq", { kind: "liq", mk, coin, pos, dir, price, value, cluster, t, chg24: r.o ? r.p / r.o - 1 : 0, range: isFinite(lo) && r.p ? (hi - lo) / r.p : 0 });
-}
-
-/* ============ recommendation engine (konservatif) ============ */
-function assess(s) {
-  const coin = s.coin, now = s.t;
-  let score = 50;
-  const plus = [], minus = [];
-  const add = (n, why) => { score += n; (n >= 0 ? plus : minus).push([Math.abs(n), why]); };
-
-  if (s.dir === "flat") {
-    return { score: 40, verdict: "INFO", fut: "Arah belum jelas (beli dan jual seimbang). Tidak ada aksi.", spot: "Pantau saja.", reasons: ["Volume melonjak tapi tanpa arah dominan"] };
-  }
-  const long = s.dir === "up";
-  const v24 = vol24(coin);
-
-  // confluence across signals & exchanges in the last 15 minutes
-  let same = 0, opp = 0;
-  for (const x of recent) {
-    if (x.coin !== coin || x.t < now - 900000 || x.id === s.id) continue;
-    if (x.dir === s.dir) same++; else if (x.dir !== "flat") opp++;
-  }
-  if (same) add(Math.min(20, same * 10), `${same} sinyal lain searah dalam 15 menit`);
-  if (opp) add(-Math.min(20, opp * 10), `${opp} sinyal berlawanan dalam 15 menit`);
-
-  // liquidity
-  if (v24 < 2e6) add(-30, `Likuiditas tipis (volume 24j ${usd(v24)}), rawan manipulasi`);
-  else if (v24 < 10e6) add(-10, `Volume 24j hanya ${usd(v24)}`);
-  else if (v24 > 50e6) add(5, `Likuid (volume 24j ${usd(v24)})`);
-
-  // chasing
-  if (long && s.chg24 > 0.25) add(-20, `Sudah naik ${pct(s.chg24, 1)} dalam 24j, risiko beli di pucuk`);
-  if (!long && s.chg24 < -0.25) add(-20, `Sudah turun ${pct(s.chg24, 1)} dalam 24j, rawan pantulan`);
-  if (s.kind === "pump" && Math.abs(s.chg) > 0.10) add(-10, `Lonjakan ${pct(s.chg, 1)} terlalu cepat, sering retrace`);
-
-  // BTC regime
-  if (BTC_TREND.dir === s.dir) add(10, `Searah tren BTC (${BTC_TREND.note})`);
-  else if (BTC_TREND.dir !== "flat") add(-15, `Melawan tren BTC (${BTC_TREND.note})`);
-
-  // sentiment
-  if (FNG) {
-    const f = FNG.value;
-    if (long && f >= 75) add(-10, `Fear & Greed ${f} (keserakahan ekstrem), pasar rawan koreksi`);
-    if (!long && f <= 25) add(-10, `Fear & Greed ${f} (ketakutan ekstrem), rawan pantulan`);
-    if (long && f <= 25) add(5, `Fear & Greed ${f}: zona akumulasi kontrarian`);
-  }
-
-  // funding (Binance perp)
-  const fr = funding.get(coin);
-  if (fr != null) {
-    if (long && fr > 0.0005) add(-10, `Funding ${(fr * 100).toFixed(3)}%: terlalu banyak yang LONG`);
-    if (long && fr < 0) add(5, `Funding negatif ${(fr * 100).toFixed(3)}%: bahan bakar short squeeze`);
-    if (!long && fr < -0.0005) add(-10, `Funding ${(fr * 100).toFixed(3)}%: terlalu banyak yang SHORT`);
-    if (!long && fr > 0.0003) add(5, `Funding ${(fr * 100).toFixed(3)}%: LONG berlebihan, rawan turun`);
-  }
-
-  // size
-  if (s.kind === "trade") {
-    const thr = MAJORS.has(coin) ? CFG.bigMajor : (s.mk === "BF" ? CFG.bigFut : CFG.bigSpot);
-    if (s.value >= thr * 5) add(5, `Order sangat besar (${usd(s.value)})`);
-  }
-  if (s.kind === "liq") add(-10, "Masuk setelah likuidasi = mengejar, tunggu harga stabil");
-
-  score = clamp(Math.round(score), 0, 100);
-  let verdict = score >= 75 ? "IKUT" : score >= 55 ? "TUNGGU" : "HINDARI";
-  if (s.kind === "liq") {
-    const big = MAJORS.has(coin) ? CFG.liqCluster * 10 : CFG.liqCluster;
-    if (s.cluster < big) verdict = "INFO";
-  }
-
-  // trade plan
-  const p = s.price;
-  const slPct = clamp((s.range || 0.02) * 0.6, MAJORS.has(coin) ? 0.008 : 0.015, 0.05);
-  const lev = MAJORS.has(coin) ? 3 : v24 < 10e6 ? 2 : 3;
-  const sl = long ? p * (1 - slPct) : p * (1 + slPct);
-  const tp1 = long ? p * (1 + slPct * 1.5) : p * (1 - slPct * 1.5);
-  const tp2 = long ? p * (1 + slPct * 2.5) : p * (1 - slPct * 2.5);
-  const pb = long ? p * (1 - slPct * 0.5) : p * (1 + slPct * 0.5);
-  const side = long ? "LONG" : "SHORT";
-  let fut, spot;
-
-  if (s.kind === "liq") {
-    if (verdict === "INFO") {
-      fut = "Likuidasi tunggal, belum kaskade. Tidak ada aksi.";
-      spot = "Tidak ada aksi.";
-    } else if (s.pos === "LONG") {
-      fut = "Kaskade LONG: jangan kejar SHORT di bawah. Tunggu harga stabil 15–30 menit, peluang pantulan baru diambil setelah candle 15m hijau.";
-      spot = FNG && FNG.value <= 30 && BTC_TREND.dir !== "down"
-        ? `Boleh cicil beli kecil di sekitar ${px(p)} kalau fundamental coin bagus. Stop di bawah ${px(p * (1 - slPct))}.`
-        : "Tunggu harga stabil, jangan tangkap pisau jatuh.";
-    } else {
-      fut = verdict === "IKUT"
-        ? `Short squeeze searah tren. LONG kecil ~${px(p)}, SL ${px(sl)}, TP1 ${px(tp1)}, maks ${lev}x.`
-        : "Short squeeze: harga sering lanjut naik sebentar lalu koreksi. Jangan SHORT melawan, jangan kejar LONG.";
-      spot = "Jangan kejar. Tunggu koreksi sebelum beli.";
-    }
-  } else if (verdict === "IKUT") {
-    fut = `${side} ~${px(p)} · SL ${px(sl)} (${(slPct * 100).toFixed(1)}%) · TP1 ${px(tp1)} · TP2 ${px(tp2)} · maks ${lev}x`;
-    spot = long ? `BELI BERTAHAP 3x (40/30/30%). Batal kalau tutup di bawah ${px(sl)}.` : "Jangan beli. Kalau pegang coin ini, kurangi atau pasang stop.";
-  } else if (verdict === "TUNGGU") {
-    fut = long ? `Belum masuk. Tunggu pullback ke ~${px(pb)} dan tertahan, baru LONG.` : `Belum masuk. Tunggu pantulan ke ~${px(pb)} yang gagal tembus, baru SHORT.`;
-    spot = long ? `Tunggu koreksi ke ~${px(pb)} sebelum cicil beli.` : "Jangan beli dulu, whale sedang menjual.";
-  } else {
-    fut = `Jangan ${side}. ${minus.length ? minus.sort((a, b) => b[0] - a[0])[0][1] : "Sinyal lemah"}.`;
-    spot = long ? "Jangan beli sekarang." : "Jangan beli, tunggu harga stabil.";
-  }
-
-  const reasons = [...minus, ...plus].sort((a, b) => b[0] - a[0]).slice(0, 3).map(x => (plus.some(y => y[1] === x[1]) ? "＋ " : "－ ") + x[1]);
-  return { score, verdict, fut, spot, reasons };
-}
+const okxCtVal = new Map();     // instId -> contract value in base coin
+const E = WhaleEngine.create({ cfg: CFG, emit: onSignal, getFng: () => FNG, getBtc: () => BTC_TREND });
+const { M, funding, liqWin, onTick, onTrade, onLiq, vol24 } = E;
+setInterval(E.flushBursts, 300);
 
 /* ============ feed rendering ============ */
 const FEEDS = {
@@ -544,14 +350,7 @@ const FEEDS = {
   liq: { el: "feedLiq", count: "cLiq", items: [] },
   signal: { el: "feedSig", count: "cSig", items: [] }
 };
-let seq = 0;
-
-function emit(feed, s) {
-  s.id = Date.now().toString(36) + (seq++);
-  if (s.kind === "liq") recent.push({ id: s.id, coin: s.coin, dir: s.dir, t: s.t, kind: "liq", pos: s.pos, value: s.value });
-  else recent.push({ id: s.id, coin: s.coin, dir: s.dir, t: s.t, kind: s.kind });
-  while (recent.length && recent[0].t < Date.now() - 900000) recent.shift();
-  s.reco = assess(s);
+function onSignal(feed, s) {
   const f = FEEDS[feed];
   f.items.unshift(s);
   if (f.items.length > MAX_ITEMS) f.items.length = MAX_ITEMS;
@@ -578,7 +377,7 @@ function pass(s) {
   return true;
 }
 
-function cardHTML(s, fresh) {
+function cardHTML(s, fresh, withOutcome) {
   const c = esc(s.coin), ex = EX[s.mk], r = s.reco;
   let tone, title, desc, fields;
   if (s.kind === "liq") {
@@ -591,7 +390,7 @@ function cardHTML(s, fresh) {
     tone = s.dir === "up" ? "buy" : "sell";
     const w = s.dir === "up" ? "PUMP" : "DUMP";
     title = `${c} ${w} · ${ex}`;
-    desc = `<b>${c}</b> ${s.dir === "up" ? "mengalami lonjakan beli tajam" : "mengalami tekanan jual tajam"} <b>(${pct(s.chg)})</b> dalam ${CFG.pumpWin} menit di <b>${ex}</b>`;
+    desc = `<b>${c}</b> ${s.dir === "up" ? "mengalami lonjakan beli tajam" : "mengalami tekanan jual tajam"} <b>(${pct(s.chg)})</b> dalam ${s.win || CFG.pumpWin} menit di <b>${ex}</b>`;
     fields = [["Aset", c], ["Sinyal", w], ["Exchange", ex], ["Perubahan", pct(s.chg)], ["Harga", px(s.price)], ["24 jam", pct(s.chg24)], ["Waktu", wib(s.t)]];
   } else {
     tone = s.dir === "up" ? "buy" : s.dir === "down" ? "sell" : "neu";
@@ -618,6 +417,7 @@ function cardHTML(s, fresh) {
     <div class="reco-line"><em>Spot</em><span>${esc(r.spot)}</span></div>
     ${r.reasons.length ? `<ul class="reasons">${r.reasons.map(x => `<li>${esc(x)}</li>`).join("")}</ul>` : ""}
   </div>
+  ${withOutcome ? outcomeHTML(s) : ""}
   <div class="card-a"><button type="button" data-ask="${s.id}">Tanya Claude</button><a href="${chartUrl(s)}" target="_blank" rel="noopener">Chart</a></div>
 </div>`;
 }
@@ -652,9 +452,10 @@ document.addEventListener("click", e => {
   const id = b.dataset.ask;
   let s = null;
   for (const k in FEEDS) { s = FEEDS[k].items.find(x => x.id === id); if (s) break; }
+  if (!s) s = HIST.items.find(x => x.id === id) || null;
   if (!s) return;
   const what = s.kind === "liq" ? `Likuidasi ${s.pos} ${usd(s.value)} di ${px(s.price)} (total ${s.pos} 5 menit ${usd(s.cluster)})`
-    : s.kind === "pump" ? `${s.dir === "up" ? "PUMP" : "DUMP"} ${pct(s.chg)} dalam ${CFG.pumpWin} menit, harga ${px(s.price)}`
+    : s.kind === "pump" ? `${s.dir === "up" ? "PUMP" : "DUMP"} ${pct(s.chg)} dalam ${s.win || CFG.pumpWin} menit, harga ${px(s.price)}`
     : s.kind === "trade" ? `Transaksi ${s.dir === "up" ? "BELI" : "JUAL"} besar ${usd(s.value)} di ${px(s.price)}`
     : `Volume tak biasa ${usd(s.value)} dalam 1 menit (${s.mult.toFixed(0)}x rata-rata), ${s.how}`;
   const prompt = `Saya Adhi, trader konservatif (futures maks 3x dan spot). Analisis sinyal whale ini dan beri saran: ikut atau tidak, entry, stop loss, take profit, untuk futures dan spot.
@@ -990,6 +791,173 @@ function toast(msg) {
   el.textContent = msg; el.hidden = false;
   clearTimeout(toastT); toastT = setTimeout(() => (el.hidden = true), 2600);
 }
+
+/* ============ riwayat & ringkasan (rekaman 24 jam dari GitHub Actions) ============ */
+const REPO_RAW = "https://raw.githubusercontent.com/adhiyudho-lang/Hello/main/";
+const HIST = { index: null, items: [], date: null, shown: 200, loaded: false };
+const dayName = new Intl.DateTimeFormat("id-ID", { timeZone: "Asia/Jakarta", weekday: "short", day: "numeric", month: "short", year: "numeric" });
+const dLabel = d => dayName.format(new Date(d + "T12:00:00+07:00"));
+const hourWIB = t => new Date(t + 7 * 3600e3).getUTCHours();
+
+async function fetchData(rel) {
+  for (const url of [REPO_RAW + rel, rel + "?t=" + Date.now()]) {
+    try { const r = await fetch(url, { cache: "no-store" }); if (r.ok) return await r.json(); } catch {}
+  }
+  throw new Error("Data rekaman tidak bisa dibuka");
+}
+
+function outcomeHTML(s) {
+  if (s.dir !== "up" && s.dir !== "down") return "";
+  const cells = [1, 4, 24].map(h => {
+    const r = s.o ? s.o[h] : undefined;
+    if (r === undefined) return `<span class="oc">${h}j: menunggu</span>`;
+    if (r === null) return `<span class="oc">${h}j: tidak ada data</span>`;
+    const ok = (s.dir === "up" ? r : -r) > 0;
+    return `<span class="oc ${ok ? "ok" : "bad"}">${h}j ${pct(r)} ${ok ? "✓" : "✗"}</span>`;
+  }).join("");
+  return `<div class="outcome"><em>Hasil harga</em>${cells}</div>`;
+}
+
+function accOf(items, verdict) {
+  const out = {};
+  for (const h of [1, 4, 24]) {
+    let w = 0, n = 0, sum = 0;
+    for (const s of items) {
+      if (verdict && s.reco.verdict !== verdict) continue;
+      const r = s.o && s.o[h];
+      if (r == null || (s.dir !== "up" && s.dir !== "down")) continue;
+      const dr = s.dir === "up" ? r : -r; n++; sum += dr; if (dr > 0) w++;
+    }
+    out[h] = { w, n, sum };
+  }
+  return out;
+}
+const accTxt = a => a && a.n ? `${Math.round(a.w / a.n * 100)}%` : "--";
+const accSub = a => a && a.n ? `rata-rata ${pct(a.sum / a.n)} · ${a.n} sinyal` : "belum ada data";
+
+async function ensureIndex() {
+  if (HIST.loaded) return HIST.index;
+  try {
+    HIST.index = await fetchData("data/index.json");
+  } catch {
+    HIST.index = null;
+  }
+  HIST.loaded = true;
+  const sel = $("hDate");
+  const days = (HIST.index && HIST.index.days) || [];
+  sel.innerHTML = days.length ? days.map(d => `<option value="${d.date}">${dLabel(d.date)}</option>`).join("") : `<option value="">Belum ada rekaman</option>`;
+  return HIST.index;
+}
+
+function noDataMsg() {
+  if (!HIST.index) return "Data rekaman belum bisa dibuka. Riwayat hanya muncul kalau dashboard dibuka lewat link GitHub Pages dan repo sudah public, serta perekam GitHub Actions sudah aktif.";
+  return "Belum ada rekaman. Perekam berjalan otomatis tiap jam lewat GitHub Actions; data pertama muncul ±1 jam setelah aktif.";
+}
+
+async function openHist(date) {
+  await ensureIndex();
+  const sel = $("hDate");
+  if (date) sel.value = date;
+  const d = sel.value;
+  if (!d) { $("hStats").innerHTML = ""; $("hList").innerHTML = `<div class="empty">${noDataMsg()}</div>`; return; }
+  if (HIST.date !== d) {
+    $("hList").innerHTML = `<div class="empty">Memuat ${dLabel(d)}…</div>`;
+    try {
+      const day = await fetchData(`data/days/${d}.json`);
+      HIST.items = (day.items || []).filter(s => s && s.reco).sort((a, b) => b.t - a.t);
+      HIST.date = d;
+    } catch (e) {
+      $("hList").innerHTML = `<div class="empty">Gagal memuat data ${dLabel(d)}. Coba lagi nanti.</div>`;
+      return;
+    }
+  }
+  HIST.shown = 200;
+  renderHist();
+}
+
+function histFiltered() {
+  const from = +$("hFrom").value, to = +$("hTo").value;
+  const type = $("hType").value, verdict = $("hVerdict").value, ex = $("hEx").value;
+  const q = $("hCoin").value.trim().toUpperCase();
+  return HIST.items.filter(s => {
+    const h = hourWIB(s.t);
+    if (h < from || h > to) return false;
+    if (type !== "all" && s.f !== type) return false;
+    if (verdict !== "all" && s.reco.verdict !== verdict) return false;
+    if (ex !== "all" && s.mk !== ex) return false;
+    if (q && !s.coin.includes(q)) return false;
+    return true;
+  });
+}
+
+function renderHist() {
+  const list = histFiltered();
+  const ikut = list.filter(s => s.reco.verdict === "IKUT");
+  const a = accOf(ikut);
+  $("hStats").innerHTML = `
+    <div><small>Sinyal</small><b>${list.length}</b> <span>dari ${HIST.items.length}</span></div>
+    <div><small>Saran IKUT</small><b>${ikut.length}</b></div>
+    <div><small>IKUT tepat · 1 jam</small><b>${accTxt(a[1])}</b><br><span>${accSub(a[1])}</span></div>
+    <div><small>IKUT tepat · 4 jam</small><b>${accTxt(a[4])}</b><br><span>${accSub(a[4])}</span></div>
+    <div><small>IKUT tepat · 24 jam</small><b>${accTxt(a[24])}</b><br><span>${accSub(a[24])}</span></div>`;
+  const box = $("hList");
+  if (!list.length) { box.innerHTML = `<div class="empty">Tidak ada sinyal untuk filter ini.</div>`; return; }
+  box.innerHTML = list.slice(0, HIST.shown).map(s => cardHTML(s, false, true)).join("") +
+    (list.length > HIST.shown ? `<button type="button" class="btn ghost more" id="hMore">Tampilkan ${Math.min(200, list.length - HIST.shown)} lagi (sisa ${list.length - HIST.shown})</button>` : "");
+  const more = $("hMore");
+  if (more) more.addEventListener("click", () => { HIST.shown += 200; renderHist(); });
+}
+
+async function openSum() {
+  const idx = await ensureIndex();
+  const days = (idx && idx.days) || [];
+  if (!days.length) { $("sumNote").textContent = noDataMsg(); $("accTbl").innerHTML = ""; $("dayTbl").innerHTML = ""; return; }
+  $("sumNote").innerHTML = `Rekaman 24 jam dari <b>Binance Spot</b> dan <b>OKX</b> (Binance Futures ikut kalau tidak diblokir di server GitHub), memakai threshold default. Disimpan ${idx.keepDays || 30} hari. Update terakhir <b>${dLabel(dateKey(idx.updated))} ${wib(idx.updated)}</b>.`;
+  // accuracy across all days
+  const tot = {};
+  for (const d of days) for (const v in d.acc || {}) for (const h in d.acc[v]) {
+    const a = ((tot[v] = tot[v] || {})[h] = tot[v][h] || { w: 0, n: 0, sum: 0 });
+    a.w += d.acc[v][h].w; a.n += d.acc[v][h].n; a.sum += d.acc[v][h].sum;
+  }
+  const cell = a => `<td class="num">${accTxt(a)}<br><span class="footnote">${accSub(a)}</span></td>`;
+  $("accTbl").innerHTML = `<thead><tr><th>Saran</th><th class="num">Tepat setelah 1 jam</th><th class="num">4 jam</th><th class="num">24 jam</th></tr></thead><tbody>` +
+    ["IKUT", "TUNGGU", "HINDARI", "INFO"].map(v => `<tr><td><span class="pill ${v}">${v}</span></td>${cell(tot[v] && tot[v][1])}${cell(tot[v] && tot[v][4])}${cell(tot[v] && tot[v][24])}</tr>`).join("") + "</tbody>";
+  $("dayTbl").innerHTML = `<thead><tr><th>Tanggal</th><th class="num">F&amp;G</th><th>Likuidasi Long / Short</th><th class="num">Whale</th><th class="num">Likuidasi</th><th class="num">Pump/Dump</th><th class="num">IKUT</th><th class="num">IKUT tepat 4j</th><th>Coin paling sering</th></tr></thead><tbody>` +
+    days.map(d => {
+      const L = d.liq ? d.liq.L : 0, S = d.liq ? d.liq.S : 0, t = L + S || 1;
+      const a4 = d.acc && d.acc.IKUT && d.acc.IKUT[4];
+      return `<tr class="click" data-date="${d.date}" tabindex="0">
+        <td>${dLabel(d.date)}</td>
+        <td class="num" style="color:${d.fng == null ? "var(--muted)" : fngColor(d.fng)}">${d.fng == null ? "--" : d.fng}</td>
+        <td><span class="up">${usd(L)}</span> / <span class="down">${usd(S)}</span><div class="minibar"><i style="width:${L / t * 100}%;background:var(--buy)"></i><i style="width:${S / t * 100}%;background:var(--sell)"></i></div></td>
+        <td class="num">${d.n.whale || 0}</td><td class="num">${d.n.liq || 0}</td><td class="num">${d.n.signal || 0}</td>
+        <td class="num">${d.ikut || 0}</td><td class="num">${accTxt(a4)}${a4 && a4.n ? ` <span class="footnote">(${a4.n})</span>` : ""}</td>
+        <td>${(d.top || []).slice(0, 3).map(([c, n]) => `${esc(c)} <span class="footnote">${n}×</span>`).join(", ")}</td></tr>`;
+    }).join("") + "</tbody>";
+}
+const dateKey = t => new Date(t + 7 * 3600e3).toISOString().slice(0, 10);
+
+$("dayTbl").addEventListener("click", e => { const tr = e.target.closest("tr[data-date]"); if (tr) showView("hist", tr.dataset.date); });
+$("dayTbl").addEventListener("keydown", e => { if (e.key === "Enter") { const tr = e.target.closest("tr[data-date]"); if (tr) showView("hist", tr.dataset.date); } });
+
+for (const id of ["hFrom", "hTo"]) $(id).innerHTML = Array.from({ length: 24 }, (_, h) => `<option value="${h}">${String(h).padStart(2, "0")}.00</option>`).join("");
+$("hTo").value = "23";
+$("hDate").addEventListener("change", () => openHist());
+for (const id of ["hFrom", "hTo", "hType", "hVerdict", "hEx"]) $(id).addEventListener("change", () => { HIST.shown = 200; renderHist(); });
+$("hCoin").addEventListener("input", () => { HIST.shown = 200; renderHist(); });
+
+function showView(v, date) {
+  for (const t of document.querySelectorAll(".tab")) t.setAttribute("aria-selected", t.dataset.view === v ? "true" : "false");
+  $("view-live").hidden = v !== "live";
+  $("view-hist").hidden = v !== "hist";
+  $("view-sum").hidden = v !== "sum";
+  try { history.replaceState(null, "", v === "live" ? location.pathname : "#" + (v === "hist" ? "riwayat" : "ringkasan")); } catch {}
+  if (v === "hist") openHist(date);
+  if (v === "sum") openSum();
+}
+document.querySelectorAll(".tab").forEach(t => t.addEventListener("click", () => showView(t.dataset.view)));
+if (location.hash === "#riwayat") showView("hist");
+else if (location.hash === "#ringkasan") showView("sum");
 
 /* ============ boot ============ */
 loadHistory();

@@ -1,0 +1,48 @@
+name: Rekam data whale
+
+# Every hour: record ~55 minutes of signals with the same rules as the dashboard,
+# fill in price outcomes (1h/4h/24h), then commit data/ so the dashboard's
+# "Riwayat" and "Ringkasan" tabs can show it. Data older than 30 days is removed.
+on:
+  schedule:
+    - cron: "7 * * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: whale-recorder
+  cancel-in-progress: false
+
+jobs:
+  record:
+    runs-on: ubuntu-latest
+    timeout-minutes: 75
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Rekam sinyal
+        timeout-minutes: 63
+        run: node recorder/record.cjs
+        env:
+          RUN_MINUTES: "55"
+          KEEP_DAYS: "30"
+
+      - name: Simpan ke repo
+        if: always()
+        run: |
+          git config user.name "whale-recorder[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A data
+          if git diff --cached --quiet; then echo "Tidak ada data baru"; exit 0; fi
+          git commit -q -m "Data whale $(TZ=Asia/Jakarta date '+%Y-%m-%d %H:%M') WIB"
+          for i in 1 2 3 4; do
+            git pull -q --rebase -X theirs origin "${GITHUB_REF_NAME}" && git push -q origin "HEAD:${GITHUB_REF_NAME}" && exit 0
+            sleep $((i * 5))
+          done
+          exit 1

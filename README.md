@@ -32,4 +32,21 @@ Fear & Greed, dan funding rate. Tombol **Tanya Claude** membuka claude.ai dengan
 Catatan: Binance hanya mengirim maks 1 likuidasi per coin per detik, jadi total likuidasi bisa lebih kecil dari Coinglass.
 Sinyal mulai muncul setelah ±1 menit dashboard dibuka (butuh riwayat harga). Threshold bisa diatur lewat tombol ⚙ Threshold.
 
+### Rekaman 24 jam (Riwayat & Ringkasan harian)
+
+File `.github/workflows/recorder.yml` menjalankan `recorder/record.cjs` di GitHub Actions **setiap jam**.
+Perekam memakai aturan yang sama dengan dashboard (`engine.js`) dan menyimpan:
+
+- `data/days/YYYY-MM-DD.json`: semua sinyal per hari (tanggal WIB) + total likuidasi long/short hari itu
+- `data/index.json`: ringkasan per hari + akurasi saran (IKUT/TUNGGU/HINDARI)
+
+Setiap sinyal diberi **hasil harga** 1, 4 dan 24 jam kemudian, supaya kelihatan apakah saran IKUT terbukti.
+Data lebih dari 30 hari dihapus otomatis. Di dashboard, buka tab **Riwayat** (pilih tanggal & jam) atau **Ringkasan harian**.
+
+Syarat:
+- Repo harus **public** (GitHub Actions gratis tanpa batas menit untuk repo public).
+- Workflow harus ada di branch **main** (jadwal GitHub Actions hanya jalan dari branch utama).
+- Server GitHub ada di Amerika, jadi Binance Futures biasanya diblokir. Rekaman 24 jam berisi **Binance Spot + OKX** (termasuk likuidasi OKX).
+- Jalankan manual pertama kali: tab **Actions** → *Rekam data whale* → **Run workflow**.
+
 Bukan nasihat keuangan.
