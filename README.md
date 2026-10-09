@@ -1,3 +1,35 @@
 # Hello
-Hellow apa kabar
-ini aku
+
+## Adhi Whale Terminal
+
+Dashboard crypto live dalam satu file (`index.html`), mirip feed KJo Terminal:
+
+1. **#whale-sniper**: transaksi besar (market order whale) & volume 1 menit tak biasa. Hijau = beli, merah = jual.
+2. **#liquidation-feed**: likuidasi Binance Futures & OKX. Hijau = LONG terlikuidasi, merah = SHORT terlikuidasi.
+3. **#sinyal-whale**: PUMP / DUMP (harga bergerak ≥ X% dalam N menit) di Binance Futures, Binance Spot, OKX Futures, OKX Spot.
+4. **#fear-greed-index**: gauge, perbandingan kemarin / 7 hari / 30 hari, grafik 30 hari, dan artinya.
+
+Setiap sinyal punya **saran untuk Adhi** (IKUT / TUNGGU / HINDARI, skor 0–100) versi futures dan spot,
+dihitung dengan aturan profil konservatif: konfirmasi antar-sinyal, likuiditas, risiko mengejar, tren BTC 1 jam,
+Fear & Greed, dan funding rate. Tombol **Tanya Claude** membuka claude.ai dengan data sinyal sudah terisi.
+
+### Cara membuka
+
+- **GitHub Pages**: Settings → Pages → Source "Deploy from a branch" → pilih branch dan folder `/ (root)`.
+  Dashboard akan ada di `https://adhiyudho-lang.github.io/hello/`.
+- **Lokal**: download `index.html`, buka dengan Chrome/Safari.
+
+### Sumber data (gratis, tanpa API key)
+
+| Data | Sumber |
+|---|---|
+| Harga & volume semua pair USDT | Binance Futures/Spot websocket `!miniTicker@arr`, OKX REST tickers (tiap 10 detik) |
+| Transaksi besar | Binance `aggTrade` untuk 40 pair futures & 30 pair spot dengan volume terbesar |
+| Likuidasi | Binance `!forceOrder@arr`, OKX `liquidation-orders` |
+| Funding rate | Binance `premiumIndex` (tiap 60 detik) |
+| Fear & Greed | api.alternative.me (tiap 30 menit) |
+
+Catatan: Binance hanya mengirim maks 1 likuidasi per coin per detik, jadi total likuidasi bisa lebih kecil dari Coinglass.
+Sinyal mulai muncul setelah ±1 menit dashboard dibuka (butuh riwayat harga). Threshold bisa diatur lewat tombol ⚙ Threshold.
+
+Bukan nasihat keuangan.
