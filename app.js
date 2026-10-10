@@ -303,7 +303,7 @@ Jawab dalam Bahasa Indonesia, ringkas, dan sebutkan risikonya.`;
 /* ============ chart sheet ============ */
 let CH = null;
 function openChart(ctx) {
-  CH = Object.assign({ tf: "15m" }, ctx);
+  CH = Object.assign({ tf: store.get("awt.chtf", "15m") }, ctx);
   $("chLogo").innerHTML = logo(ctx.coin, "lg");
   $("chTitle").textContent = `${ctx.coin}/USDT`;
   $("chSub").textContent = `${EX[ctx.mk]} · ${isFut(ctx.mk) ? "Perpetual" : "Spot"}${ctx.setup ? ` · setup ${ctx.setup.side}` : ctx.sig ? ` · sinyal ${wib(ctx.sig.t)}` : ""}`;
@@ -322,7 +322,7 @@ $("chClose").addEventListener("click", closeChart);
 $("chartSheet").addEventListener("click", e => { if (e.target.id === "chartSheet") closeChart(); });
 $("chTf").addEventListener("click", e => {
   const b = e.target.closest("button[data-tf]"); if (!b || !CH) return;
-  CH.tf = b.dataset.tf;
+  CH.tf = b.dataset.tf; store.set("awt.chtf", CH.tf);
   for (const x of $("chTf").querySelectorAll("button")) x.setAttribute("aria-pressed", x === b);
   drawChart();
 });
@@ -330,7 +330,7 @@ async function drawChart() {
   const box = $("chartBox"), ctx = CH;
   if (CH.chart) { CH.chart.remove(); CH.chart = null; }
   box.innerHTML = `<div class="empty">Memuat candle ${ctx.tf}…</div>`;
-  const cs = await candles(ctx.mk, ctx.coin, ctx.tf, 200);
+  const cs = await candles(ctx.mk, ctx.coin, ctx.tf, 300);
   if (CH !== ctx) return;
   if (!cs) { box.innerHTML = `<div class="empty">Candle ${esc(ctx.coin)} belum bisa diambil dari exchange.</div>`; return; }
   box.innerHTML = "";
@@ -353,7 +353,7 @@ async function drawChart() {
     const e = emaArr(closes, n), s = chart.addLineSeries({ color, lineWidth: 1, priceLineVisible: false, lastValueVisible: false, crosshairMarkerVisible: false });
     s.setData(cs.map((c, i) => ({ time: Math.floor(c.t / 1000), value: e[i] })).slice(n));
   };
-  addEma(20, "#f3ba2f"); addEma(50, "#a78bfa");
+  addEma(5, "#f472b6"); addEma(20, "#f3ba2f"); if (cs.length > 200) addEma(200, "#a78bfa");
   const lines = [], add = (price, color, title, style = 0) => { if (price > 0) { series.createPriceLine({ price, color, lineWidth: 1, lineStyle: style, axisLabelVisible: true, title }); lines.push([color, title]); } };
   const x = ctx.setup;
   const plan = x && x.at ? { entry: x.entry, sl: x.sl, tp1: x.tp1, tp2: x.tp2 } : ctx.sig && ctx.sig.reco && ctx.sig.reco.plan;
@@ -365,10 +365,10 @@ async function drawChart() {
   if (ctx.sig) series.setMarkers([{ time: Math.floor(ctx.sig.t / 1000 / (tfSec(ctx.tf))) * tfSec(ctx.tf), position: ctx.sig.dir === "down" ? "aboveBar" : "belowBar", color: "#22d3ee", shape: ctx.sig.dir === "down" ? "arrowDown" : "arrowUp", text: "sinyal" }].filter(m => m.time >= cs[0].t / 1000));
   // show the most recent ~90 candles; older ones are a swipe away
   chart.timeScale().setVisibleLogicalRange({ from: Math.max(0, cs.length - 90), to: cs.length + 3 });
-  $("chLegend").innerHTML = [["#f3ba2f", "EMA20"], ["#a78bfa", "EMA50"], ...lines].filter((v, i, a) => a.findIndex(y => y[1] === v[1]) === i)
+  $("chLegend").innerHTML = [["#f472b6", "EMA5"], ["#f3ba2f", "EMA20"], ...(cs.length > 200 ? [["#a78bfa", "EMA200"]] : []), ...lines].filter((v, i, a) => a.findIndex(y => y[1] === v[1]) === i)
     .map(([c, t]) => `<span><i style="background:${c}"></i>${t}</span>`).join("");
 }
-const tfSec = tf => ({ "15m": 900, "1h": 3600, "4h": 14400 }[tf] || 900);
+const tfSec = tf => ({ "15m": 900, "1h": 3600, "4h": 14400, "1d": 86400 }[tf] || 900);
 
 /* ============ alerts ============ */
 let actx = null;
