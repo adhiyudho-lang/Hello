@@ -996,6 +996,7 @@ async function openRekap() {
     <div class="rings">${pctRing(tot[v] && tot[v][1], "1 jam")}${pctRing(tot[v] && tot[v][4], "4 jam")}${pctRing(tot[v] && tot[v][24], "24 jam")}</div>
     <div class="foot">% sinyal yang harganya bergerak sesuai arah. ${tot[v] && tot[v][4] && tot[v][4].n ? `Rata-rata 4 jam ${pct(tot[v][4].sum / tot[v][4].n)}.` : ""}</div>
   </article>`).join("");
+  if (typeof openMiss === "function") openMiss(days);
   $("dayBox").innerHTML = days.map(d => {
     const L = d.liq ? d.liq.L : 0, S = d.liq ? d.liq.S : 0, t = L + S || 1, a4 = d.acc && d.acc.IKUT && d.acc.IKUT[4];
     return `<button class="day" data-day="${d.date}">

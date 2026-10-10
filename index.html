@@ -414,6 +414,23 @@ details.why ul { margin: 6px 0 0; padding-left: 16px; font-size: 12px; color: va
 .risk-box h3 { margin: 0 0 6px; color: var(--warn); font-size: 14px; }
 .risk-box ul { margin: 0; padding-left: 18px; display: grid; gap: 4px; }
 
+/* ---------- rekap: IKUT miss analysis ---------- */
+.miss-grid { display: grid; gap: 12px; grid-template-columns: repeat(auto-fill, minmax(min(100%, 340px), 1fr)); align-items: start; }
+.miss-card { background: linear-gradient(180deg, var(--card), var(--panel)); border: 1px solid var(--line); border-radius: 16px; padding: 14px; display: grid; gap: 9px; min-width: 0; }
+.miss-card.bad { border-color: rgba(234,57,67,.45); }
+.miss-card p { margin: 0; font-size: 12.5px; color: #c3cfe2; }
+.miss-h { display: flex; align-items: center; gap: 10px; }
+.miss-h b { font-size: 14.5px; }
+.miss-ic { width: 36px; height: 36px; flex: none; display: grid; place-items: center; border-radius: 10px; background: var(--sell-bg); color: var(--sell); font-size: 17px; font-weight: 800; font-family: var(--font-mono); }
+.miss-card:not(.bad) .miss-ic { background: rgba(138,155,184,.12); color: var(--muted); }
+.miss-bar { height: 6px; border-radius: 3px; background: var(--line); overflow: hidden; }
+.miss-bar i { display: block; height: 100%; background: var(--sell); }
+.miss-cmp { display: flex; flex-wrap: wrap; gap: 4px 14px; font-size: 12px; color: var(--muted); }
+.miss-cmp small { color: var(--faint); }
+.miss-coins { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; font-size: 12px; color: var(--muted); }
+.miss-plan { margin: 0; padding-left: 20px; display: grid; gap: 8px; font-size: 13px; color: #c3cfe2; }
+.miss-plan b { color: var(--fg); }
+
 /* ---------- sheets (chart, settings) ---------- */
 .sheet { position: fixed; inset: 0; z-index: 60; background: rgba(2,5,12,.66); display: flex; align-items: flex-end; justify-content: center; }
 .sheet-in { width: min(760px, 100%); max-height: 92vh; overflow-y: auto; background: var(--bg2); border: 1px solid var(--line); border-bottom: 0; border-radius: 22px 22px 0 0; padding: 10px 16px calc(18px + env(safe-area-inset-bottom, 0px)); display: grid; gap: 12px; }
@@ -553,6 +570,8 @@ details.why ul { margin: 6px 0 0; padding-left: 16px; font-size: 12px; color: va
     <article class="panel" id="sumNote"><div class="empty">Memuat ringkasan…</div></article>
     <div class="sec-h"><h2>Seberapa tepat saran dashboard?</h2><small>semua hari tersimpan</small></div>
     <div class="acc" id="accBox"></div>
+    <div class="sec-h"><h2>Kenapa saran IKUT bisa meleset?</h2><small>analisa otomatis dari rekaman</small></div>
+    <div class="view" id="missBox"></div>
     <div class="sec-h"><h2>Rekap per hari</h2><small>ketuk untuk lihat riwayat</small></div>
     <div class="days" id="dayBox"></div>
   </section>
@@ -620,5 +639,6 @@ details.why ul { margin: 6px 0 0; padding-left: 16px; font-size: 12px; color: va
 <script src="engine.js"></script>
 <script src="app.js"></script>
 <script src="brief.js"></script>
+<script src="miss.js"></script>
 </body>
 </html>
