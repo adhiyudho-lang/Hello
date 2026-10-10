@@ -96,7 +96,7 @@ button { cursor: pointer; }
 .card-t { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
 .card-t .ttl { font-weight: 600; font-size: 14.5px; }
 .card-t .ttl.buy { color: var(--buy); } .card-t .ttl.sell { color: var(--sell); } .card-t .ttl.neu { color: var(--warn); }
-.card-t .ex { font-size: 11.5px; color: var(--muted); border: 1px solid var(--line); border-radius: 5px; padding: 1px 6px; }
+.card-t .ex, .ik-h .ex { font-size: 11.5px; color: var(--muted); border: 1px solid var(--line); border-radius: 5px; padding: 1px 6px; }
 .card-t .time { margin-left: auto; font-size: 11.5px; color: var(--muted); font-family: var(--font-mono); }
 .card-d { font-size: 13px; color: #c7d0db; }
 .card-d b { color: var(--fg); }
@@ -182,6 +182,37 @@ table.t td.num, table.t th.num { text-align: right; font-family: var(--font-mono
 .minibar i { display: block; height: 100%; }
 h3.sec { margin: 6px 0 0; font-size: 14px; }
 .more { justify-self: center; }
+/* saran IKUT */
+.tab .badge { display: inline-block; min-width: 18px; padding: 0 5px; margin-left: 6px; border-radius: 9px; background: var(--buy); color: #04140c; font-size: 11px; line-height: 18px; text-align: center; }
+.ikgrid { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 420px), 1fr)); gap: 12px; align-items: start; }
+.ik { background: var(--card); border: 1px solid var(--line); border-radius: 12px; padding: 12px 14px; display: grid; gap: 10px; min-width: 0; border-top: 3px solid var(--line); }
+.ik.go { border-top-color: var(--buy); box-shadow: 0 0 0 1px rgba(34,196,125,.25); }
+.ik.wait { border-top-color: var(--warn); }
+.ik.off { opacity: .62; }
+.ik-h { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.ik-h .coin { font-size: 18px; font-weight: 700; }
+.ik-h .side { font-size: 12px; font-weight: 700; letter-spacing: .06em; border-radius: 5px; padding: 2px 8px; }
+.side.LONG { background: var(--buy-bg); color: var(--buy); }
+.side.SHORT { background: var(--sell-bg); color: var(--sell); }
+.ik-h .age { margin-left: auto; font-size: 11.5px; color: var(--muted); font-family: var(--font-mono); }
+.st { font-size: 12px; font-weight: 700; letter-spacing: .05em; border-radius: 6px; padding: 4px 10px; justify-self: start; }
+.st.go { background: var(--buy); color: #04140c; }
+.st.wait { background: var(--warn-bg); color: var(--warn); }
+.st.miss { background: rgba(133,147,165,.14); color: var(--muted); }
+.st.cancel { background: var(--sell-bg); color: var(--sell); }
+.ik-sub { font-size: 12.5px; color: var(--muted); }
+.lv { display: grid; grid-template-columns: repeat(auto-fit, minmax(118px, 1fr)); gap: 8px; }
+.lv div { background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 7px 9px; min-width: 0; }
+.lv small { display: block; color: var(--muted); font-size: 10.5px; text-transform: uppercase; letter-spacing: .07em; }
+.lv span { font-family: var(--font-mono); font-size: 13px; word-break: break-word; }
+.lv .e span { color: var(--accent); } .lv .t span { color: var(--buy); } .lv .s span { color: var(--sell); }
+.ind { display: grid; grid-template-columns: repeat(auto-fit, minmax(118px, 1fr)); gap: 8px; }
+.ind div { min-width: 0; }
+.ind small { display: block; color: var(--muted); font-size: 10.5px; text-transform: uppercase; letter-spacing: .07em; }
+.ind span { font-family: var(--font-mono); font-size: 13px; }
+.checks { list-style: none; margin: 0; padding: 0; display: grid; gap: 3px; font-size: 12.5px; }
+.checks li.ok::before { content: "✓ "; color: var(--buy); font-weight: 700; }
+.checks li.no::before { content: "✗ "; color: var(--sell); font-weight: 700; }
 .disclaimer { font-size: 11.5px; color: var(--faint); text-align: center; }
 </style>
 </head>
@@ -209,6 +240,7 @@ h3.sec { margin: 6px 0 0; font-size: 14px; }
 <main class="wrap">
   <nav class="tabs" role="tablist" aria-label="Tampilan">
     <button class="tab" role="tab" data-view="live" aria-selected="true">Live</button>
+    <button class="tab" role="tab" data-view="ikut" aria-selected="false">Saran IKUT<span class="badge" id="ikBadge" hidden>0</span></button>
     <button class="tab" role="tab" data-view="hist" aria-selected="false">Riwayat</button>
     <button class="tab" role="tab" data-view="sum" aria-selected="false">Ringkasan harian</button>
   </nav>
@@ -249,6 +281,11 @@ h3.sec { margin: 6px 0 0; font-size: 14px; }
       <div class="fng" id="fngBox"><div class="empty">Memuat Fear &amp; Greed Index…</div></div>
     </article>
   </section>
+  </section>
+
+  <section class="view" id="view-ikut" hidden>
+    <div class="note">Sinyal dengan saran <b>IKUT</b> dari 60 menit terakhir, dicek ulang tiap 30 detik dengan candle 15 menit dan 1 jam. Status <b style="color:var(--buy)">BISA DIIKUTI</b> muncul kalau harga masih di zona entry dan RSI, MACD, EMA serta tren ikut mengonfirmasi. Saat itu terjadi kamu dapat bunyi dan notifikasi (nyalakan 🔈 Bunyi dan 🔔 Notif di atas). Dashboard harus tetap terbuka.</div>
+    <div class="ikgrid" id="ikList"><div class="empty">Belum ada sinyal IKUT dalam 60 menit terakhir. Profil konservatif membuat sinyal IKUT jarang muncul; biarkan dashboard terbuka.</div></div>
   </section>
 
   <section class="view" id="view-hist" hidden>
@@ -362,6 +399,7 @@ function onSignal(feed, s) {
   }
   updateCount(feed);
   alertFor(s);
+  if (s.reco.verdict === "IKUT" && typeof ikutLoop === "function") setTimeout(ikutLoop, 500);
   dirty = true;
 }
 
@@ -792,6 +830,191 @@ function toast(msg) {
   clearTimeout(toastT); toastT = setTimeout(() => (el.hidden = true), 2600);
 }
 
+/* ============ saran IKUT: technical check of IKUT signals for up to 60 minutes ============ */
+const IK = { setups: new Map(), candles: new Map(), notified: new Set(), busy: false };
+const IK_WINDOW = 60 * 60000;
+
+function emaArr(v, n) { const a = 2 / (n + 1); let e = v[0]; return v.map(x => (e = x * a + e * (1 - a))); }
+function rsiLast(c, n = 14) {
+  if (c.length <= n) return null;
+  let g = 0, l = 0;
+  for (let i = 1; i <= n; i++) { const d = c[i] - c[i - 1]; if (d > 0) g += d; else l -= d; }
+  g /= n; l /= n;
+  for (let i = n + 1; i < c.length; i++) { const d = c[i] - c[i - 1]; g = (g * (n - 1) + Math.max(d, 0)) / n; l = (l * (n - 1) + Math.max(-d, 0)) / n; }
+  return l === 0 ? 100 : 100 - 100 / (1 + g / l);
+}
+function macdOf(c) {
+  const e12 = emaArr(c, 12), e26 = emaArr(c, 26);
+  const m = c.map((_, i) => e12[i] - e26[i]), sig = emaArr(m, 9);
+  const k = c.length - 1;
+  return { macd: m[k], signal: sig[k], hist: m[k] - sig[k], prevHist: m[k - 1] - sig[k - 1] };
+}
+function levels(cs, price) {
+  const piv = [];
+  for (let i = 3; i < cs.length - 3; i++) {
+    let hi = true, lo = true;
+    for (let j = i - 3; j <= i + 3; j++) { if (cs[j].h > cs[i].h) hi = false; if (cs[j].l < cs[i].l) lo = false; }
+    if (hi) piv.push(cs[i].h); if (lo) piv.push(cs[i].l);
+  }
+  piv.sort((a, b) => a - b);
+  const zones = [];
+  for (const p of piv) { const z = zones[zones.length - 1]; if (z && p / z.avg - 1 < 0.004) { z.sum += p; z.n++; z.avg = z.sum / z.n; } else zones.push({ sum: p, n: 1, avg: p }); }
+  const lv = zones.map(z => z.avg);
+  return { sup: lv.filter(x => x < price * 0.999).reverse().slice(0, 2), res: lv.filter(x => x > price * 1.001).slice(0, 2) };
+}
+
+async function candles(mk, coin, tf) {
+  const key = `${mk}:${coin}:${tf}`, ttl = tf === "15m" ? 25000 : 240000;
+  const hit = IK.candles.get(key);
+  if (hit && Date.now() - hit.at < ttl) return hit.cs;
+  const bin = base => getJSON(`${base}?symbol=${coin}USDT&interval=${tf}&limit=210`).then(k => k.map(x => ({ t: +x[0], o: +x[1], h: +x[2], l: +x[3], c: +x[4] })));
+  const okx = inst => getJSON(`https://www.okx.com/api/v5/market/candles?instId=${inst}&bar=${tf === "1h" ? "1H" : tf}&limit=210`).then(j => j.data.map(x => ({ t: +x[0], o: +x[1], h: +x[2], l: +x[3], c: +x[4] })).reverse());
+  const order = mk === "BF" ? [() => bin("https://fapi.binance.com/fapi/v1/klines"), () => bin("https://data-api.binance.vision/api/v3/klines"), () => okx(`${coin}-USDT-SWAP`)]
+    : mk === "BS" ? [() => bin("https://data-api.binance.vision/api/v3/klines"), () => okx(`${coin}-USDT`)]
+    : mk === "OF" ? [() => okx(`${coin}-USDT-SWAP`), () => bin("https://data-api.binance.vision/api/v3/klines")]
+    : [() => okx(`${coin}-USDT`), () => bin("https://data-api.binance.vision/api/v3/klines")];
+  for (const f of order) {
+    try { const cs = await f(); if (cs.length >= 60) { IK.candles.set(key, { at: Date.now(), cs }); return cs; } } catch {}
+  }
+  return hit ? hit.cs : null;
+}
+
+function collectIkut() {
+  const now = Date.now(), seen = new Map();
+  for (const k in FEEDS) for (const s of FEEDS[k].items) {
+    if (!s.reco || s.reco.verdict !== "IKUT" || now - s.t > IK_WINDOW + 15 * 60000) continue;
+    if (s.dir !== "up" && s.dir !== "down") continue;
+    const key = s.coin + ":" + (s.dir === "up" ? "LONG" : "SHORT");
+    const g = seen.get(key) || { latest: s, ids: new Set() };
+    g.ids.add(s.id); if (s.t > g.latest.t) g.latest = s;
+    seen.set(key, g);
+  }
+  for (const [key, g] of seen) {
+    const cur = IK.setups.get(key);
+    if (cur && cur.sig.id === g.latest.id) { cur.count = g.ids.size; continue; }
+    IK.setups.set(key, { key, side: key.endsWith("LONG") ? "LONG" : "SHORT", sig: g.latest, count: g.ids.size });
+  }
+  for (const k of [...IK.setups.keys()]) if (!seen.has(k)) IK.setups.delete(k);
+}
+
+async function evalSetup(x) {
+  const s = x.sig, long = x.side === "LONG";
+  const [c15, c1h] = await Promise.all([candles(s.mk, s.coin, "15m"), candles(s.mk, s.coin, "1h")]);
+  if (!c15) { x.err = "Data candle belum bisa diambil"; return; }
+  x.err = null;
+  const cl = c15.map(c => c.c), price = cl[cl.length - 1];
+  const e20 = emaArr(cl, 20), e50 = emaArr(cl, 50);
+  const rsi = rsiLast(cl), md = macdOf(cl);
+  let h1 = null;
+  if (c1h && c1h.length > 60) {
+    const c = c1h.map(k => k.c), a20 = emaArr(c, 20), a50 = emaArr(c, 50), a200 = c.length >= 200 ? emaArr(c, 200) : null, p = c[c.length - 1], i = c.length - 1;
+    const trend = p > a50[i] && a20[i] > a50[i] ? "Bullish" : p < a50[i] && a20[i] < a50[i] ? "Bearish" : "Netral";
+    h1 = { trend, e20: a20[i], e50: a50[i], e200: a200 ? a200[i] : null, rsi: rsiLast(c), price: p };
+  }
+  const lv = levels(c15.slice(-150), price);
+  // trade plan: engine plan, stop tightened to the nearest support/resistance when it is close enough
+  const pl = s.reco.plan || {};
+  const entry = pl.entry || s.price;
+  let sl = pl.sl || (long ? entry * 0.98 : entry * 1.02);
+  const near = long ? lv.sup.find(v => v < entry) : lv.res.find(v => v > entry);
+  if (near) { const d = Math.abs(entry / near - 1); if (d >= 0.005 && d <= 0.05) sl = long ? near * 0.997 : near * 1.003; }
+  const R = Math.abs(entry - sl);
+  const tp1 = long ? entry + 1.5 * R : entry - 1.5 * R, tp2 = long ? entry + 2.5 * R : entry - 2.5 * R;
+  const zLo = long ? entry - 0.3 * R : entry - 0.3 * R, zHi = long ? entry + 0.3 * R : entry + 0.3 * R;
+  const wall = long ? lv.res[0] : lv.sup[0];
+  const checks = long ? [
+    [!h1 || h1.trend !== "Bearish", `Tren 1 jam ${h1 ? h1.trend : "belum ada data"} (tidak bearish)`],
+    [price > e20[e20.length - 1], "Harga di atas EMA20 (15m)"],
+    [md.hist > 0, `MACD 15m positif${md.hist > 0 && md.prevHist <= 0 ? " (baru cross naik)" : ""}`],
+    [rsi != null && rsi >= 45 && rsi <= 70, `RSI 15m ${rsi == null ? "--" : rsi.toFixed(0)} di 45–70 (kuat, belum jenuh beli)`],
+    [!wall || wall - price >= R, wall ? `Jarak ke resistance ${px(wall)} cukup (≥ 1R)` : "Tidak ada resistance dekat"]
+  ] : [
+    [!h1 || h1.trend !== "Bullish", `Tren 1 jam ${h1 ? h1.trend : "belum ada data"} (tidak bullish)`],
+    [price < e20[e20.length - 1], "Harga di bawah EMA20 (15m)"],
+    [md.hist < 0, `MACD 15m negatif${md.hist < 0 && md.prevHist >= 0 ? " (baru cross turun)" : ""}`],
+    [rsi != null && rsi >= 30 && rsi <= 55, `RSI 15m ${rsi == null ? "--" : rsi.toFixed(0)} di 30–55 (lemah, belum jenuh jual)`],
+    [!wall || price - wall >= R, wall ? `Jarak ke support ${px(wall)} cukup (≥ 1R)` : "Tidak ada support dekat"]
+  ];
+  const age = Date.now() - s.t;
+  let st, why;
+  if (age > IK_WINDOW) { st = "miss"; why = "KEDALUWARSA (lebih dari 60 menit)"; }
+  else if (long ? price <= sl : price >= sl) { st = "cancel"; why = "BATAL: stop loss sudah tersentuh"; }
+  else if (long ? price >= tp1 : price <= tp1) { st = "miss"; why = "TERLEWAT: harga sudah sampai TP1"; }
+  else if (long ? price > zHi : price < zLo) { st = "miss"; why = "TERLEWAT: harga sudah lari dari zona entry, jangan kejar"; }
+  else if (checks.every(c => c[0])) { st = "go"; why = "BISA DIIKUTI"; }
+  else { st = "wait"; why = `TUNGGU KONFIRMASI (${checks.filter(c => !c[0]).length} syarat belum terpenuhi)`; }
+  const prev = x.st;
+  Object.assign(x, { price, entry, sl, tp1, tp2, zLo, zHi, lv, rsi, md, e20: e20[e20.length - 1], e50: e50[e50.length - 1], h1, checks, st, why, at: Date.now() });
+  if (st === "go" && prev !== "go") notifyIkut(x);
+}
+
+function notifyIkut(x) {
+  const k = x.sig.id;
+  if (IK.notified.has(k)) return;
+  IK.notified.add(k);
+  const body = `${x.side} ${x.sig.coin} · Entry ${px(x.zLo)}–${px(x.zHi)} · SL ${px(x.sl)} · TP1 ${px(x.tp1)}`;
+  beep(x.side === "LONG");
+  toast(`Bisa diikuti: ${body}`);
+  if (UI.notif && "Notification" in window && Notification.permission === "granted") {
+    try { new Notification(`✅ ${x.sig.coin} bisa diikuti (${x.side})`, { body, tag: "ik-" + k }); } catch {}
+  }
+}
+
+function ikutCard(x) {
+  const s = x.sig, mins = Math.floor((Date.now() - s.t) / 60000), long = x.side === "LONG";
+  const head = `<div class="ik-h"><span class="coin">${esc(s.coin)}</span><span class="side ${x.side}">${x.side}</span><span class="ex">${EX[s.mk]}</span><span class="age">${mins} mnt lalu · ${wib(s.t)}</span></div>`;
+  if (!x.at) return `<div class="ik wait">${head}<div class="ik-sub">${x.err ? esc(x.err) : "Menghitung indikator…"}</div></div>`;
+  const dist = x.price / x.entry - 1;
+  const cls = x.st === "go" ? "go" : x.st === "wait" ? "wait" : "off";
+  const fmtL = a => a.length ? a.map(px).join(" · ") : "--";
+  const h1 = x.h1;
+  return `<div class="ik ${cls}">
+  ${head}
+  <span class="st ${x.st}">${esc(x.why)}</span>
+  <div class="ik-sub">Harga sekarang <b class="num">${px(x.price)}</b> (${pct(dist)} dari entry) · sinyal skor ${s.reco.score}${x.count > 1 ? ` · ${x.count} sinyal IKUT searah` : ""}</div>
+  <div class="lv">
+    <div class="e"><small>Entry (zona)</small><span>${px(x.zLo)} – ${px(x.zHi)}</span></div>
+    <div class="s"><small>Stop loss</small><span>${px(x.sl)} (${pct(x.sl / x.entry - 1, 1)})</span></div>
+    <div class="t"><small>TP1 · 1.5R</small><span>${px(x.tp1)} (${pct(x.tp1 / x.entry - 1, 1)})</span></div>
+    <div class="t"><small>TP2 · 2.5R</small><span>${px(x.tp2)} (${pct(x.tp2 / x.entry - 1, 1)})</span></div>
+    <div><small>Support</small><span>${fmtL(x.lv.sup)}</span></div>
+    <div><small>Resistance</small><span>${fmtL(x.lv.res)}</span></div>
+  </div>
+  <div class="ind">
+    <div><small>Tren 1 jam</small><span class="${h1 && h1.trend === "Bullish" ? "up" : h1 && h1.trend === "Bearish" ? "down" : "flat"}">${h1 ? h1.trend : "--"}</span></div>
+    <div><small>RSI 14 · 15m / 1j</small><span>${x.rsi == null ? "--" : x.rsi.toFixed(0)} / ${h1 && h1.rsi != null ? h1.rsi.toFixed(0) : "--"}</span></div>
+    <div><small>MACD 15m</small><span class="${x.md.hist >= 0 ? "up" : "down"}">${x.md.hist >= 0 ? "Positif" : "Negatif"}${(x.md.hist > 0) !== (x.md.prevHist > 0) ? " · baru cross" : ""}</span></div>
+    <div><small>EMA 15m · 20 / 50</small><span>${px(x.e20)} / ${px(x.e50)}</span></div>
+    <div><small>EMA 1j · 20 / 50 / 200</small><span>${h1 ? `${px(h1.e20)} / ${px(h1.e50)} / ${h1.e200 ? px(h1.e200) : "--"}` : "--"}</span></div>
+    <div><small>Leverage maks</small><span>${(s.reco.plan && s.reco.plan.lev) || 3}x · risiko 1% modal</span></div>
+  </div>
+  <ul class="checks">${x.checks.map(([ok, t]) => `<li class="${ok ? "ok" : "no"}">${esc(t)}</li>`).join("")}</ul>
+  <div class="card-a"><button type="button" data-ask="${s.id}">Tanya Claude</button><a href="${chartUrl(s)}" target="_blank" rel="noopener">Chart</a></div>
+</div>`;
+}
+
+const ikRank = { go: 0, wait: 1, miss: 2, cancel: 3 };
+function renderIkut() {
+  const list = [...IK.setups.values()].sort((a, b) => (ikRank[a.st] ?? 1) - (ikRank[b.st] ?? 1) || b.sig.t - a.sig.t);
+  const go = list.filter(x => x.st === "go").length;
+  const badge = $("ikBadge"); badge.hidden = !go; badge.textContent = go;
+  if ($("view-ikut").hidden) return;
+  $("ikList").innerHTML = list.length ? list.map(ikutCard).join("")
+    : `<div class="empty">Belum ada sinyal IKUT dalam 60 menit terakhir. Profil konservatif membuat sinyal IKUT jarang muncul; biarkan dashboard terbuka.</div>`;
+}
+
+async function ikutLoop() {
+  if (IK.busy) return;
+  IK.busy = true;
+  try {
+    collectIkut();
+    for (const x of IK.setups.values()) { try { await evalSetup(x); } catch (e) { x.err = "Gagal menghitung indikator"; } }
+    renderIkut();
+  } finally { IK.busy = false; }
+}
+setInterval(ikutLoop, 30000);
+setTimeout(ikutLoop, 3000);
+
 /* ============ riwayat & ringkasan (rekaman 24 jam dari GitHub Actions) ============ */
 // HEAD = the repo's default branch, which is where the scheduled recorder commits its data
 const REPO_RAW = "https://raw.githubusercontent.com/adhiyudho-lang/Hello/HEAD/";
@@ -950,15 +1173,18 @@ $("hCoin").addEventListener("input", () => { HIST.shown = 200; renderHist(); });
 function showView(v, date) {
   for (const t of document.querySelectorAll(".tab")) t.setAttribute("aria-selected", t.dataset.view === v ? "true" : "false");
   $("view-live").hidden = v !== "live";
+  $("view-ikut").hidden = v !== "ikut";
   $("view-hist").hidden = v !== "hist";
   $("view-sum").hidden = v !== "sum";
-  try { history.replaceState(null, "", v === "live" ? location.pathname : "#" + (v === "hist" ? "riwayat" : "ringkasan")); } catch {}
+  try { history.replaceState(null, "", v === "live" ? location.pathname : "#" + ({ hist: "riwayat", sum: "ringkasan", ikut: "ikut" }[v])); } catch {}
   if (v === "hist") openHist(date);
   if (v === "sum") openSum();
+  if (v === "ikut") renderIkut();
 }
 document.querySelectorAll(".tab").forEach(t => t.addEventListener("click", () => showView(t.dataset.view)));
 if (location.hash === "#riwayat") showView("hist");
 else if (location.hash === "#ringkasan") showView("sum");
+else if (location.hash === "#ikut") showView("ikut");
 
 /* ============ boot ============ */
 loadHistory();

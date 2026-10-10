@@ -32,6 +32,13 @@ Fear & Greed, dan funding rate. Tombol **Tanya Claude** membuka claude.ai dengan
 Catatan: Binance hanya mengirim maks 1 likuidasi per coin per detik, jadi total likuidasi bisa lebih kecil dari Coinglass.
 Sinyal mulai muncul setelah ±1 menit dashboard dibuka (butuh riwayat harga). Threshold bisa diatur lewat tombol ⚙ Threshold.
 
+### Tab Saran IKUT
+
+Semua sinyal dengan saran IKUT dari 60 menit terakhir, dicek ulang tiap 30 detik dengan candle 15 menit dan 1 jam:
+entry (zona), stop loss, TP1/TP2, support & resistance, tren 1 jam (bullish/bearish), RSI 14, MACD, EMA 20/50/200.
+Status **BISA DIIKUTI** muncul (plus bunyi & notifikasi) kalau harga masih di zona entry dan semua syarat terpenuhi;
+**TUNGGU KONFIRMASI**, **TERLEWAT**, **BATAL** atau **KEDALUWARSA** kalau tidak.
+
 ### Rekaman 24 jam (Riwayat & Ringkasan harian)
 
 File `.github/workflows/recorder.yml` menjalankan `recorder/record.cjs` di GitHub Actions **setiap jam**.

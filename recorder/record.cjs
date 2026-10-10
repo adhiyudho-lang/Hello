@@ -1,8 +1,15 @@
 /* Adhi Whale Terminal recorder.
    Runs inside GitHub Actions for RUN_MINUTES, records every signal the dashboard would show
-   (same engine.js rules), fills in price outcomes 1h/4h/24h later, and writes:
-     data/days/YYYY-MM-DD.json  one file per WIB day: signals + liquidation totals
-     data/index.json            daily summaries + recommendation accuracy, read by the dashboard
+   (same engine.js rules) and fills in price outcomes 1h/4h/24h later.
+
+   Two modes, so overlapping runs can never overwrite each other's data:
+     node record.cjs                 record; writes only a journal file (JOURNAL) of what it found
+     node record.cjs merge <journal> apply a journal onto the freshest data/ checkout, then rebuild
+                                     the index. The workflow re-runs this after every fetch/reset,
+                                     so a push race just means merging again on top of the new data.
+
+   data/days/YYYY-MM-DD.json  one file per WIB day: signals + liquidation totals
+   data/index.json            daily summaries + recommendation accuracy, read by the dashboard
    No dependencies: Node 22 has fetch and WebSocket built in. */
 "use strict";
 const fs = require("fs");
@@ -15,6 +22,7 @@ const DATA = process.env.DATA_DIR || path.join(__dirname, "..", "data");
 const DAYS = path.join(DATA, "days");
 const HORIZONS = [1, 4, 24];
 const START = Date.now();
+const JOURNAL = process.env.JOURNAL || path.join(require("os").tmpdir(), "recorder-out.json");
 
 const log = (...a) => console.log(new Date().toISOString().slice(11, 19), ...a);
 const sleep = ms => new Promise(r => setTimeout(r, ms));
@@ -23,8 +31,8 @@ const dateWIB = t => new Date(t + 7 * 3600e3).toISOString().slice(0, 10);
 /* ---------- engine ---------- */
 const CFG = { ...W.DEFAULTS };
 let FNG = null, BTC = null;
-let pending = [];          // signals not yet written to disk
-let liqAgg = {};           // date -> totals of ALL liquidations (not only shown ones)
+// journal of this run: new signals, outcome values found for older signals, liquidation totals
+const J = { items: [], outcomes: {}, liq: {}, fng: null };
 const stats = { whale: 0, liq: 0, signal: 0 };
 
 const E = W.create({
@@ -37,11 +45,11 @@ const E = W.create({
     for (const k of ["value", "cluster"]) if (s[k] != null) s[k] = Math.round(s[k]);
     for (const k of ["chg", "chg24"]) if (s[k] != null) s[k] = +s[k].toFixed(5);
     if (s.mult != null) s.mult = +s.mult.toFixed(1);
-    pending.push(s);
+    J.items.push(s);
     stats[feed]++;
   },
   onLiqRaw: (mk, coin, pos, v, t) => {
-    const a = liqAgg[dateWIB(t)] || (liqAgg[dateWIB(t)] = { L: 0, S: 0, nL: 0, nS: 0 });
+    const a = J.liq[dateWIB(t)] || (J.liq[dateWIB(t)] = { L: 0, S: 0, nL: 0, nS: 0 });
     if (pos === "LONG") { a.L += v; a.nL++; } else { a.S += v; a.nS++; }
   }
 });
@@ -180,23 +188,37 @@ function writeJSON(file, obj) { fs.mkdirSync(path.dirname(file), { recursive: tr
 const dayFile = d => path.join(DAYS, d + ".json");
 const loadDay = d => readJSON(dayFile(d), { date: d, liq: { L: 0, S: 0, nL: 0, nS: 0 }, fng: null, items: [] });
 
-function save() {
-  const batch = pending; pending = [];
-  const agg = liqAgg; liqAgg = {};
+function writeJournal() {
+  if (FNG) J.fng = FNG.value;
+  fs.writeFileSync(JOURNAL, JSON.stringify(J));
+  log(`journal: ${J.items.length} signals, ${Object.keys(J.outcomes).length} outcome updates`);
+}
+
+/* apply a journal onto data/ (idempotent for a fresh checkout) */
+function applyJournal(j) {
   const byDay = {};
-  for (const s of batch) (byDay[dateWIB(s.t)] = byDay[dateWIB(s.t)] || []).push(s);
-  const dates = new Set([...Object.keys(byDay), ...Object.keys(agg)]);
+  for (const s of j.items) (byDay[dateWIB(s.t)] = byDay[dateWIB(s.t)] || []).push(s);
+  const outByDay = {};
+  for (const id in j.outcomes) { const u = j.outcomes[id]; (outByDay[u.d] = outByDay[u.d] || {})[id] = u.o; }
+  const today = dateWIB(Date.now());
+  const dates = new Set([...Object.keys(byDay), ...Object.keys(j.liq), ...Object.keys(outByDay), today]);
   for (const d of dates) {
+    if (d === today && !byDay[d] && !j.liq[d] && !outByDay[d] && !fs.existsSync(dayFile(d))) continue;
     const day = loadDay(d);
     const seen = new Set(day.items.map(x => x.id));
     for (const s of byDay[d] || []) if (!seen.has(s.id)) day.items.push(s);
     day.items.sort((a, b) => a.t - b.t);
-    const a = agg[d];
+    const outs = outByDay[d] || {};
+    for (const s of day.items) {
+      const o = outs[s.id]; if (!o) continue;
+      s.o = s.o || {};
+      for (const h in o) if (s.o[h] === undefined) s.o[h] = o[h];
+    }
+    const a = j.liq[d];
     if (a) { day.liq.L += a.L; day.liq.S += a.S; day.liq.nL += a.nL; day.liq.nS += a.nS; }
-    if (FNG && d === dateWIB(Date.now())) day.fng = FNG.value;
+    if (j.fng != null && d === today) day.fng = j.fng;
     writeJSON(dayFile(d), day);
   }
-  if (batch.length) log(`saved ${batch.length} signals`);
 }
 
 /* ---------- outcomes: where did price go 1h / 4h / 24h after the signal? ---------- */
@@ -223,24 +245,24 @@ async function fillOutcomes(budgetMs) {
   for (const d of [dateWIB(now - 2 * 86400e3), dateWIB(now - 86400e3), dateWIB(now)]) {
     if (!fs.existsSync(dayFile(d))) continue;
     const day = loadDay(d);
-    let changed = false;
     for (const s of day.items) {
       if (Date.now() > until) break;
       if (s.dir !== "up" && s.dir !== "down") continue;
       if (!(s.price > 0)) continue;
-      s.o = s.o || {};
+      const o = s.o || {};
       for (const h of HORIZONS) {
-        if (s.o[h] !== undefined) continue;
+        const u = J.outcomes[s.id];
+        if (o[h] !== undefined || (u && u.o[h] !== undefined)) continue;
         const T = s.t + h * 3600e3;
         if (now < T + 6 * 60000) continue;           // candle not closed yet
-        if (now - T > 3 * 86400e3) { s.o[h] = null; changed = true; continue; }
+        const rec = J.outcomes[s.id] || (J.outcomes[s.id] = { d, o: {} });
+        if (now - T > 3 * 86400e3) { rec.o[h] = null; continue; }
         const p = await priceAt(s.mk, s.coin, T);
-        s.o[h] = p ? +(p / s.price - 1).toFixed(5) : null;
-        changed = true; filled++;
+        rec.o[h] = p ? +(p / s.price - 1).toFixed(5) : null;
+        filled++;
         await sleep(110);
       }
     }
-    if (changed) writeJSON(dayFile(d), day);
   }
   log(`outcomes filled: ${filled}`);
 }
@@ -276,30 +298,37 @@ function buildIndex() {
 }
 
 /* ---------- main ---------- */
-if (require.main !== module) { module.exports = { fillOutcomes, buildIndex, loadDay, dayFile, writeJSON }; return; }
+if (require.main !== module) { module.exports = { fillOutcomes, buildIndex, loadDay, dayFile, writeJSON, applyJournal }; return; }
+if (process.argv[2] === "merge") {
+  const file = process.argv[3] || JOURNAL;
+  if (fs.existsSync(file)) { applyJournal(JSON.parse(fs.readFileSync(file, "utf8"))); log("merged", file); }
+  else log("no journal at", file);
+  buildIndex();
+  process.exit(0);
+}
 (async () => {
   log(`recording for ${RUN_MS / 60000} minutes`);
   setInterval(E.flushBursts, 300);
   startSources();
   await Promise.all([loadFng(), loadBtcTrend(), okxInstruments().catch(e => log("okx instruments", e.message))]);
   await fillOutcomes(4 * 60000);
-  buildIndex();
+  writeJournal();
   setInterval(okxTickers, 10000); okxTickers();
   setInterval(loadBtcTrend, 5 * 60000);
-  setInterval(() => { save(); buildIndex(); }, 10 * 60000);
+  setInterval(writeJournal, 5 * 60000);
 
   const end = () => {
     stopping = true;
     for (const ws of sockets) { try { ws.close(); } catch {} }
     okxPings.forEach(clearInterval);
   };
-  process.on("SIGTERM", () => { end(); save(); buildIndex(); process.exit(0); });
+  process.on("SIGTERM", () => { end(); writeJournal(); process.exit(0); });
   await sleep(Math.max(0, RUN_MS - (Date.now() - START)));
   end();
   E.flushBursts();
-  save();
+  writeJournal();
   await fillOutcomes(3 * 60000);
-  buildIndex();
+  writeJournal();
   log("done", JSON.stringify(stats));
   process.exit(0);
 })();

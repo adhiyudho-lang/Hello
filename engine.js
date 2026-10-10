@@ -282,7 +282,9 @@ function create(opts) {
     }
 
     const reasons = [...minus, ...plus].sort((a, b) => b[0] - a[0]).slice(0, 3).map(x => (plus.some(y => y[1] === x[1]) ? "＋ " : "－ ") + x[1]);
-    return { score, verdict, fut, spot, reasons };
+    const r5 = v => +v.toPrecision(6);
+    const plan = { side, entry: r5(p), sl: r5(sl), tp1: r5(tp1), tp2: r5(tp2), slPct: +slPct.toFixed(4), lev };
+    return { score, verdict, fut, spot, reasons, plan };
   }
 
   let seq = 0;
