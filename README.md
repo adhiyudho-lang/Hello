@@ -46,6 +46,13 @@ di `data/etf.json`, diambil perekam tiap jam lewat `recorder/etf.cjs`. Tiap coin
 framework Adhi di `data/fundamental.json` (70%) + teknikal brief (30%) untuk saran MASUK / TAHAN / HINDARI 2 tahun. Sub-tab: Ringkasan, Arus ETF, Event, Pengingat,
 Teknikal BTC, Altcoin, Aksi.
 
+### Aturan IKUT v2 (sejak 10 Okt 2026)
+
+IKUT butuh skor ≥ 80. Ditahan jadi TUNGGU bila: SHORT tanpa tren BTC turun & Fear & Greed < 55, harga sudah
+bergerak > 10% searah, arah volume hanya dari taker flow 1 menit, atau coin yang sama sudah dapat IKUT < 60 menit.
+Konfirmasi dihitung per jenis sinyal, bukan per exchange. Alert hanya saat tab IKUT menyatakan BISA DIIKUTI.
+Perekam mencatat TP1/SL mana yang tersentuh dulu dalam 4 jam; tab Rekap membandingkan aturan lama vs baru.
+
 ### Tab Saran IKUT
 
 Semua sinyal dengan saran IKUT dari 60 menit terakhir, dicek ulang tiap 30 detik dengan candle 15 menit dan 1 jam:

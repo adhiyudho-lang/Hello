@@ -41,6 +41,7 @@ function create(opts) {
   const funding = new Map();      // coin -> last funding rate (Binance futures)
   const taker = { BF: new Map(), BS: new Map() }; // sym -> [{t, side, v}]
   const recent = [];              // recent signals for confluence: {coin, dir, t, kind, mk}
+  const lastIkut = new Map();     // coin|dir -> time of the last IKUT (max one per coin per hour)
   const liqWin = [];              // {t, pos, v}
   const cooldown = new Map();
 
@@ -186,19 +187,21 @@ function create(opts) {
     const add = (n, why) => { score += n; (n >= 0 ? plus : minus).push([Math.abs(n), why]); };
 
     if (s.dir === "flat") {
-      return { score: 40, verdict: "INFO", fut: "Arah belum jelas (beli dan jual seimbang). Tidak ada aksi.", spot: "Pantau saja.", reasons: ["Volume melonjak tapi tanpa arah dominan"] };
+      return { score: 40, verdict: "INFO", fut: "Arah belum jelas (beli dan jual seimbang). Tidak ada aksi.", spot: "Pantau saja.", reasons: ["Volume melonjak tapi tanpa arah dominan"], rules: 2 };
     }
     const long = s.dir === "up";
     const v24 = vol24(coin);
 
-    // confluence across signals & exchanges in the last 15 minutes
-    let same = 0, opp = 0;
+    // confluence in the last 15 minutes, counted per signal TYPE: the same move showing up
+    // on several exchanges is one piece of evidence, not several (rules v2)
+    const sameK = new Set(), oppK = new Set();
     for (const x of recent) {
-      if (x.coin !== coin || x.t < now - 900000 || x.id === s.id) continue;
-      if (x.dir === s.dir) same++; else if (x.dir !== "flat") opp++;
+      if (x.coin !== coin || x.t < now - 900000 || x.id === s.id || x.kind === s.kind) continue;
+      if (x.dir === s.dir) sameK.add(x.kind); else if (x.dir !== "flat") oppK.add(x.kind);
     }
-    if (same) add(Math.min(20, same * 10), `${same} sinyal lain searah dalam 15 menit`);
-    if (opp) add(-Math.min(20, opp * 10), `${opp} sinyal berlawanan dalam 15 menit`);
+    const same = sameK.size, opp = oppK.size;
+    if (same) add(Math.min(20, same * 10), `${same} jenis sinyal lain searah dalam 15 menit`);
+    if (opp) add(-Math.min(20, opp * 10), `${opp} jenis sinyal berlawanan dalam 15 menit`);
 
     // liquidity
     if (v24 < 2e6) add(-30, `Likuiditas tipis (volume 24j ${usd(v24)}), rawan manipulasi`);
@@ -239,10 +242,24 @@ function create(opts) {
     if (s.kind === "liq") add(-10, "Masuk setelah likuidasi = mengejar, tunggu harga stabil");
 
     score = clamp(Math.round(score), 0, 100);
-    let verdict = score >= 75 ? "IKUT" : score >= 55 ? "TUNGGU" : "HINDARI";
+    // rules v2: IKUT needs 80+, and a few patterns that kept missing are held back as TUNGGU
+    let verdict = score >= 80 ? "IKUT" : score >= 55 ? "TUNGGU" : "HINDARI";
     if (s.kind === "liq") {
       const big = MAJORS.has(coin) ? CFG.liqCluster * 10 : CFG.liqCluster;
       if (s.cluster < big) verdict = "INFO";
+    }
+    const gates = [];
+    if (verdict === "IKUT") {
+      if (!long && !(BTC_TREND.dir === "down" && FNG && FNG.value < 55)) gates.push("SHORT hanya info kecuali tren BTC turun & Fear & Greed < 55");
+      const pumpMove = s.kind === "pump" ? s.chg : 0;
+      const moved = long ? Math.max(s.chg24 || 0, pumpMove) : -Math.min(s.chg24 || 0, pumpMove);
+      if (moved > 0.10) gates.push(`Harga sudah bergerak ${pct(moved, 1)} searah, tunggu pullback ke zona entry`);
+      if (s.kind === "volume" && /^taker/.test(s.how || "")) gates.push("Arah dari taker flow 1 menit, tunggu candle 15m mengonfirmasi");
+      const key = coin + "|" + s.dir, lt = lastIkut.get(key);
+      if (lt && now - lt < 3600e3) gates.push("Sudah ada IKUT untuk coin ini kurang dari 60 menit lalu");
+      if (gates.length) verdict = "TUNGGU";
+      else lastIkut.set(key, now);
+      if (lastIkut.size > 500) for (const [k, t] of lastIkut) if (now - t > 3600e3) lastIkut.delete(k);
     }
 
     // trade plan
@@ -272,8 +289,11 @@ function create(opts) {
         spot = "Jangan kejar. Tunggu koreksi sebelum beli.";
       }
     } else if (verdict === "IKUT") {
-      fut = `${side} ~${px(p)} · SL ${px(sl)} (${(slPct * 100).toFixed(1)}%) · TP1 ${px(tp1)} · TP2 ${px(tp2)} · maks ${lev}x`;
+      fut = `${side} ~${px(p)} · SL ${px(sl)} (${(slPct * 100).toFixed(1)}%) · TP1 ${px(tp1)} · TP2 ${px(tp2)} · maks ${lev}x. Masuk saat tab IKUT menyatakan BISA DIIKUTI; ambil 50% di TP1, geser SL ke entry, tutup sisa maks 4 jam.`;
       spot = long ? `BELI BERTAHAP 3x (40/30/30%). Batal kalau tutup di bawah ${px(sl)}.` : "Jangan beli. Kalau pegang coin ini, kurangi atau pasang stop.";
+    } else if (verdict === "TUNGGU" && gates.length) {
+      fut = `Belum masuk: ${gates[0]}. Pantau status BISA DIIKUTI.`;
+      spot = long ? `Tunggu koreksi ke ~${px(pb)} sebelum cicil beli.` : "Jangan beli dulu, whale sedang menjual.";
     } else if (verdict === "TUNGGU") {
       fut = long ? `Belum masuk. Tunggu pullback ke ~${px(pb)} dan tertahan, baru LONG.` : `Belum masuk. Tunggu pantulan ke ~${px(pb)} yang gagal tembus, baru SHORT.`;
       spot = long ? `Tunggu koreksi ke ~${px(pb)} sebelum cicil beli.` : "Jangan beli dulu, whale sedang menjual.";
@@ -282,10 +302,10 @@ function create(opts) {
       spot = long ? "Jangan beli sekarang." : "Jangan beli, tunggu harga stabil.";
     }
 
-    const reasons = [...minus, ...plus].sort((a, b) => b[0] - a[0]).slice(0, 3).map(x => (plus.some(y => y[1] === x[1]) ? "＋ " : "－ ") + x[1]);
+    const reasons = [...gates.map(g => "⏸ " + g), ...[...minus, ...plus].sort((a, b) => b[0] - a[0]).map(x => (plus.some(y => y[1] === x[1]) ? "＋ " : "－ ") + x[1])].slice(0, 3);
     const r5 = v => +v.toPrecision(6);
     const plan = { side, entry: r5(p), sl: r5(sl), tp1: r5(tp1), tp2: r5(tp2), slPct: +slPct.toFixed(4), lev };
-    return { score, verdict, fut, spot, reasons, plan };
+    return { score, verdict, fut, spot, reasons, plan, rules: 2 };
   }
 
   let seq = 0;

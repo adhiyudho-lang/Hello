@@ -97,7 +97,33 @@ async function openMiss(days) {
   const dirN = { up: "LONG / beli", down: "SHORT / jual" };
   const top = rows.filter(r => r.wrWith != null && r.wrWithout != null && r.wrWith < r.wrWithout && r.nWith >= 3).slice(0, 3);
 
-  MISS.html = `
+  // rules v1 vs v2: v1 = signals recorded before the new rules (reco.rules missing);
+  // "simulasi" replays the v2 gates over the v1 IKUT calls to estimate the effect right away
+  const v2gate = s => {
+    if (s.reco.score < 80) return false;
+    if (s.dir === "down" && !((s.reco.reasons || []).some(r => /Searah tren BTC \(turun/.test(r)) && (s.fng || 100) < 55)) return false;
+    const moved = s.dir === "up" ? Math.max(s.chg24 || 0, s.kind === "pump" ? s.chg : 0) : -Math.min(s.chg24 || 0, s.kind === "pump" ? s.chg : 0);
+    if (moved > 0.10) return false;
+    if (s.kind === "volume" && /^taker/.test(s.how || "")) return false;
+    return true;
+  };
+  const firstPerHour = list => { const last = {}; return list.slice().sort((a, b) => a.t - b.t).filter(s => { const k = s.coin + s.dir; if (last[k] && s.t - last[k] < 3600e3) return false; last[k] = s.t; return true; }); };
+  const v1 = scored.filter(s => !s.reco.rules), v2 = scored.filter(s => s.reco.rules >= 2);
+  const sim = firstPerHour(v1.filter(v2gate));
+  const stat = (label, list, note) => {
+    const n = list.length, w = n ? list.filter(s => ret(s) > 0).length / n : null;
+    const tp = list.filter(s => s.o && s.o.tp != null), tpw = tp.length ? tp.filter(s => s.o.tp === 1).length / tp.length : null, slw = tp.length ? tp.filter(s => s.o.tp === -1).length / tp.length : null;
+    return `<tr><td><b>${label}</b><div class="foot">${note}</div></td><td class="num">${n}</td><td class="num ${w == null ? "" : w >= 0.55 ? "up" : w < 0.45 ? "down" : ""}">${pctTxt(w)}</td><td class="num">${tp.length ? `<span class="up">${pctTxt(tpw)}</span> / <span class="down">${pctTxt(slw)}</span>` : "--"}</td></tr>`;
+  };
+  const cmpHtml = `<div class="sec-h"><h2>Aturan lama vs baru</h2><small>IKUT yang sudah punya hasil</small></div>
+  <div class="tblwrap"><table class="t"><thead><tr><th>Aturan</th><th class="num">IKUT</th><th class="num">Tepat 4j</th><th class="num">TP1 / SL dulu</th></tr></thead><tbody>
+    ${stat("Lama (v1)", v1, "ambang 75, semua sinyal")}
+    ${stat("Simulasi aturan baru", sim, "v1 yang lolos aturan v2")}
+    ${stat("Baru (v2, live)", v2, v2.length ? "sejak aturan baru aktif" : "belum ada hasil, tunggu beberapa jam")}
+  </tbody></table></div>
+  <div class="foot">TP1 / SL dulu = mana yang tersentuh lebih dulu dalam 4 jam memakai level di rencana sinyal (dicek perekam tiap jam, hanya untuk sinyal baru).</div>`;
+
+  MISS.html = cmpHtml + `
   <article class="panel">
     <div class="tiles" style="margin-bottom:10px">
       <div class="tile w3"><div class="tx"><b>${scored.length}</b><small>IKUT dengan hasil harga</small></div></div>

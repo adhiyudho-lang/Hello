@@ -389,7 +389,8 @@ function notify(title, body, tag) {
 }
 function alertFor(s) {
   if (s.hist) return;
-  const important = s.reco.verdict === "IKUT" || (s.value || 0) >= CFG.alertBig;
+  // IKUT itself no longer alerts: the IKUT tab alerts once the setup is confirmed (BISA DIIKUTI)
+  const important = (s.value || 0) >= CFG.alertBig;
   if (!important || !pass(s)) return;
   beep(s.dir === "up");
   const title = s.kind === "liq" ? `Likuidasi ${s.pos} ${s.coin} ${usd(s.value)}` : s.kind === "pump" ? `${s.coin} ${s.dir === "up" ? "PUMP" : "DUMP"} ${pct(s.chg)}` : `${s.coin} whale ${s.dir === "up" ? "BELI" : "JUAL"} ${usd(s.value)}`;
@@ -685,13 +686,13 @@ function setFeed(f) {
 $("sigSeg").addEventListener("click", e => { const b = e.target.closest("button[data-feed]"); if (b) setFeed(b.dataset.feed); });
 
 function syncToggles() { $("btnSound").setAttribute("aria-pressed", UI.sound); $("btnNotif").setAttribute("aria-pressed", UI.notif); }
-$("btnSound").addEventListener("click", () => { UI.sound = !UI.sound; if (UI.sound) beep(true); syncToggles(); saveUI(); toast(UI.sound ? "Bunyi aktif untuk sinyal IKUT & nilai besar" : "Bunyi dimatikan"); });
+$("btnSound").addEventListener("click", () => { UI.sound = !UI.sound; if (UI.sound) beep(true); syncToggles(); saveUI(); toast(UI.sound ? "Bunyi aktif untuk BISA DIIKUTI & nilai besar" : "Bunyi dimatikan"); });
 $("btnNotif").addEventListener("click", async () => {
   if (!("Notification" in window)) return toast("Browser ini tidak mendukung notifikasi. Di iPhone, buka dari ikon Home Screen.");
   if (!UI.notif) {
     const p = Notification.permission === "granted" ? "granted" : await Notification.requestPermission();
     if (p !== "granted") return toast("Izin notifikasi ditolak. Aktifkan dari pengaturan browser.");
-    UI.notif = true; toast("Notifikasi aktif untuk IKUT & nilai besar");
+    UI.notif = true; toast("Notifikasi aktif untuk BISA DIIKUTI & nilai besar");
   } else { UI.notif = false; toast("Notifikasi dimatikan"); }
   syncToggles(); saveUI();
 });

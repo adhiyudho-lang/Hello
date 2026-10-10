@@ -239,6 +239,27 @@ async function priceAt(mk, coin, T) {
   priceCache.set(key, p);
   return p;
 }
+// 1 = TP1 reached first, -1 = stop loss first (or both inside one candle), 0 = neither within 4h
+async function tpSl(s, pl) {
+  const T = s.t, end = T + 4 * 3600e3;
+  const bin = () => getJSON(`https://data-api.binance.vision/api/v3/klines?symbol=${s.coin}USDT&interval=5m&startTime=${T}&limit=48`, 1)
+    .then(k => k.map(x => ({ t: +x[0], h: +x[2], l: +x[3] })));
+  const okx = inst => getJSON(`https://www.okx.com/api/v5/market/history-candles?instId=${inst}&bar=5m&after=${end + 1}&limit=48`, 1)
+    .then(j => (j.data || []).map(x => ({ t: +x[0], h: +x[2], l: +x[3] })).reverse());
+  const order = s.mk === "BS" ? [bin, () => okx(`${s.coin}-USDT`)] : s.mk === "OS" ? [() => okx(`${s.coin}-USDT`), bin] : [() => okx(`${s.coin}-USDT-SWAP`), bin];
+  let cs = null;
+  for (const f of order) { try { cs = await f(); } catch { cs = null; } if (cs && cs.length) break; await sleep(60); }
+  if (!cs || !cs.length) return null;
+  const long = s.dir === "up";
+  for (const c of cs) {
+    if (c.t < T - 300000 || c.t > end) continue;
+    const hitSl = long ? c.l <= pl.sl : c.h >= pl.sl, hitTp = long ? c.h >= pl.tp1 : c.l <= pl.tp1;
+    if (hitSl) return -1;
+    if (hitTp) return 1;
+  }
+  return 0;
+}
+
 async function fillOutcomes(budgetMs) {
   const until = Date.now() + budgetMs, now = Date.now();
   let filled = 0;
@@ -261,6 +282,16 @@ async function fillOutcomes(budgetMs) {
         rec.o[h] = p ? +(p / s.price - 1).toFixed(5) : null;
         filled++;
         await sleep(110);
+      }
+      // TP/SL check for IKUT and would-be IKUT (score >= 75): which was hit first within 4 hours
+      const pl = s.reco && s.reco.plan, v = s.reco && s.reco.verdict;
+      if (pl && (v === "IKUT" || (v === "TUNGGU" && s.reco.score >= 75))) {
+        const u = J.outcomes[s.id];
+        if (o.tp === undefined && !(u && u.o.tp !== undefined) && now > s.t + 4 * 3600e3 + 6 * 60000) {
+          const rec = J.outcomes[s.id] || (J.outcomes[s.id] = { d, o: {} });
+          if (now - s.t > 3 * 86400e3) rec.o.tp = null;
+          else { rec.o.tp = await tpSl(s, pl); filled++; await sleep(110); }
+        }
       }
     }
   }
@@ -298,7 +329,7 @@ function buildIndex() {
 }
 
 /* ---------- main ---------- */
-if (require.main !== module) { module.exports = { fillOutcomes, buildIndex, loadDay, dayFile, writeJSON, applyJournal }; return; }
+if (require.main !== module) { module.exports = { fillOutcomes, buildIndex, loadDay, dayFile, writeJSON, applyJournal, J }; return; }
 if (process.argv[2] === "merge") {
   const file = process.argv[3] || JOURNAL;
   if (fs.existsSync(file)) { applyJournal(JSON.parse(fs.readFileSync(file, "utf8"))); log("merged", file); }
