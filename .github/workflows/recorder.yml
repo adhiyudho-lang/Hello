@@ -11,7 +11,6 @@ on:
 
 permissions:
   contents: write
-  pages: write
 
 concurrency:
   group: whale-recorder
@@ -57,14 +56,3 @@ jobs:
             sleep $((i * 5))
           done
           exit 1
-
-      # Pushes made by this workflow don't rebuild GitHub Pages on their own; ask for a build
-      # so the site (and any dashboard update) stays current.
-      - name: Perbarui GitHub Pages
-        if: always()
-        continue-on-error: true
-        env:
-          GH_TOKEN: ${{ github.token }}
-        run: |
-          curl -fsS -X POST -H "Authorization: Bearer $GH_TOKEN" -H "Accept: application/vnd.github+json" \
-            "https://api.github.com/repos/${{ github.repository }}/pages/builds" || echo "Pages build request failed"
