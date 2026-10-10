@@ -1,0 +1,30 @@
+{
+ "asOf": "2026-10-10",
+ "framework": "Framework fundamental Adhi: 7 kriteria berbobot, skor 1-10; >= 7,0 = kandidat kuat",
+ "criteria": [
+  {"key": "dev", "name": "Developer & survive-bear", "w": 20},
+  {"key": "adopt", "name": "Adopsi on-chain riil", "w": 18},
+  {"key": "token", "name": "Tokenomics & unlock", "w": 15},
+  {"key": "narr", "name": "Narasi + produk", "w": 15},
+  {"key": "mcap", "name": "Market cap sweet spot", "w": 12},
+  {"key": "hold", "name": "Distribusi holder", "w": 10},
+  {"key": "liq", "name": "Likuiditas & listing", "w": 10}
+ ],
+ "coins": {
+  "ETH": {"s": {"dev": 9, "adopt": 6, "token": 7, "narr": 7, "mcap": 2, "hold": 8, "liq": 10}, "snap": "Mcap $304 miliar · supply 100% beredar · TVL $51 miliar (1 th lalu $93 miliar) · revenue 30 hari naik", "note": "Ekosistem developer terbesar dan aset institusi (ETF, RWA). Kelemahan: kapitalisasi sudah $300 miliar sehingga 2x butuh arus modal sangat besar, dan TVL turun ±45% setahun."},
+  "SOL": {"s": {"dev": 9, "adopt": 6, "token": 6, "narr": 7, "mcap": 4, "hold": 7, "liq": 10}, "snap": "Mcap $65 miliar · 93% beredar · TVL $6,2 miliar (1 th lalu $12,6 miliar) · developer baru 2025 terbanyak", "note": "Paling banyak menarik developer baru dan punya ETF. Kelemahan: inflasi staking masih ada dan TVL turun separuh dalam setahun."},
+  "HYPE": {"s": {"dev": 7, "adopt": 8, "token": 4, "narr": 8, "mcap": 5, "hold": 5, "liq": 9}, "snap": "Mcap $18,7 miliar · FDV $80 miliar · baru 22% beredar · revenue perps ±$680 juta/tahun · unlock tim bulanan", "note": "Revenue riil terbesar di daftar ini dan buyback Assistance Fund. Kelemahan besar: baru 22% supply beredar dengan unlock tim tiap bulan (±6 Nov berikutnya). Data aktivitas developer publik tidak ditemukan, dinilai konservatif."},
+  "LINK": {"s": {"dev": 9, "adopt": 7, "token": 5, "narr": 8, "mcap": 6, "hold": 6, "liq": 10}, "snap": "Mcap $9,8 miliar · 77% beredar · aktivitas GitHub teratas (Santiment Q1 2026) · infrastruktur oracle & CCIP", "note": "Infrastruktur RWA/institusi dengan developer paling aktif. Kelemahan: ±23% supply non-sirkulasi masih dipegang tim/cadangan dan value accrual ke token belum kuat."},
+  "PENDLE": {"s": {"dev": 7, "adopt": 6, "token": 6, "narr": 6, "mcap": 9, "hold": 6, "liq": 7}, "snap": "Mcap $370 jt · FDV $600 jt · 62% beredar · TVL $1,2 miliar (jauh di bawah puncak)", "note": "Market cap ideal untuk multi-bagger dan produk yield yang terbukti. Kelemahan: TVL dan aktivitas turun dari puncak, emisi masih berjalan."},
+  "INJ": {"s": {"dev": 6, "adopt": 3, "token": 8, "narr": 6, "mcap": 8, "hold": 6, "liq": 7}, "snap": "Mcap $700 jt · 100% beredar · burn mingguan (>6,9 jt INJ terbakar) · TVL ±$10 jt · revenue ±$3,7 jt/tahun", "note": "Tokenomics deflasi terbaik (sudah 100% beredar, burn rutin). Kelemahan: adopsi on-chain sangat kecil, TVL dan revenue jauh tertinggal; katalis ETF belum pasti."},
+  "TAO": {"s": {"dev": 8, "adopt": 6, "token": 6, "narr": 9, "mcap": 7, "hold": 6, "liq": 8}, "snap": "Mcap $3,1 miliar · FDV $5,8 miliar · 54% beredar · TVL subnet ±$0,55 miliar · emisi turun setelah halving", "note": "Narasi AI terkuat dengan ekosistem subnet yang terus dibangun. Kelemahan: revenue riil belum jelas dan 46% supply belum beredar."}
+ },
+ "sources": [
+  ["CoinGecko market data (10 Okt 2026)", "https://www.coingecko.com"],
+  ["DefiLlama TVL & revenue (10 Okt 2026)", "https://defillama.com"],
+  ["Santiment Q1 2026 GitHub activity", "https://blockeden.xyz/blog/2026/03/15/santiment-q1-2026-github-activity-rankings-developer-commits-building-vs-marketing/"],
+  ["Syndica/Electric Capital: developer baru Solana vs Ethereum", "https://finance.yahoo.com/markets/crypto/articles/solana-just-overtook-ethereum-developer-094509890.html"],
+  ["Chainspect developer activity", "https://chainspect.app/dashboard/developer-activity"],
+  ["Injective burn & ETF (Jul 2026)", "https://coinmarketcap.com/top-stories/6a454ac2fddb8f35bf739949/"]
+ ]
+}

@@ -40,8 +40,10 @@ Sinyal mulai muncul setelah ±1 menit dashboard dibuka (butuh riwayat harga). Th
 ### Menu ETF Brief (Crypto ETF Weekly Brief)
 
 Isi brief mingguan dari artifact claude.ai (`data/brief.json`, disinkronkan tiap Sabtu pagi oleh Routine Claude
-lewat `recorder/brief-extract.cjs`) ditambah arus harian ETF Bitcoin spot per penerbit (`data/etf.json`, diambil
-dari bitbo.io oleh perekam tiap jam lewat `recorder/etf.cjs`). Sub-tab: Ringkasan, Arus ETF, Event, Pengingat,
+lewat `recorder/brief-extract.cjs`) ditambah arus harian ETF spot BTC, ETH, SOL beserta harganya (CoinMarketCap) dan per penerbit BTC (bitbo.io)
+di `data/etf.json`, diambil perekam tiap jam lewat `recorder/etf.cjs`. Tiap coin diberi skor akumulasi 1–100
+(akumulasi / akumulasi tersembunyi / risiko distribusi / distribusi). Tab Altcoin memakai skor fundamental
+framework Adhi di `data/fundamental.json` (70%) + teknikal brief (30%) untuk saran MASUK / TAHAN / HINDARI 2 tahun. Sub-tab: Ringkasan, Arus ETF, Event, Pengingat,
 Teknikal BTC, Altcoin, Aksi.
 
 ### Tab Saran IKUT

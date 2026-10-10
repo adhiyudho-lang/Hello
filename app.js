@@ -202,10 +202,10 @@ async function getJSON(url) {
   return r.json();
 }
 async function candles(mk, coin, tf, limit = 210) {
-  const key = `${mk}:${coin}:${tf}:${limit}`, ttl = tf === "1m" ? 60000 : tf === "15m" ? 25000 : 240000;
+  const key = `${mk}:${coin}:${tf}:${limit}`, ttl = tf === "1m" ? 60000 : tf === "15m" ? 25000 : tf === "1d" ? 900000 : 240000;
   const hit = CANDLES.get(key);
   if (hit && Date.now() - hit.at < ttl) return hit.cs;
-  const okxBar = { "1m": "1m", "15m": "15m", "1h": "1H", "4h": "4H" }[tf];
+  const okxBar = { "1m": "1m", "15m": "15m", "1h": "1H", "4h": "4H", "1d": "1Dutc" }[tf];
   const bin = base => getJSON(`${base}?symbol=${coin}USDT&interval=${tf}&limit=${limit}`).then(k => k.map(x => ({ t: +x[0], o: +x[1], h: +x[2], l: +x[3], c: +x[4], v: +x[7] })));
   const okx = inst => getJSON(`https://www.okx.com/api/v5/market/candles?instId=${inst}&bar=${okxBar}&limit=${Math.min(limit, 300)}`).then(j => j.data.map(x => ({ t: +x[0], o: +x[1], h: +x[2], l: +x[3], c: +x[4], v: +x[7] })).reverse());
   const spot = () => bin("https://data-api.binance.vision/api/v3/klines");
@@ -561,11 +561,23 @@ function topCoins(n) {
   }
   return [...best.values()].sort((a, b) => b.r.q - a.r.q).slice(0, n);
 }
+// coins Adhi follows; XAU = gold perpetual (Binance Futures), OKX XAUT as fallback
+const FOCUS = ["BTC", "ETH", "SOL", "HYPE", "LINK", "TAO", "ONDO", "INJ", "PENDLE", "NEAR", "XAU"];
+function focusCoins() {
+  const out = [];
+  for (const c of FOCUS) {
+    let b = bestRec(c);
+    if (!b && c === "XAU") { const r = M.OS.get("XAUT") || M.OF.get("XAUT"); if (r && r.p) b = { mk: M.OS.get("XAUT") ? "OS" : "OF", r }; }
+    if (b && b.r.o) out.push({ mk: b.mk, coin: c, r: b.r });
+  }
+  return out;
+}
 let tickerKey = "";
 function renderTicker() {
-  const top = topCoins(14);
+  const top = focusCoins();
   if (!top.length) return;
-  const items = top.map(x => { const ch = x.r.p / x.r.o - 1; return `<button class="tk" data-heat="${x.mk}|${esc(x.coin)}">${logo(x.coin, "sm")}<b>${esc(x.coin)}</b><span class="num">${px(x.r.p)}</span><span class="num ${ch >= 0 ? "up" : "down"}">${pct(ch)}</span></button>`; }).join("");
+  const label = c => c === "XAU" ? "XAU/USDT" : c;
+  const items = top.map(x => { const ch = x.r.p / x.r.o - 1; return `<button class="tk" data-heat="${x.mk}|${esc(x.coin === "XAU" && x.mk[0] === "O" ? "XAUT" : x.coin)}">${logo(x.coin === "XAU" ? "XAUT" : x.coin, "sm")}<b>${label(x.coin)}</b><span class="num">${px(x.r.p)}</span><span class="num ${ch >= 0 ? "up" : "down"}">${pct(ch)}</span></button>`; }).join("");
   const key = top.map(x => x.coin).join();
   const track = $("ticker");
   if (key !== tickerKey) { track.innerHTML = items + items; tickerKey = key; return; }
