@@ -28,7 +28,7 @@ jobs:
       - name: Siapkan file situs
         run: |
           mkdir -p _site
-          cp index.html engine.js .nojekyll _site/
+          cp index.html engine.js app.js .nojekyll _site/
           cp -r data _site/
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v3

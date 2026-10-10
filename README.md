@@ -2,6 +2,11 @@
 
 ## Adhi Whale Terminal
 
+Tampilan mobile-first ala app exchange: menu bawah (Beranda, Sinyal, IKUT, Riwayat, Rekap), logo coin,
+grafik mini 1 jam di tiap sinyal, heatmap pasar, gauge Fear & Greed, dan chart candle (TradingView
+Lightweight Charts) dengan garis Entry/SL/TP serta support & resistance. File: `index.html` (tampilan),
+`app.js` (logika browser), `engine.js` (aturan sinyal, dipakai juga oleh perekam).
+
 Dashboard crypto live dalam satu file (`index.html`), mirip feed KJo Terminal:
 
 1. **#whale-sniper**: transaksi besar (market order whale) & volume 1 menit tak biasa. Hijau = beli, merah = jual.

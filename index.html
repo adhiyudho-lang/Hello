@@ -3,355 +3,508 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#060b16">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <title>Adhi Whale Terminal</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%23060b16'/%3E%3Cpath d='M10 36c6-12 22-16 34-10 4-6 8-8 12-8-2 4-3 8-2 12-6 14-28 20-44 6z' fill='%2322d3ee'/%3E%3C/svg%3E">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap">
 <style>
-/* Layout: sticky market strip, filter bar, then a 2x2 grid of feeds (stacks to one column on phones). Single dark terminal look. */
+/* Layout: mobile-first trading app. Sticky top bar + price ticker, one view at a time,
+   fixed bottom navigation (turns into a left rail on desktop). Dark navy with cyan glow
+   reserved for live/actionable things (IKUT setups, sentiment hero). */
 :root {
-  --bg: #0a0e13;
-  --panel: #10161e;
-  --card: #151d27;
-  --line: #222d3a;
-  --fg: #e4eaf1;
-  --muted: #8593a5;
-  --faint: #5a6878;
-  --buy: #22c47d;
-  --buy-bg: rgba(34,196,125,.12);
-  --sell: #f04a5d;
-  --sell-bg: rgba(240,74,93,.12);
-  --warn: #f2b33d;
-  --warn-bg: rgba(242,179,61,.12);
-  --accent: #6f8dff;
+  --bg: #060b16;
+  --bg2: #081122;
+  --panel: #0c1526;
+  --card: #0f1a2f;
+  --card2: #13203a;
+  --line: #1b2945;
+  --fg: #e7eef8;
+  --muted: #8a9bb8;
+  --faint: #56688a;
+  --buy: #16c784;
+  --buy-bg: rgba(22,199,132,.13);
+  --sell: #ea3943;
+  --sell-bg: rgba(234,57,67,.13);
+  --warn: #f3ba2f;
+  --warn-bg: rgba(243,186,47,.13);
+  --glow: #22d3ee;
+  --glow-bg: rgba(34,211,238,.12);
+  --accent: #4f8cff;
   --font-sans: "IBM Plex Sans", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
   --font-mono: "IBM Plex Mono", ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
+  --nav-h: 64px;
   color-scheme: dark;
 }
 * { box-sizing: border-box; }
 [hidden] { display: none !important; }
 html, body { margin: 0; }
 body {
-  background: var(--bg); color: var(--fg);
+  background:
+    radial-gradient(900px 500px at 85% -10%, rgba(34,211,238,.10), transparent 60%),
+    radial-gradient(700px 500px at -10% 10%, rgba(79,140,255,.10), transparent 60%),
+    var(--bg);
+  background-attachment: fixed;
+  color: var(--fg);
   font: 14px/1.45 var(--font-sans);
-  padding-top: env(safe-area-inset-top, 0px);
-  padding-bottom: env(safe-area-inset-bottom, 0px);
+  -webkit-font-smoothing: antialiased;
+  padding-bottom: calc(var(--nav-h) + env(safe-area-inset-bottom, 0px));
 }
 button, input, select { font: inherit; color: inherit; }
 button { cursor: pointer; }
-:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
-.num { font-family: var(--font-mono); font-variant-numeric: tabular-nums; }
-.wrap { padding-inline: 16px; padding-block: 12px 24px; max-width: 1680px; margin: 0 auto; display: grid; gap: 12px; }
-
-/* top strip */
-@media (max-width: 700px) { .top { position: static !important; } }
-.top { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 20; background: var(--bg); border-bottom: 1px solid var(--line); }
-.top-inner { padding-inline: 16px; padding-block: 10px; max-width: 1680px; margin: 0 auto; display: flex; flex-wrap: wrap; align-items: center; gap: 10px 18px; }
-.brand { display: flex; align-items: baseline; gap: 8px; margin-right: auto; }
-.brand b { font-size: 17px; letter-spacing: .02em; }
-.brand span { color: var(--muted); font-size: 12px; }
-.stat { display: flex; flex-direction: column; gap: 1px; min-width: 0; }
-.stat small { color: var(--muted); font-size: 10.5px; text-transform: uppercase; letter-spacing: .08em; }
-.stat .v { font-family: var(--font-mono); font-size: 14px; white-space: nowrap; }
+:focus-visible { outline: 2px solid var(--glow); outline-offset: 2px; }
+.num, .mono { font-family: var(--font-mono); font-variant-numeric: tabular-nums; }
 .up { color: var(--buy); } .down { color: var(--sell); } .flat { color: var(--warn); }
-.liqbar { display: flex; height: 6px; width: 140px; border-radius: 3px; overflow: hidden; background: var(--line); margin-top: 3px; }
-.liqbar i { display: block; height: 100%; }
-.dots { display: flex; gap: 8px; flex-wrap: wrap; }
-.dot { display: inline-flex; align-items: center; gap: 4px; font-size: 11px; color: var(--muted); }
-.dot::before { content: ""; width: 7px; height: 7px; border-radius: 50%; background: var(--faint); }
-.dot.ok::before { background: var(--buy); }
-.dot.err::before { background: var(--sell); }
-.iconbtn { background: var(--card); border: 1px solid var(--line); border-radius: 8px; padding: 6px 10px; font-size: 13px; }
-.iconbtn[aria-pressed="true"] { border-color: var(--accent); color: var(--accent); }
+a { color: var(--glow); }
 
-/* filters */
-.filters { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
-.filters input[type=search], .filters select, .filters input[type=number] { background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 7px 10px; min-width: 0; }
-.filters input[type=search] { width: 190px; }
-.filters input[type=number] { width: 120px; }
-.chip { background: var(--panel); border: 1px solid var(--line); border-radius: 999px; padding: 5px 11px; font-size: 12.5px; color: var(--muted); }
-.chip[aria-pressed="true"] { color: var(--fg); border-color: var(--accent); background: rgba(111,141,255,.12); }
-.filters label.inline { display: inline-flex; gap: 6px; align-items: center; color: var(--muted); font-size: 12.5px; }
+/* ---------- top bar ---------- */
+.appbar { position: sticky; top: 0; z-index: 30; background: rgba(6,11,22,.86); backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px); border-bottom: 1px solid var(--line); padding-top: env(safe-area-inset-top, 0px); }
+.appbar-in { display: flex; align-items: center; gap: 10px; padding: 10px 16px; max-width: 1400px; margin: 0 auto; }
+.brand { display: flex; align-items: center; gap: 10px; min-width: 0; margin-right: auto; }
+.brand svg { width: 34px; height: 34px; flex: none; filter: drop-shadow(0 0 10px rgba(34,211,238,.45)); }
+.brand b { display: block; font-size: 15.5px; letter-spacing: .01em; white-space: nowrap; }
+.brand small { display: flex; align-items: center; gap: 6px; color: var(--muted); font-size: 11.5px; font-family: var(--font-mono); }
+.live { width: 7px; height: 7px; border-radius: 50%; background: var(--buy); box-shadow: 0 0 8px var(--buy); animation: pulse 2s infinite; }
+.live.off { background: var(--sell); box-shadow: 0 0 8px var(--sell); }
+@keyframes pulse { 50% { opacity: .35; } }
+.ibtn { width: 38px; height: 38px; display: grid; place-items: center; border-radius: 11px; border: 1px solid var(--line); background: var(--card); color: var(--muted); flex: none; }
+.ibtn svg { width: 19px; height: 19px; }
+.ibtn[aria-pressed="true"] { color: var(--glow); border-color: rgba(34,211,238,.5); background: var(--glow-bg); }
 
-/* grid of panels */
-.grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
-@media (max-width: 980px) { .grid { grid-template-columns: minmax(0, 1fr); } }
-.panel { background: var(--panel); border: 1px solid var(--line); border-radius: 12px; display: flex; flex-direction: column; min-width: 0; height: 640px; }
-@media (max-width: 980px) { .panel { height: 75vh; min-height: 460px; } }
-.panel-h { display: flex; align-items: center; gap: 10px; padding: 12px 14px; border-bottom: 1px solid var(--line); }
-.panel-h h2 { font-size: 15px; margin: 0; letter-spacing: .01em; text-wrap: balance; }
-.panel-h .hash { color: var(--faint); font-family: var(--font-mono); }
-.panel-h .count { margin-left: auto; font-size: 11.5px; color: var(--muted); }
-.panel-sub { padding: 8px 14px 0; font-size: 12px; color: var(--muted); }
-.feed { overflow-y: auto; padding: 10px 12px 14px; display: flex; flex-direction: column; gap: 10px; flex: 1; min-height: 0; }
-.empty { color: var(--muted); font-size: 13px; padding: 24px 8px; text-align: center; }
+/* ---------- ticker ---------- */
+.ticker { overflow: hidden; border-bottom: 1px solid var(--line); background: rgba(8,17,34,.7); }
+.ticker-track { display: flex; gap: 22px; padding: 8px 16px; width: max-content; animation: marquee 60s linear infinite; }
+.ticker:hover .ticker-track { animation-play-state: paused; }
+@keyframes marquee { to { transform: translateX(-50%); } }
+@media (prefers-reduced-motion: reduce) { .ticker { overflow-x: auto; } .ticker-track { animation: none; } .live { animation: none; } }
+.tk { display: flex; align-items: center; gap: 7px; white-space: nowrap; font-size: 12.5px; background: none; border: 0; padding: 0; }
+.tk b { font-weight: 600; }
+.tk .num { color: var(--muted); }
 
-/* signal card */
-.card { background: var(--card); border: 1px solid var(--line); border-left: 4px solid var(--warn); border-radius: 10px; padding: 11px 12px; display: grid; gap: 8px; min-width: 0; }
-.card.buy { border-left-color: var(--buy); }
-.card.sell { border-left-color: var(--sell); }
-.card.fresh { animation: flash 1.4s ease-out; }
-@keyframes flash { from { background: #1d2836; } to { background: var(--card); } }
-@media (prefers-reduced-motion: reduce) { .card.fresh { animation: none; } }
-.card-t { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
-.card-t .ttl { font-weight: 600; font-size: 14.5px; }
-.card-t .ttl.buy { color: var(--buy); } .card-t .ttl.sell { color: var(--sell); } .card-t .ttl.neu { color: var(--warn); }
-.card-t .ex, .ik-h .ex { font-size: 11.5px; color: var(--muted); border: 1px solid var(--line); border-radius: 5px; padding: 1px 6px; }
-.card-t .time { margin-left: auto; font-size: 11.5px; color: var(--muted); font-family: var(--font-mono); }
-.card-d { font-size: 13px; color: #c7d0db; }
-.card-d b { color: var(--fg); }
-.fields { display: grid; grid-template-columns: repeat(auto-fill, minmax(104px, 1fr)); gap: 6px 10px; }
-.f small { display: block; color: var(--muted); font-size: 10.5px; text-transform: uppercase; letter-spacing: .07em; }
-.f span { font-family: var(--font-mono); font-size: 12.5px; word-break: break-word; }
-.reco { border-top: 1px dashed var(--line); padding-top: 8px; display: grid; gap: 6px; }
-.reco-h { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
-.pill { font-size: 11.5px; font-weight: 700; letter-spacing: .06em; border-radius: 5px; padding: 2px 8px; }
-.pill.IKUT { background: var(--buy-bg); color: var(--buy); }
+/* ---------- layout ---------- */
+main { max-width: 1400px; margin: 0 auto; padding-inline: 16px; padding-block: 14px 24px; }
+.view { display: grid; gap: 16px; min-width: 0; }
+.sec-h { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 10px; margin: 4px 0 -4px; }
+.sec-h h2 { font-size: 16px; margin: 0; letter-spacing: .01em; text-wrap: balance; }
+.sec-h small { color: var(--muted); font-size: 12px; }
+.sec-h .more { margin-left: auto; background: none; border: 0; color: var(--glow); font-size: 12.5px; padding: 0; }
+.panel { background: linear-gradient(180deg, var(--card), var(--panel)); border: 1px solid var(--line); border-radius: 18px; padding: 14px; min-width: 0; }
+.glow { border-color: rgba(34,211,238,.35); box-shadow: 0 0 0 1px rgba(34,211,238,.08), 0 18px 50px -24px rgba(34,211,238,.55); }
+.empty { color: var(--muted); font-size: 13px; padding: 22px 10px; text-align: center; }
+.foot { font-size: 11.5px; color: var(--faint); }
+.disclaimer { font-size: 11.5px; color: var(--faint); text-align: center; margin: 4px 0 0; }
+
+/* ---------- bottom nav / rail ---------- */
+.bnav { position: fixed; left: 0; right: 0; bottom: 0; z-index: 40; display: grid; grid-template-columns: repeat(5, 1fr); background: rgba(8,14,28,.94); backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px); border-top: 1px solid var(--line); padding-bottom: env(safe-area-inset-bottom, 0px); }
+.nb { position: relative; height: var(--nav-h); background: none; border: 0; color: var(--faint); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; font-size: 11px; font-weight: 600; }
+.nb svg { width: 22px; height: 22px; }
+.nb[aria-current="page"] { color: var(--glow); }
+.nb[aria-current="page"]::before { content: ""; position: absolute; top: 0; left: 30%; right: 30%; height: 2px; border-radius: 2px; background: var(--glow); box-shadow: 0 0 12px var(--glow); }
+.nb .badge { position: absolute; top: 8px; left: calc(50% + 6px); min-width: 17px; height: 17px; padding: 0 4px; border-radius: 9px; background: var(--buy); color: #03140c; font-size: 10.5px; line-height: 17px; text-align: center; box-shadow: 0 0 10px var(--buy); }
+@media (min-width: 1000px) {
+  body { padding-bottom: 0; padding-left: 88px; }
+  .bnav { top: 0; right: auto; width: 88px; grid-template-columns: 1fr; grid-auto-rows: 76px; align-content: start; padding-top: 80px; border-top: 0; border-right: 1px solid var(--line); }
+  .nb { height: 76px; }
+  .nb[aria-current="page"]::before { top: 22%; bottom: 22%; left: 0; right: auto; width: 3px; height: auto; }
+  .nb .badge { top: 12px; }
+}
+
+/* ---------- home ---------- */
+.home-top { display: grid; gap: 16px; grid-template-columns: minmax(0, 1fr); }
+@media (min-width: 860px) { .home-top { grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr); } }
+.hero { position: relative; overflow: hidden; }
+.hero::after { content: ""; position: absolute; inset: auto -40px -60px auto; width: 220px; height: 220px; background: radial-gradient(circle, rgba(34,211,238,.18), transparent 65%); pointer-events: none; }
+.hero-row { display: grid; grid-template-columns: minmax(0, 190px) minmax(0, 1fr); gap: 14px; align-items: center; }
+@media (max-width: 420px) { .hero-row { grid-template-columns: minmax(0, 150px) minmax(0, 1fr); gap: 10px; } }
+.gauge { width: 100%; height: auto; display: block; }
+.k { color: var(--muted); font-size: 10.5px; text-transform: uppercase; letter-spacing: .09em; font-weight: 600; }
+.fng-v { font-family: var(--font-mono); font-size: 40px; font-weight: 600; line-height: 1; margin-top: 4px; }
+.fng-l { font-size: 16px; font-weight: 700; margin-top: 4px; }
+.fng-cmp { display: flex; gap: 12px; margin-top: 10px; flex-wrap: wrap; font-size: 12px; color: var(--muted); }
+.fng-cmp b { font-family: var(--font-mono); font-size: 13px; }
+.fng-note { margin-top: 12px; font-size: 13px; color: #c5d1e4; background: rgba(6,11,22,.45); border: 1px solid var(--line); border-radius: 12px; padding: 10px 12px; }
+.spark30 { width: 100%; height: 56px; display: block; margin-top: 10px; }
+.mstats { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+.ms { background: rgba(6,11,22,.45); border: 1px solid var(--line); border-radius: 14px; padding: 11px 12px; min-width: 0; }
+.ms .v { font-family: var(--font-mono); font-size: 18px; font-weight: 600; margin-top: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.ms .s { font-size: 12px; color: var(--muted); margin-top: 2px; }
+.ms.wide { grid-column: 1 / -1; }
+.lsbar { display: flex; height: 8px; border-radius: 4px; overflow: hidden; background: var(--line); margin-top: 8px; }
+.lsbar i { display: block; height: 100%; }
+.src { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 8px; font-size: 11.5px; color: var(--muted); }
+.src span { display: inline-flex; align-items: center; gap: 5px; }
+.src span::before { content: ""; width: 7px; height: 7px; border-radius: 50%; background: var(--faint); }
+.src span.ok::before { background: var(--buy); box-shadow: 0 0 6px var(--buy); }
+.src span.err::before { background: var(--sell); }
+
+.hscroll { display: grid; grid-auto-flow: column; grid-auto-columns: minmax(260px, 82%); gap: 12px; overflow-x: auto; scroll-snap-type: x mandatory; padding-bottom: 4px; scrollbar-width: none; }
+.hscroll::-webkit-scrollbar { display: none; }
+.hscroll > * { scroll-snap-align: start; }
+@media (min-width: 860px) { .hscroll { grid-auto-columns: minmax(300px, 32%); } }
+.mini-ik { display: grid; gap: 10px; }
+.mini-ik .row { display: flex; align-items: center; gap: 10px; }
+.mini-ik .row b { font-size: 16px; }
+.mini-ik .lv3 { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px; }
+.mini-ik .lv3 div { background: rgba(6,11,22,.5); border-radius: 9px; padding: 6px 8px; min-width: 0; }
+.mini-ik .lv3 span { display: block; font-family: var(--font-mono); font-size: 12px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+.heat { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 6px; }
+@media (min-width: 640px) { .heat { grid-template-columns: repeat(6, minmax(0, 1fr)); } }
+@media (min-width: 1200px) { .heat { grid-template-columns: repeat(8, minmax(0, 1fr)); } }
+.ht { border: 0; border-radius: 12px; padding: 9px 8px; min-height: 74px; display: flex; flex-direction: column; justify-content: space-between; align-items: flex-start; gap: 4px; text-align: left; color: var(--fg); min-width: 0; }
+.ht.big { grid-column: span 2; min-height: 92px; }
+.ht .t { display: flex; align-items: center; gap: 6px; font-weight: 700; font-size: 12.5px; min-width: 0; }
+.ht .p { font-family: var(--font-mono); font-size: 11px; opacity: .85; }
+.ht .c { font-family: var(--font-mono); font-size: 13px; font-weight: 600; }
+
+.rows { display: grid; }
+.rw { display: grid; grid-template-columns: 34px minmax(0, 1fr) auto; gap: 10px; align-items: center; padding: 10px 2px; border-bottom: 1px solid var(--line); background: none; border-left: 0; border-right: 0; border-top: 0; text-align: left; width: 100%; }
+.rw:last-child { border-bottom: 0; }
+.rw .m { min-width: 0; }
+.rw .m b { display: block; font-size: 13.5px; }
+.rw .m small { display: block; color: var(--muted); font-size: 12px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.rw .r { text-align: right; display: grid; gap: 3px; justify-items: end; }
+
+/* ---------- coin logo ---------- */
+.logo { width: 34px; height: 34px; border-radius: 50%; flex: none; background: var(--card2); object-fit: cover; display: inline-grid; place-items: center; font-weight: 700; font-size: 12px; color: #fff; overflow: hidden; }
+.logo.sm { width: 22px; height: 22px; font-size: 8.5px; }
+.logo.lg { width: 44px; height: 44px; font-size: 14px; }
+
+/* ---------- chips & pills ---------- */
+.chip { display: inline-flex; align-items: center; gap: 4px; font-size: 11px; font-weight: 700; letter-spacing: .05em; border-radius: 6px; padding: 2px 7px; white-space: nowrap; }
+.chip.buy { background: var(--buy-bg); color: var(--buy); }
+.chip.sell { background: var(--sell-bg); color: var(--sell); }
+.chip.neu { background: var(--warn-bg); color: var(--warn); }
+.chip.dim { background: rgba(138,155,184,.12); color: var(--muted); font-weight: 600; letter-spacing: .02em; }
+.pill { font-size: 11px; font-weight: 800; letter-spacing: .07em; border-radius: 6px; padding: 3px 8px; }
+.pill.IKUT { background: var(--buy); color: #03140c; box-shadow: 0 0 14px -2px rgba(22,199,132,.7); }
 .pill.TUNGGU { background: var(--warn-bg); color: var(--warn); }
 .pill.HINDARI { background: var(--sell-bg); color: var(--sell); }
-.pill.INFO { background: rgba(133,147,165,.14); color: var(--muted); }
-.score { display: flex; align-items: center; gap: 6px; font-size: 11.5px; color: var(--muted); }
-.score .bar { width: 70px; height: 5px; background: var(--line); border-radius: 3px; overflow: hidden; }
-.score .bar i { display: block; height: 100%; }
-.reco-line { font-size: 12.5px; display: grid; grid-template-columns: 58px minmax(0, 1fr); gap: 6px; }
-.reco-line em { font-style: normal; color: var(--muted); font-size: 11px; text-transform: uppercase; letter-spacing: .07em; padding-top: 2px; }
-.reasons { margin: 0; padding-left: 16px; font-size: 12px; color: var(--muted); }
-.card-a { display: flex; gap: 8px; flex-wrap: wrap; }
-.card-a a, .card-a button { font-size: 12px; background: transparent; border: 1px solid var(--line); border-radius: 6px; padding: 4px 9px; color: var(--accent); text-decoration: none; }
-.card-a a:hover, .card-a button:hover { border-color: var(--accent); }
-.hist-tag { font-size: 10.5px; color: var(--faint); }
+.pill.INFO { background: rgba(138,155,184,.14); color: var(--muted); }
 
-/* fear & greed */
-.fng { padding: 14px; display: grid; gap: 14px; overflow-y: auto; }
-.fng-top { display: grid; grid-template-columns: minmax(0, 260px) minmax(0, 1fr); gap: 16px; align-items: center; }
-@media (max-width: 520px) { .fng-top { grid-template-columns: minmax(0, 1fr); } }
-.gauge { width: 100%; max-width: 260px; }
-.fng-val { font-family: var(--font-mono); font-size: 44px; font-weight: 600; line-height: 1; }
-.fng-cls { font-size: 18px; font-weight: 600; margin-top: 4px; }
-.fng-cmp { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
-.fng-cmp div { background: var(--card); border: 1px solid var(--line); border-radius: 8px; padding: 8px 10px; }
-.fng-cmp small { display: block; color: var(--muted); font-size: 11px; }
-.fng-cmp b { font-family: var(--font-mono); font-size: 16px; }
-.fng-note { background: var(--card); border: 1px solid var(--line); border-radius: 10px; padding: 12px; font-size: 13px; display: grid; gap: 6px; }
-.fng-note h3 { margin: 0; font-size: 13px; color: var(--muted); text-transform: uppercase; letter-spacing: .07em; }
-.spark { width: 100%; height: 120px; display: block; }
-.footnote { font-size: 11.5px; color: var(--faint); }
+/* ---------- filters ---------- */
+.seg { display: grid; grid-auto-flow: column; grid-auto-columns: 1fr; background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 3px; gap: 3px; }
+.seg button { background: none; border: 0; border-radius: 9px; padding: 8px 6px; color: var(--muted); font-weight: 600; font-size: 13px; white-space: nowrap; }
+.seg button[aria-pressed="true"] { background: var(--card2); color: var(--fg); box-shadow: inset 0 0 0 1px var(--line); }
+.seg button .n { font-family: var(--font-mono); font-size: 11px; color: var(--faint); margin-left: 4px; }
+.fbar { display: flex; gap: 8px; overflow-x: auto; scrollbar-width: none; padding-bottom: 2px; align-items: center; }
+.fbar::-webkit-scrollbar { display: none; }
+.fbar input, .fbar select { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 8px 10px; min-width: 0; flex: none; }
+.fbar input[type=search] { width: 150px; }
+.fbar input[type=number] { width: 110px; }
+.fc { flex: none; background: var(--panel); border: 1px solid var(--line); border-radius: 999px; padding: 6px 12px; font-size: 12.5px; color: var(--muted); white-space: nowrap; }
+.fc[aria-pressed="true"] { color: var(--fg); border-color: rgba(34,211,238,.5); background: var(--glow-bg); }
 
-/* settings drawer */
-.drawer { position: fixed; inset: 0; background: rgba(0,0,0,.55); z-index: 50; display: flex; justify-content: flex-end; }
-.drawer-in { width: min(420px, 100%); height: 100%; background: var(--panel); border-left: 1px solid var(--line); overflow-y: auto; padding: 18px 16px calc(18px + env(safe-area-inset-bottom, 0px)); display: grid; gap: 14px; align-content: start; }
-.drawer h2 { margin: 0; font-size: 17px; }
-.drawer fieldset { border: 1px solid var(--line); border-radius: 10px; padding: 10px 12px 12px; display: grid; gap: 8px; margin: 0; }
-.drawer legend { color: var(--muted); font-size: 12px; text-transform: uppercase; letter-spacing: .07em; padding: 0 4px; }
-.drawer label { display: grid; grid-template-columns: minmax(0, 1fr) 120px; gap: 10px; align-items: center; font-size: 13px; }
-.drawer input { background: var(--card); border: 1px solid var(--line); border-radius: 7px; padding: 6px 8px; width: 100%; font-family: var(--font-mono); }
-.drawer .row { display: flex; gap: 8px; justify-content: flex-end; }
-.btn { background: var(--accent); color: #fff; border: 0; border-radius: 8px; padding: 8px 14px; font-weight: 600; }
-.btn.ghost { background: transparent; border: 1px solid var(--line); color: var(--fg); }
-.toast { position: fixed; left: 50%; bottom: calc(18px + env(safe-area-inset-bottom, 0px)); transform: translateX(-50%); background: var(--card); border: 1px solid var(--line); padding: 8px 14px; border-radius: 8px; font-size: 13px; z-index: 60; max-width: calc(100% - 32px); }
-/* views: live / riwayat / ringkasan */
-.tabs { display: flex; gap: 4px; border-bottom: 1px solid var(--line); overflow-x: auto; }
-.tab { background: transparent; border: 0; border-bottom: 2px solid transparent; padding: 8px 14px; color: var(--muted); font-weight: 600; white-space: nowrap; }
-.tab[aria-selected="true"] { color: var(--fg); border-bottom-color: var(--accent); }
-.view { display: grid; gap: 12px; min-width: 0; }
-.hctl { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
-.hctl select, .hctl input { background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 7px 10px; min-width: 0; }
-.hctl label { display: inline-flex; gap: 6px; align-items: center; color: var(--muted); font-size: 12.5px; }
-.hstats { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 8px; }
-.hstats div { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 10px 12px; min-width: 0; }
-.hstats small { display: block; color: var(--muted); font-size: 11px; text-transform: uppercase; letter-spacing: .07em; }
-.hstats b { font-family: var(--font-mono); font-size: 18px; font-weight: 600; }
-.hstats span { font-size: 12px; color: var(--muted); }
-.hlist { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 460px), 1fr)); gap: 10px; align-items: start; }
+/* ---------- signal cards ---------- */
+.cols { display: grid; gap: 14px; grid-template-columns: minmax(0, 1fr); align-items: start; }
+.col { display: grid; gap: 12px; min-width: 0; }
+.col-h { display: none; }
+@media (min-width: 1100px) {
+  .cols { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .cols .col[hidden] { display: grid !important; }
+  .col-h { display: flex; align-items: center; gap: 8px; font-weight: 700; font-size: 14px; }
+  .col-h small { color: var(--muted); font-weight: 500; font-family: var(--font-mono); }
+  #sigSeg { display: none; }
+}
+.sc { position: relative; background: linear-gradient(180deg, var(--card), var(--panel)); border: 1px solid var(--line); border-radius: 16px; padding: 12px; display: grid; gap: 10px; min-width: 0; overflow: hidden; }
+.sc::before { content: ""; position: absolute; left: 0; top: 0; bottom: 0; width: 3px; background: var(--warn); }
+.sc.buy::before { background: var(--buy); } .sc.sell::before { background: var(--sell); }
+.sc.ikut { border-color: rgba(22,199,132,.45); box-shadow: 0 16px 40px -24px rgba(22,199,132,.7); }
+.sc.fresh { animation: flash 1.6s ease-out; }
+@keyframes flash { from { background: #183053; } }
+@media (prefers-reduced-motion: reduce) { .sc.fresh { animation: none; } }
+.sc-top { display: flex; align-items: center; gap: 10px; min-width: 0; }
+.sc-top .id { min-width: 0; flex: 1; }
+.sc-top .id b { font-size: 15px; margin-right: 4px; }
+.sc-top .id small { display: block; color: var(--muted); font-size: 11.5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.sc-title { font-weight: 700; font-size: 14px; }
+.sc-title.buy { color: var(--buy); } .sc-title.sell { color: var(--sell); } .sc-title.neu { color: var(--warn); }
+.sc-desc { font-size: 12.5px; color: #c3cfe2; margin-top: 2px; }
+.sc-desc b { color: var(--fg); }
+.sc-mid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.1fr); gap: 10px; align-items: center; }
+.spark { width: 100%; height: 54px; display: block; border-radius: 10px; background: rgba(6,11,22,.45); }
+.kv { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 6px 10px; }
+.kv small { display: block; color: var(--muted); font-size: 10px; text-transform: uppercase; letter-spacing: .08em; }
+.kv span { font-family: var(--font-mono); font-size: 12px; display: block; overflow-wrap: anywhere; }
+.reco { background: rgba(6,11,22,.45); border: 1px solid var(--line); border-radius: 12px; padding: 10px; display: grid; gap: 7px; }
+.reco-h { display: flex; align-items: center; gap: 8px; }
+.reco-h .who { color: var(--muted); font-size: 11.5px; margin-left: auto; }
+.ring { width: 34px; height: 34px; flex: none; }
+.rl { display: grid; grid-template-columns: 52px minmax(0, 1fr); gap: 6px; font-size: 12.5px; }
+.rl em { font-style: normal; color: var(--muted); font-size: 10.5px; text-transform: uppercase; letter-spacing: .08em; padding-top: 2px; }
+.plan { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 6px; }
+.plan div { background: var(--card); border-radius: 9px; padding: 6px 7px; min-width: 0; }
+.plan small { display: block; font-size: 9.5px; color: var(--muted); text-transform: uppercase; letter-spacing: .08em; }
+.plan span { display: block; font-family: var(--font-mono); font-size: 11.5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.plan .e span { color: var(--glow); } .plan .s span { color: var(--sell); } .plan .t span { color: var(--buy); }
+@media (max-width: 380px) { .plan { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+details.why summary { cursor: pointer; color: var(--muted); font-size: 12px; list-style: none; }
+details.why summary::-webkit-details-marker { display: none; }
+details.why summary::before { content: "▸ "; }
+details.why[open] summary::before { content: "▾ "; }
+details.why ul { margin: 6px 0 0; padding-left: 16px; font-size: 12px; color: var(--muted); }
+.acts { display: flex; gap: 8px; }
+.acts button, .acts a { flex: 1; text-align: center; font-size: 12.5px; font-weight: 600; background: var(--card2); border: 1px solid var(--line); border-radius: 10px; padding: 8px 10px; color: var(--fg); text-decoration: none; }
+.acts .pri { background: var(--glow-bg); border-color: rgba(34,211,238,.45); color: var(--glow); }
 .outcome { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; font-size: 12px; }
-.outcome em { font-style: normal; color: var(--muted); font-size: 11px; text-transform: uppercase; letter-spacing: .07em; margin-right: 2px; }
-.oc { font-family: var(--font-mono); border-radius: 5px; padding: 2px 7px; background: rgba(133,147,165,.12); color: var(--muted); }
+.outcome em { font-style: normal; color: var(--muted); font-size: 10.5px; text-transform: uppercase; letter-spacing: .08em; margin-right: 2px; }
+.oc { font-family: var(--font-mono); border-radius: 6px; padding: 2px 7px; background: rgba(138,155,184,.12); color: var(--muted); }
 .oc.ok { background: var(--buy-bg); color: var(--buy); }
 .oc.bad { background: var(--sell-bg); color: var(--sell); }
-.note { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 10px 12px; font-size: 12.5px; color: var(--muted); }
-.note b { color: var(--fg); }
-.tblwrap { overflow-x: auto; background: var(--panel); border: 1px solid var(--line); border-radius: 12px; }
-table.t { border-collapse: collapse; width: 100%; font-size: 13px; }
-table.t th { text-align: left; font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: .07em; font-weight: 600; padding: 10px 12px; border-bottom: 1px solid var(--line); white-space: nowrap; }
-table.t td { padding: 9px 12px; border-bottom: 1px solid var(--line); white-space: nowrap; font-variant-numeric: tabular-nums; }
-table.t tr:last-child td { border-bottom: 0; }
-table.t tbody tr.click { cursor: pointer; }
-table.t tbody tr.click:hover { background: var(--card); }
-table.t td.num, table.t th.num { text-align: right; font-family: var(--font-mono); }
-.minibar { display: flex; width: 110px; height: 6px; border-radius: 3px; overflow: hidden; background: var(--line); margin-top: 4px; }
-.minibar i { display: block; height: 100%; }
-h3.sec { margin: 6px 0 0; font-size: 14px; }
-.more { justify-self: center; }
-/* saran IKUT */
-.tab .badge { display: inline-block; min-width: 18px; padding: 0 5px; margin-left: 6px; border-radius: 9px; background: var(--buy); color: #04140c; font-size: 11px; line-height: 18px; text-align: center; }
-.ikgrid { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 420px), 1fr)); gap: 12px; align-items: start; }
-.ik { background: var(--card); border: 1px solid var(--line); border-radius: 12px; padding: 12px 14px; display: grid; gap: 10px; min-width: 0; border-top: 3px solid var(--line); }
-.ik.go { border-top-color: var(--buy); box-shadow: 0 0 0 1px rgba(34,196,125,.25); }
-.ik.wait { border-top-color: var(--warn); }
-.ik.off { opacity: .62; }
-.ik-h { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
-.ik-h .coin { font-size: 18px; font-weight: 700; }
-.ik-h .side { font-size: 12px; font-weight: 700; letter-spacing: .06em; border-radius: 5px; padding: 2px 8px; }
-.side.LONG { background: var(--buy-bg); color: var(--buy); }
-.side.SHORT { background: var(--sell-bg); color: var(--sell); }
-.ik-h .age { margin-left: auto; font-size: 11.5px; color: var(--muted); font-family: var(--font-mono); }
-.st { font-size: 12px; font-weight: 700; letter-spacing: .05em; border-radius: 6px; padding: 4px 10px; justify-self: start; }
-.st.go { background: var(--buy); color: #04140c; }
+
+/* ---------- IKUT setups ---------- */
+.ikgrid { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 400px), 1fr)); gap: 14px; align-items: start; }
+.ik { position: relative; background: linear-gradient(180deg, var(--card), var(--panel)); border: 1px solid var(--line); border-radius: 18px; padding: 14px; display: grid; gap: 12px; min-width: 0; }
+.ik.go { border-color: rgba(22,199,132,.6); box-shadow: 0 0 0 1px rgba(22,199,132,.15), 0 20px 50px -22px rgba(22,199,132,.75); }
+.ik.wait { border-color: rgba(243,186,47,.35); }
+.ik.off { opacity: .6; }
+.ik-h { display: flex; align-items: center; gap: 10px; min-width: 0; }
+.ik-h .id { flex: 1; min-width: 0; }
+.ik-h .id b { font-size: 18px; margin-right: 6px; }
+.ik-h .id small { display: block; color: var(--muted); font-size: 11.5px; }
+.st { display: flex; align-items: center; gap: 8px; font-size: 12.5px; font-weight: 800; letter-spacing: .04em; border-radius: 10px; padding: 8px 11px; }
+.st.go { background: var(--buy); color: #03140c; box-shadow: 0 0 22px -4px rgba(22,199,132,.8); }
 .st.wait { background: var(--warn-bg); color: var(--warn); }
-.st.miss { background: rgba(133,147,165,.14); color: var(--muted); }
+.st.miss { background: rgba(138,155,184,.13); color: var(--muted); }
 .st.cancel { background: var(--sell-bg); color: var(--sell); }
-.ik-sub { font-size: 12.5px; color: var(--muted); }
-.lv { display: grid; grid-template-columns: repeat(auto-fit, minmax(118px, 1fr)); gap: 8px; }
-.lv div { background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 7px 9px; min-width: 0; }
-.lv small { display: block; color: var(--muted); font-size: 10.5px; text-transform: uppercase; letter-spacing: .07em; }
-.lv span { font-family: var(--font-mono); font-size: 13px; word-break: break-word; }
-.lv .e span { color: var(--accent); } .lv .t span { color: var(--buy); } .lv .s span { color: var(--sell); }
-.ind { display: grid; grid-template-columns: repeat(auto-fit, minmax(118px, 1fr)); gap: 8px; }
-.ind div { min-width: 0; }
-.ind small { display: block; color: var(--muted); font-size: 10.5px; text-transform: uppercase; letter-spacing: .07em; }
+.ladder { position: relative; height: 46px; margin: 4px 4px 0; }
+.ladder .bar { position: absolute; left: 0; right: 0; top: 18px; height: 8px; border-radius: 4px; background: var(--line); overflow: hidden; }
+.ladder .bar i { position: absolute; top: 0; bottom: 0; }
+.ladder .tick { position: absolute; top: 12px; width: 2px; height: 20px; background: var(--fg); opacity: .6; transform: translateX(-1px); }
+.ladder .lab { position: absolute; top: 34px; font-size: 9.5px; font-family: var(--font-mono); color: var(--muted); transform: translateX(-50%); white-space: nowrap; }
+.ladder .now { position: absolute; top: 0; transform: translateX(-50%); font-size: 10px; font-family: var(--font-mono); font-weight: 600; color: var(--glow); white-space: nowrap; }
+.ladder .now::after { content: ""; position: absolute; left: 50%; top: 14px; width: 12px; height: 12px; margin-left: -6px; border-radius: 50%; background: var(--glow); box-shadow: 0 0 12px var(--glow); border: 2px solid var(--bg); }
+.lv { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+@media (min-width: 480px) { .lv { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+.lv div { background: rgba(6,11,22,.5); border: 1px solid var(--line); border-radius: 10px; padding: 7px 9px; min-width: 0; }
+.lv small { display: block; color: var(--muted); font-size: 10px; text-transform: uppercase; letter-spacing: .08em; }
+.lv span { display: block; font-family: var(--font-mono); font-size: 12.5px; word-break: break-word; }
+.lv .e span { color: var(--glow); } .lv .t span { color: var(--buy); } .lv .s span { color: var(--sell); }
+.ind { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+.ind > div { background: rgba(6,11,22,.5); border: 1px solid var(--line); border-radius: 10px; padding: 8px 9px; min-width: 0; }
+.ind small { display: block; color: var(--muted); font-size: 10px; text-transform: uppercase; letter-spacing: .08em; }
 .ind span { font-family: var(--font-mono); font-size: 13px; }
-.checks { list-style: none; margin: 0; padding: 0; display: grid; gap: 3px; font-size: 12.5px; }
-.checks li.ok::before { content: "✓ "; color: var(--buy); font-weight: 700; }
-.checks li.no::before { content: "✗ "; color: var(--sell); font-weight: 700; }
-.disclaimer { font-size: 11.5px; color: var(--faint); text-align: center; }
+.meter { position: relative; height: 6px; border-radius: 3px; margin-top: 6px; background: linear-gradient(90deg, var(--buy) 0 30%, #2a3a5a 30% 70%, var(--sell) 70%); opacity: .9; }
+.meter i { position: absolute; top: -3px; width: 4px; height: 12px; border-radius: 2px; background: var(--fg); transform: translateX(-2px); box-shadow: 0 0 6px rgba(255,255,255,.6); }
+.checks { list-style: none; margin: 0; padding: 0; display: grid; gap: 4px; font-size: 12.5px; }
+.checks li.ok::before { content: "✓ "; color: var(--buy); font-weight: 800; }
+.checks li.no::before { content: "✗ "; color: var(--sell); font-weight: 800; }
+
+/* ---------- history & recap ---------- */
+.dates { display: flex; gap: 8px; overflow-x: auto; scrollbar-width: none; }
+.dates::-webkit-scrollbar { display: none; }
+.dt { flex: none; background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 7px 12px; text-align: left; }
+.dt b { display: block; font-size: 13px; }
+.dt small { color: var(--muted); font-size: 11px; font-family: var(--font-mono); }
+.dt[aria-pressed="true"] { border-color: rgba(34,211,238,.55); background: var(--glow-bg); }
+.tiles { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 8px; }
+.tile.w3 { grid-column: span 3; } .tile.w2 { grid-column: span 2; padding: 10px; }
+.tile.w2 b { font-size: 16px; }
+@media (min-width: 760px) { .tiles { grid-template-columns: repeat(5, minmax(0, 1fr)); } .tile.w3, .tile.w2 { grid-column: span 1; } }
+.tile { background: linear-gradient(180deg, var(--card), var(--panel)); border: 1px solid var(--line); border-radius: 14px; padding: 11px 12px; display: flex; gap: 10px; align-items: center; min-width: 0; }
+.tile .tx { min-width: 0; }
+.tile b { display: block; font-family: var(--font-mono); font-size: 18px; }
+.tile small { display: block; font-size: 11.5px; color: var(--muted); }
+.hlist { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 380px), 1fr)); gap: 12px; align-items: start; }
+.acc { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 250px), 1fr)); gap: 12px; }
+.acc .panel { display: grid; gap: 10px; }
+.acc .rings { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px; text-align: center; }
+.acc .rings svg { width: 100%; max-width: 70px; height: auto; }
+.acc .rings small { display: block; color: var(--muted); font-size: 11px; }
+.days { display: grid; gap: 10px; }
+.day { display: grid; gap: 8px; text-align: left; width: 100%; background: linear-gradient(180deg, var(--card), var(--panel)); border: 1px solid var(--line); border-radius: 14px; padding: 12px; color: var(--fg); }
+.day-h { display: flex; align-items: center; gap: 8px; }
+.day-h b { font-size: 14px; }
+.day-h .fg { margin-left: auto; font-family: var(--font-mono); font-size: 12px; border-radius: 6px; padding: 2px 7px; background: rgba(6,11,22,.5); }
+.day-c { display: flex; gap: 6px; flex-wrap: wrap; }
+.day-top { display: flex; gap: 6px; align-items: center; font-size: 12px; color: var(--muted); }
+.hctl { display: flex; gap: 8px; overflow-x: auto; scrollbar-width: none; }
+.hctl::-webkit-scrollbar { display: none; }
+.hctl select, .hctl input { flex: none; background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 8px 10px; }
+.hctl input { width: 130px; }
+.btn { background: var(--glow); color: #021216; border: 0; border-radius: 10px; padding: 10px 16px; font-weight: 700; }
+.btn.ghost { background: transparent; border: 1px solid var(--line); color: var(--fg); }
+.morebtn { justify-self: center; }
+
+/* ---------- sheets (chart, settings) ---------- */
+.sheet { position: fixed; inset: 0; z-index: 60; background: rgba(2,5,12,.66); display: flex; align-items: flex-end; justify-content: center; }
+.sheet-in { width: min(760px, 100%); max-height: 92vh; overflow-y: auto; background: var(--bg2); border: 1px solid var(--line); border-bottom: 0; border-radius: 22px 22px 0 0; padding: 10px 16px calc(18px + env(safe-area-inset-bottom, 0px)); display: grid; gap: 12px; }
+@media (min-width: 1000px) { .sheet { align-items: center; } .sheet-in { border-radius: 22px; border-bottom: 1px solid var(--line); } }
+.grab { width: 40px; height: 4px; border-radius: 2px; background: var(--line); justify-self: center; }
+.sheet-h { display: flex; align-items: center; gap: 10px; }
+.sheet-h .id { flex: 1; min-width: 0; }
+.sheet-h b { font-size: 17px; }
+.sheet-h small { display: block; color: var(--muted); font-size: 12px; }
+#chartBox { height: 360px; border-radius: 14px; overflow: hidden; background: var(--panel); border: 1px solid var(--line); }
+@media (min-width: 760px) { #chartBox { height: 440px; } }
+.legend { display: flex; flex-wrap: wrap; gap: 10px; font-size: 11.5px; color: var(--muted); }
+.legend span { display: inline-flex; align-items: center; gap: 5px; }
+.legend i { width: 14px; height: 3px; border-radius: 2px; display: inline-block; }
+.setform { display: grid; gap: 12px; }
+.setform fieldset { border: 1px solid var(--line); border-radius: 14px; padding: 10px 12px 12px; display: grid; gap: 9px; margin: 0; }
+.setform legend { color: var(--muted); font-size: 11px; text-transform: uppercase; letter-spacing: .08em; padding: 0 4px; }
+.setform label { display: grid; grid-template-columns: minmax(0, 1fr) 118px; gap: 10px; align-items: center; font-size: 13px; }
+.setform input { background: var(--card); border: 1px solid var(--line); border-radius: 9px; padding: 7px 9px; width: 100%; font-family: var(--font-mono); }
+.setform .row { display: flex; gap: 8px; justify-content: flex-end; flex-wrap: wrap; }
+.toast { position: fixed; left: 50%; bottom: calc(var(--nav-h) + 14px + env(safe-area-inset-bottom, 0px)); transform: translateX(-50%); background: var(--card2); border: 1px solid rgba(34,211,238,.4); box-shadow: 0 10px 30px -10px rgba(34,211,238,.5); padding: 10px 14px; border-radius: 12px; font-size: 13px; z-index: 70; max-width: calc(100% - 32px); }
+@media (min-width: 1000px) { .toast { bottom: 24px; } }
 </style>
 </head>
 <body>
 
-<header class="top">
-  <div class="top-inner">
-    <div class="brand"><b>Adhi Whale Terminal</b><span id="clock" class="num">--</span></div>
-    <div class="stat"><small>BTC</small><span class="v" id="hBtc">--</span></div>
-    <div class="stat"><small>ETH</small><span class="v" id="hEth">--</span></div>
-    <div class="stat"><small>Tren BTC (1 jam)</small><span class="v" id="hTrend">--</span></div>
-    <div class="stat"><small>Fear &amp; Greed</small><span class="v" id="hFng">--</span></div>
-    <div class="stat"><small>Likuidasi 60 mnt · Long / Short</small><span class="v" id="hLiq">--</span><div class="liqbar" aria-hidden="true"><i id="hLiqL" style="background:var(--buy);width:50%"></i><i id="hLiqS" style="background:var(--sell);width:50%"></i></div></div>
-    <div class="dots" id="dots">
-      <span class="dot" data-src="bf">Binance Futures</span>
-      <span class="dot" data-src="bs">Binance Spot</span>
-      <span class="dot" data-src="okx">OKX</span>
+<header class="appbar">
+  <div class="appbar-in">
+    <div class="brand">
+      <svg viewBox="0 0 64 64" aria-hidden="true"><defs><linearGradient id="lg" x1="0" x2="1" y1="0" y2="1"><stop offset="0" stop-color="#22d3ee"/><stop offset="1" stop-color="#4f8cff"/></linearGradient></defs><rect x="2" y="2" width="60" height="60" rx="16" fill="#0c1526" stroke="#1b2945"/><path d="M11 37c6-12 21-16 33-10 4-6 8-8 12-8-2 4-3 8-2 12-6 14-28 20-43 6z" fill="url(#lg)"/><circle cx="23" cy="34" r="2" fill="#060b16"/><path d="M40 20c0-4 3-7 3-7s3 3 3 7" stroke="#22d3ee" stroke-width="2.5" fill="none" stroke-linecap="round"/></svg>
+      <div><b>Adhi Whale Terminal</b><small><i class="live" id="liveDot"></i><span id="clock">--</span></small></div>
     </div>
-    <button class="iconbtn" id="btnSound" aria-pressed="false" title="Bunyi saat sinyal IKUT">🔈 Bunyi</button>
-    <button class="iconbtn" id="btnNotif" aria-pressed="false" title="Notifikasi browser">🔔 Notif</button>
-    <button class="iconbtn" id="btnSettings">⚙ Threshold</button>
+    <button class="ibtn" id="btnSound" aria-pressed="false" title="Bunyi" aria-label="Bunyi"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 5 6 9H3v6h3l5 4z"/><path d="M15.5 8.5a5 5 0 0 1 0 7"/><path d="M18.5 5.5a9 9 0 0 1 0 13"/></svg></button>
+    <button class="ibtn" id="btnNotif" aria-pressed="false" title="Notifikasi" aria-label="Notifikasi"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8a6 6 0 1 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.9 1.9 0 0 0 3.4 0"/></svg></button>
+    <button class="ibtn" id="btnSettings" title="Atur threshold" aria-label="Atur threshold"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6h10M18 6h2M4 12h4M12 12h8M4 18h12M20 18h0"/><circle cx="16" cy="6" r="2"/><circle cx="10" cy="12" r="2"/><circle cx="18" cy="18" r="2"/></svg></button>
   </div>
+  <div class="ticker" aria-label="Harga pasar"><div class="ticker-track" id="ticker"><span class="tk"><span class="num">Menghubungkan ke Binance &amp; OKX…</span></span></div></div>
 </header>
 
-<main class="wrap">
-  <nav class="tabs" role="tablist" aria-label="Tampilan">
-    <button class="tab" role="tab" data-view="live" aria-selected="true">Live</button>
-    <button class="tab" role="tab" data-view="ikut" aria-selected="false">Saran IKUT<span class="badge" id="ikBadge" hidden>0</span></button>
-    <button class="tab" role="tab" data-view="hist" aria-selected="false">Riwayat</button>
-    <button class="tab" role="tab" data-view="sum" aria-selected="false">Ringkasan harian</button>
-  </nav>
-  <section class="view" id="view-live">
-  <div class="filters" role="group" aria-label="Filter">
-    <input type="search" id="fSearch" placeholder="Cari coin, mis. BTC" autocomplete="off">
-    <button class="chip" data-ex="BF" aria-pressed="true">Binance Futures</button>
-    <button class="chip" data-ex="BS" aria-pressed="true">Binance Spot</button>
-    <button class="chip" data-ex="OF" aria-pressed="true">OKX Futures</button>
-    <button class="chip" data-ex="OS" aria-pressed="true">OKX Spot</button>
-    <select id="fSide" aria-label="Arah">
-      <option value="all">Semua arah</option>
-      <option value="buy">Beli / Long / Pump</option>
-      <option value="sell">Jual / Short / Dump</option>
-    </select>
-    <input type="number" id="fMin" min="0" step="10000" placeholder="Nilai min $" aria-label="Nilai minimum USD">
-    <label class="inline"><input type="checkbox" id="fIkut"> Hanya saran IKUT</label>
-  </div>
+<main>
+  <!-- HOME -->
+  <section class="view" id="v-home">
+    <div class="home-top">
+      <article class="panel glow hero" id="fngHero"><div class="empty">Memuat Fear &amp; Greed Index…</div></article>
+      <article class="panel">
+        <div class="mstats">
+          <div class="ms"><div class="k">Bitcoin</div><div class="v" id="msBtc">--</div><div class="s" id="msBtcS">24 jam</div></div>
+          <div class="ms"><div class="k">Ethereum</div><div class="v" id="msEth">--</div><div class="s" id="msEthS">24 jam</div></div>
+          <div class="ms"><div class="k">Tren BTC · 1 jam</div><div class="v" id="msTrend">--</div><div class="s">EMA20 candle 1 jam</div></div>
+          <div class="ms"><div class="k">Pasar dipantau</div><div class="v" id="msMarkets">0</div><div class="s" id="msMarketsS">pair USDT</div></div>
+          <div class="ms wide"><div class="k">Likuidasi 60 menit · Long vs Short</div>
+            <div class="v" id="msLiq">--</div>
+            <div class="lsbar"><i id="msLiqL" style="width:50%;background:var(--buy)"></i><i id="msLiqS" style="width:50%;background:var(--sell)"></i></div>
+            <div class="src" id="srcDots"><span data-src="bf">Binance Futures</span><span data-src="bs">Binance Spot</span><span data-src="okx">OKX</span></div>
+          </div>
+        </div>
+      </article>
+    </div>
 
-  <section class="grid">
-    <article class="panel" aria-labelledby="h1">
-      <div class="panel-h"><span class="hash">#</span><h2 id="h1">whale-sniper</h2><span class="count" id="cWhale">0</span></div>
-      <div class="panel-sub">Transaksi besar &amp; volume tak biasa. Hijau = whale beli, merah = whale jual.</div>
-      <div class="feed" id="feedWhale"></div>
-    </article>
-    <article class="panel" aria-labelledby="h2">
-      <div class="panel-h"><span class="hash">#</span><h2 id="h2">liquidation-feed</h2><span class="count" id="cLiq">0</span></div>
-      <div class="panel-sub">Posisi yang dipaksa tutup. Hijau = LONG terlikuidasi, merah = SHORT terlikuidasi.</div>
-      <div class="feed" id="feedLiq"></div>
-    </article>
-    <article class="panel" aria-labelledby="h3">
-      <div class="panel-h"><span class="hash">#</span><h2 id="h3">sinyal-whale</h2><span class="count" id="cSig">0</span></div>
-      <div class="panel-sub">Pergerakan harga tidak wajar dalam waktu singkat. Hijau = PUMP, merah = DUMP.</div>
-      <div class="feed" id="feedSig"></div>
-    </article>
-    <article class="panel" aria-labelledby="h4">
-      <div class="panel-h"><span class="hash">#</span><h2 id="h4">fear-greed-index</h2><span class="count" id="cFng">alternative.me</span></div>
-      <div class="fng" id="fngBox"><div class="empty">Memuat Fear &amp; Greed Index…</div></div>
-    </article>
-  </section>
+    <div class="sec-h"><h2>Saran IKUT aktif</h2><small id="homeIkN"></small><button class="more" data-go="ikut">Lihat semua ›</button></div>
+    <div class="hscroll" id="homeIk"></div>
+
+    <div class="sec-h"><h2>Heatmap pasar</h2><small>24 jam · ketuk untuk chart</small></div>
+    <div class="heat" id="heat"><div class="empty">Menunggu data harga…</div></div>
+
+    <div class="sec-h"><h2>Sinyal terbaru</h2><button class="more" data-go="sig">Semua sinyal ›</button></div>
+    <article class="panel"><div class="rows" id="latest"><div class="empty">Menunggu sinyal pertama… biasanya muncul 1–2 menit setelah dashboard dibuka.</div></div></article>
+    <p class="disclaimer">Saran dihitung otomatis dari aturan (profil konservatif), bukan nasihat keuangan. Selalu pakai stop loss dan risiko maks 1% modal per posisi.</p>
   </section>
 
-  <section class="view" id="view-ikut" hidden>
-    <div class="note">Sinyal dengan saran <b>IKUT</b> dari 60 menit terakhir, dicek ulang tiap 30 detik dengan candle 15 menit dan 1 jam. Status <b style="color:var(--buy)">BISA DIIKUTI</b> muncul kalau harga masih di zona entry dan RSI, MACD, EMA serta tren ikut mengonfirmasi. Saat itu terjadi kamu dapat bunyi dan notifikasi (nyalakan 🔈 Bunyi dan 🔔 Notif di atas). Dashboard harus tetap terbuka.</div>
-    <div class="ikgrid" id="ikList"><div class="empty">Belum ada sinyal IKUT dalam 60 menit terakhir. Profil konservatif membuat sinyal IKUT jarang muncul; biarkan dashboard terbuka.</div></div>
+  <!-- SIGNALS -->
+  <section class="view" id="v-sig" hidden>
+    <div class="seg" id="sigSeg" role="group" aria-label="Jenis sinyal">
+      <button data-feed="whale" aria-pressed="true">Whale<span class="n" id="nWhale">0</span></button>
+      <button data-feed="liq" aria-pressed="false">Likuidasi<span class="n" id="nLiq">0</span></button>
+      <button data-feed="signal" aria-pressed="false">Pump/Dump<span class="n" id="nSig">0</span></button>
+    </div>
+    <div class="fbar" role="group" aria-label="Filter">
+      <input type="search" id="fSearch" placeholder="Cari coin" autocomplete="off" aria-label="Cari coin">
+      <button class="fc" data-ex="BF" aria-pressed="true">Binance Futures</button>
+      <button class="fc" data-ex="BS" aria-pressed="true">Binance Spot</button>
+      <button class="fc" data-ex="OF" aria-pressed="true">OKX Futures</button>
+      <button class="fc" data-ex="OS" aria-pressed="true">OKX Spot</button>
+      <select id="fSide" aria-label="Arah"><option value="all">Semua arah</option><option value="buy">Beli / Long / Pump</option><option value="sell">Jual / Short / Dump</option></select>
+      <input type="number" id="fMin" min="0" step="10000" placeholder="Nilai min $" aria-label="Nilai minimum USD">
+      <button class="fc" id="fIkut" aria-pressed="false">Hanya IKUT</button>
+    </div>
+    <div class="cols">
+      <div class="col" id="colWhale"><div class="col-h">Whale sniper <small id="hWhale"></small></div><div class="col" id="feedWhale"></div></div>
+      <div class="col" id="colLiq" hidden><div class="col-h">Likuidasi <small id="hLiq"></small></div><div class="col" id="feedLiq"></div></div>
+      <div class="col" id="colSig" hidden><div class="col-h">Pump / Dump <small id="hSig"></small></div><div class="col" id="feedSig"></div></div>
+    </div>
   </section>
 
-  <section class="view" id="view-hist" hidden>
+  <!-- IKUT -->
+  <section class="view" id="v-ikut" hidden>
+    <article class="panel glow">
+      <div class="sec-h" style="margin:0 0 6px"><h2>Saran IKUT · 60 menit terakhir</h2></div>
+      <div class="foot" style="font-size:12.5px;color:var(--muted)">Dicek ulang tiap 30 detik dengan candle 15 menit &amp; 1 jam. Status <b style="color:var(--buy)">BISA DIIKUTI</b> muncul kalau harga masih di zona entry dan RSI, MACD, EMA serta tren ikut mengonfirmasi, lalu kamu dapat bunyi &amp; notifikasi. Dashboard harus tetap terbuka.</div>
+    </article>
+    <div class="ikgrid" id="ikList"></div>
+  </section>
+
+  <!-- HISTORY -->
+  <section class="view" id="v-hist" hidden>
+    <div class="dates" id="hDates"></div>
     <div class="hctl" role="group" aria-label="Filter riwayat">
-      <select id="hDate" aria-label="Tanggal"><option>Memuat…</option></select>
-      <label for="hFrom">Jam <select id="hFrom"></select></label>
-      <label for="hTo">s/d <select id="hTo"></select></label>
-      <select id="hType" aria-label="Jenis sinyal">
-        <option value="all">Semua jenis</option>
-        <option value="whale">Whale sniper</option>
-        <option value="liq">Likuidasi</option>
-        <option value="signal">Pump / Dump</option>
-      </select>
-      <select id="hVerdict" aria-label="Saran">
-        <option value="all">Semua saran</option>
-        <option value="IKUT">IKUT</option>
-        <option value="TUNGGU">TUNGGU</option>
-        <option value="HINDARI">HINDARI</option>
-        <option value="INFO">INFO</option>
-      </select>
-      <select id="hEx" aria-label="Exchange">
-        <option value="all">Semua exchange</option>
-        <option value="BF">Binance Futures</option>
-        <option value="BS">Binance Spot</option>
-        <option value="OF">OKX Futures</option>
-        <option value="OS">OKX Spot</option>
-      </select>
+      <select id="hFrom" aria-label="Dari jam"></select>
+      <select id="hTo" aria-label="Sampai jam"></select>
+      <select id="hType" aria-label="Jenis"><option value="all">Semua jenis</option><option value="whale">Whale</option><option value="liq">Likuidasi</option><option value="signal">Pump / Dump</option></select>
+      <select id="hVerdict" aria-label="Saran"><option value="all">Semua saran</option><option value="IKUT">IKUT</option><option value="TUNGGU">TUNGGU</option><option value="HINDARI">HINDARI</option><option value="INFO">INFO</option></select>
+      <select id="hEx" aria-label="Exchange"><option value="all">Semua exchange</option><option value="BF">Binance Futures</option><option value="BS">Binance Spot</option><option value="OF">OKX Futures</option><option value="OS">OKX Spot</option></select>
       <input type="search" id="hCoin" placeholder="Cari coin" autocomplete="off" aria-label="Cari coin">
     </div>
-    <div class="hstats" id="hStats"></div>
-    <div class="note"><b>Hasil harga</b> = perubahan harga 1, 4 dan 24 jam setelah sinyal. ✓ artinya harga bergerak sesuai arah sinyal (naik untuk beli/pump/short terlikuidasi, turun untuk jual/dump/long terlikuidasi).</div>
-    <div class="hlist" id="hList"></div>
+    <div class="tiles" id="hStats"></div>
+    <div class="foot" style="color:var(--muted)"><b style="color:var(--fg)">Hasil harga</b> = perubahan harga 1, 4 dan 24 jam setelah sinyal. ✓ berarti harga bergerak sesuai arah sinyal.</div>
+    <div class="hlist" id="hList"><div class="empty">Memuat rekaman…</div></div>
   </section>
 
-  <section class="view" id="view-sum" hidden>
-    <div class="note" id="sumNote">Memuat ringkasan…</div>
-    <h3 class="sec">Seberapa tepat saran dashboard? (semua hari yang tersimpan)</h3>
-    <div class="tblwrap"><table class="t" id="accTbl"></table></div>
-    <h3 class="sec">Rekap per hari · klik baris untuk lihat riwayatnya</h3>
-    <div class="tblwrap"><table class="t" id="dayTbl"></table></div>
+  <!-- RECAP -->
+  <section class="view" id="v-rekap" hidden>
+    <article class="panel" id="sumNote"><div class="empty">Memuat ringkasan…</div></article>
+    <div class="sec-h"><h2>Seberapa tepat saran dashboard?</h2><small>semua hari tersimpan</small></div>
+    <div class="acc" id="accBox"></div>
+    <div class="sec-h"><h2>Rekap per hari</h2><small>ketuk untuk lihat riwayat</small></div>
+    <div class="days" id="dayBox"></div>
   </section>
-
-  <p class="disclaimer">Saran dihitung otomatis dari aturan (profil konservatif) dan bukan nasihat keuangan. Selalu pakai stop loss dan risiko maks 1% modal per posisi.</p>
 </main>
 
-<div class="drawer" id="drawer" hidden>
-  <form class="drawer-in" id="setForm">
-    <h2>Atur threshold</h2>
+<nav class="bnav" aria-label="Menu utama">
+  <button class="nb" data-view="home" aria-current="page"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11 12 4l9 7"/><path d="M5 10v10h14V10"/><path d="M10 20v-6h4v6"/></svg>Beranda</button>
+  <button class="nb" data-view="sig"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12h4l3-8 4 16 3-8h4"/></svg>Sinyal</button>
+  <button class="nb" data-view="ikut"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1.2" fill="currentColor"/></svg>IKUT<span class="badge" id="ikBadge" hidden>0</span></button>
+  <button class="nb" data-view="hist"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 3-6.7"/><path d="M3 4v5h5"/><path d="M12 7v5l3 2"/></svg>Riwayat</button>
+  <button class="nb" data-view="rekap"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20V10"/><path d="M10 20V4"/><path d="M16 20v-7"/><path d="M22 20H2"/></svg>Rekap</button>
+</nav>
+
+<div class="sheet" id="chartSheet" hidden role="dialog" aria-modal="true" aria-labelledby="chTitle">
+  <div class="sheet-in">
+    <div class="grab"></div>
+    <div class="sheet-h">
+      <span id="chLogo"></span>
+      <div class="id"><b id="chTitle">--</b><small id="chSub">--</small></div>
+      <button class="ibtn" id="chClose" aria-label="Tutup"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6 6 18"/></svg></button>
+    </div>
+    <div class="seg" id="chTf" role="group" aria-label="Timeframe">
+      <button data-tf="15m" aria-pressed="true">15m</button><button data-tf="1h" aria-pressed="false">1 jam</button><button data-tf="4h" aria-pressed="false">4 jam</button>
+    </div>
+    <div id="chartBox"></div>
+    <div class="legend" id="chLegend"></div>
+    <div class="acts"><a id="chTv" href="#" target="_blank" rel="noopener">Buka di TradingView</a></div>
+  </div>
+</div>
+
+<div class="sheet" id="setSheet" hidden role="dialog" aria-modal="true" aria-labelledby="setTitle">
+  <form class="sheet-in setform" id="setForm">
+    <div class="grab"></div>
+    <div class="sheet-h"><div class="id"><b id="setTitle">Atur threshold</b><small>Disimpan di browser ini. Berlaku untuk sinyal berikutnya.</small></div></div>
     <fieldset>
       <legend>Whale sniper</legend>
       <label for="s_bigMajor">Transaksi besar BTC/ETH ($)<input id="s_bigMajor" type="number" min="0" step="50000"></label>
       <label for="s_bigFut">Transaksi besar altcoin futures ($)<input id="s_bigFut" type="number" min="0" step="10000"></label>
       <label for="s_bigSpot">Transaksi besar altcoin spot ($)<input id="s_bigSpot" type="number" min="0" step="10000"></label>
       <label for="s_volMin">Volume 1 menit minimum ($)<input id="s_volMin" type="number" min="0" step="10000"></label>
-      <label for="s_volMult">Volume 1 menit ≥ berapa kali rata-rata<input id="s_volMult" type="number" min="1" step="1"></label>
+      <label for="s_volMult">Volume 1 menit ≥ x rata-rata<input id="s_volMult" type="number" min="1" step="1"></label>
     </fieldset>
     <fieldset>
-      <legend>Sinyal pump / dump</legend>
+      <legend>Pump / dump</legend>
       <label for="s_pumpPct">Perubahan harga minimum (%)<input id="s_pumpPct" type="number" min="0.5" step="0.5"></label>
-      <label for="s_pumpWin">Dalam jendela waktu (menit)<input id="s_pumpWin" type="number" min="1" max="30" step="1"></label>
+      <label for="s_pumpWin">Dalam jendela (menit)<input id="s_pumpWin" type="number" min="1" max="30" step="1"></label>
     </fieldset>
     <fieldset>
       <legend>Likuidasi &amp; umum</legend>
       <label for="s_liqMin">Tampilkan likuidasi ≥ ($)<input id="s_liqMin" type="number" min="0" step="5000"></label>
-      <label for="s_liqCluster">Kaskade likuidasi alt 5 mnt ≥ ($)<input id="s_liqCluster" type="number" min="0" step="50000"></label>
-      <label for="s_minVol24">Abaikan coin dengan volume 24 jam &lt; ($)<input id="s_minVol24" type="number" min="0" step="100000"></label>
+      <label for="s_liqCluster">Kaskade alt 5 menit ≥ ($)<input id="s_liqCluster" type="number" min="0" step="50000"></label>
+      <label for="s_minVol24">Abaikan volume 24j &lt; ($)<input id="s_minVol24" type="number" min="0" step="100000"></label>
       <label for="s_alertBig">Notifikasi juga untuk nilai ≥ ($)<input id="s_alertBig" type="number" min="0" step="100000"></label>
     </fieldset>
     <div class="row">
@@ -359,840 +512,11 @@ h3.sec { margin: 6px 0 0; font-size: 14px; }
       <button type="button" class="btn ghost" id="setClose">Batal</button>
       <button type="submit" class="btn">Simpan</button>
     </div>
-    <p class="footnote">Threshold disimpan di browser ini saja. Perubahan berlaku untuk sinyal berikutnya.</p>
   </form>
 </div>
 
+<script src="https://cdn.jsdelivr.net/npm/lightweight-charts@4.1.3/dist/lightweight-charts.standalone.production.js"></script>
 <script src="engine.js"></script>
-<script>
-"use strict";
-/* ============ engine & storage ============ */
-const { DEFAULTS, EX, STABLE, MAJORS, wib, usd, px, pct, esc, clamp, tf, df } = WhaleEngine;
-const TOP_FUT = 40, TOP_SPOT = 30, MAX_ITEMS = 150;
-const store = {
-  get(k, d) { try { const v = localStorage.getItem(k); return v ? JSON.parse(v) : d; } catch { return d; } },
-  set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch {} }
-};
-let CFG = Object.assign({}, DEFAULTS, store.get("awt.cfg", {}));
-const UI = Object.assign({ sound: false, notif: false, ex: { BF: true, BS: true, OF: true, OS: true }, side: "all", min: "", ikut: false }, store.get("awt.ui", {}));
-let FNG = null, BTC_TREND = { dir: "flat", note: "memuat" };
-const okxCtVal = new Map();     // instId -> contract value in base coin
-const E = WhaleEngine.create({ cfg: CFG, emit: onSignal, getFng: () => FNG, getBtc: () => BTC_TREND });
-const { M, funding, liqWin, onTick, onTrade, onLiq, vol24 } = E;
-setInterval(E.flushBursts, 300);
-
-/* ============ feed rendering ============ */
-const FEEDS = {
-  whale: { el: "feedWhale", count: "cWhale", items: [] },
-  liq: { el: "feedLiq", count: "cLiq", items: [] },
-  signal: { el: "feedSig", count: "cSig", items: [] }
-};
-function onSignal(feed, s) {
-  const f = FEEDS[feed];
-  f.items.unshift(s);
-  if (f.items.length > MAX_ITEMS) f.items.length = MAX_ITEMS;
-  if (pass(s)) {
-    const box = document.getElementById(f.el);
-    const empty = box.querySelector(".empty"); if (empty) empty.remove();
-    box.insertAdjacentHTML("afterbegin", cardHTML(s, true));
-    while (box.children.length > MAX_ITEMS) box.lastElementChild.remove();
-  }
-  updateCount(feed);
-  alertFor(s);
-  if (s.reco.verdict === "IKUT" && typeof ikutLoop === "function") setTimeout(ikutLoop, 500);
-  dirty = true;
-}
-
-function pass(s) {
-  if (!UI.ex[s.mk]) return false;
-  const q = (UI.search || "").trim().toUpperCase();
-  if (q && !s.coin.includes(q)) return false;
-  const d = s.kind === "liq" ? (s.pos === "LONG" ? "buy" : "sell") : (s.dir === "up" ? "buy" : s.dir === "down" ? "sell" : "flat");
-  if (UI.side !== "all" && d !== UI.side) return false;
-  const v = s.value || 0;
-  if (UI.min && s.kind !== "pump" && v < +UI.min) return false;
-  if (UI.ikut && s.reco.verdict !== "IKUT") return false;
-  return true;
-}
-
-function cardHTML(s, fresh, withOutcome) {
-  const c = esc(s.coin), ex = EX[s.mk], r = s.reco;
-  let tone, title, desc, fields;
-  if (s.kind === "liq") {
-    tone = s.pos === "LONG" ? "buy" : "sell";
-    title = `Likuidasi ${s.pos} — ${c}`;
-    desc = `Posisi <b>${s.pos}</b> dilikuidasi senilai <b>${usd(s.value)}</b> di harga <b>${px(s.price)}</b>` +
-      (s.cluster > s.value ? `. Total ${s.pos} ${c} terlikuidasi 5 menit: <b>${usd(s.cluster)}</b>` : "");
-    fields = [["Aset", c], ["Posisi", s.pos], ["Nilai", usd(s.value)], ["Harga", px(s.price)], ["Exchange", ex], ["Waktu", wib(s.t)]];
-  } else if (s.kind === "pump") {
-    tone = s.dir === "up" ? "buy" : "sell";
-    const w = s.dir === "up" ? "PUMP" : "DUMP";
-    title = `${c} ${w} · ${ex}`;
-    desc = `<b>${c}</b> ${s.dir === "up" ? "mengalami lonjakan beli tajam" : "mengalami tekanan jual tajam"} <b>(${pct(s.chg)})</b> dalam ${s.win || CFG.pumpWin} menit di <b>${ex}</b>`;
-    fields = [["Aset", c], ["Sinyal", w], ["Exchange", ex], ["Perubahan", pct(s.chg)], ["Harga", px(s.price)], ["24 jam", pct(s.chg24)], ["Waktu", wib(s.t)]];
-  } else {
-    tone = s.dir === "up" ? "buy" : s.dir === "down" ? "sell" : "neu";
-    const act = s.dir === "up" ? "Beli" : s.dir === "down" ? "Jual" : "";
-    if (s.kind === "trade") {
-      title = `${c} — Transaksi ${act} Besar`;
-      desc = `Whale ${s.dir === "up" ? "membeli" : "menjual"} <b>${usd(s.value)}</b> ${c} sekaligus (market order) di ${ex}`;
-      fields = [["Aset", c], ["Arah", act.toUpperCase()], ["Nilai", usd(s.value)], ["Harga", px(s.price)], ["Exchange", ex], ["Waktu", wib(s.t)]];
-    } else {
-      title = `${c} — Volume ${act ? act + " " : ""}Tak Biasa`;
-      desc = `<b>${usd(s.value)}</b> USDT mengalir dalam <b>1 menit</b> (${s.mult.toFixed(0)}× rata-rata) · ${esc(s.how)}`;
-      fields = [["Aset", c], ["Arah", act ? act.toUpperCase() : "CAMPURAN"], ["Nilai", usd(s.value)], ["Durasi", "1 menit"], ["Exchange", ex], ["Waktu", wib(s.t)]];
-    }
-  }
-  const tCls = tone === "neu" ? "" : tone;
-  const barColor = r.verdict === "IKUT" ? "var(--buy)" : r.verdict === "HINDARI" ? "var(--sell)" : r.verdict === "INFO" ? "var(--faint)" : "var(--warn)";
-  return `<div class="card ${tCls}${fresh ? " fresh" : ""}" data-id="${s.id}">
-  <div class="card-t"><span class="ttl ${tone}">${title}</span><span class="ex">${ex}</span><span class="time">${wib(s.t)}${s.hist ? ' <span class="hist-tag">riwayat</span>' : ""}</span></div>
-  <div class="card-d">${desc}</div>
-  <div class="fields">${fields.map(([k, v]) => `<div class="f"><small>${k}</small><span>${v}</span></div>`).join("")}</div>
-  <div class="reco">
-    <div class="reco-h"><span class="pill ${r.verdict}">${r.verdict === "INFO" ? "INFO" : r.verdict}</span><span class="score">Skor ${r.score}<span class="bar"><i style="width:${r.score}%;background:${barColor}"></i></span></span><span class="score">Saran untuk Adhi</span></div>
-    <div class="reco-line"><em>Futures</em><span>${esc(r.fut)}</span></div>
-    <div class="reco-line"><em>Spot</em><span>${esc(r.spot)}</span></div>
-    ${r.reasons.length ? `<ul class="reasons">${r.reasons.map(x => `<li>${esc(x)}</li>`).join("")}</ul>` : ""}
-  </div>
-  ${withOutcome ? outcomeHTML(s) : ""}
-  <div class="card-a"><button type="button" data-ask="${s.id}">Tanya Claude</button><a href="${chartUrl(s)}" target="_blank" rel="noopener">Chart</a></div>
-</div>`;
-}
-
-function chartUrl(s) {
-  const fut = s.mk === "BF" || s.mk === "OF";
-  const ex = s.mk[0] === "B" ? "BINANCE" : "OKX";
-  return `https://www.tradingview.com/chart/?symbol=${ex}:${encodeURIComponent(s.coin)}USDT${fut ? ".P" : ""}`;
-}
-
-function rerender(feed) {
-  const f = FEEDS[feed], box = document.getElementById(f.el);
-  const list = f.items.filter(pass);
-  box.innerHTML = list.length ? list.map(s => cardHTML(s, false)).join("") : emptyHTML(feed);
-  updateCount(feed);
-}
-function rerenderAll() { for (const k in FEEDS) rerender(k); }
-function updateCount(feed) {
-  const f = FEEDS[feed];
-  document.getElementById(f.count).textContent = `${f.items.filter(pass).length} sinyal`;
-}
-function emptyHTML(feed) {
-  const n = M.BF.size + M.BS.size + M.OF.size + M.OS.size;
-  const what = { whale: "transaksi besar atau volume tak biasa", liq: "likuidasi di atas " + usd(CFG.liqMin), signal: `pergerakan ≥ ${CFG.pumpPct}% dalam ${CFG.pumpWin} menit` }[feed];
-  return `<div class="empty">Menunggu ${what}…<br><span class="num">${n}</span> pasar sedang dipantau. Cek filter di atas kalau lama kosong.</div>`;
-}
-
-/* ============ Tanya Claude ============ */
-document.addEventListener("click", e => {
-  const b = e.target.closest("[data-ask]");
-  if (!b) return;
-  const id = b.dataset.ask;
-  let s = null;
-  for (const k in FEEDS) { s = FEEDS[k].items.find(x => x.id === id); if (s) break; }
-  if (!s) s = HIST.items.find(x => x.id === id) || null;
-  if (!s) return;
-  const what = s.kind === "liq" ? `Likuidasi ${s.pos} ${usd(s.value)} di ${px(s.price)} (total ${s.pos} 5 menit ${usd(s.cluster)})`
-    : s.kind === "pump" ? `${s.dir === "up" ? "PUMP" : "DUMP"} ${pct(s.chg)} dalam ${s.win || CFG.pumpWin} menit, harga ${px(s.price)}`
-    : s.kind === "trade" ? `Transaksi ${s.dir === "up" ? "BELI" : "JUAL"} besar ${usd(s.value)} di ${px(s.price)}`
-    : `Volume tak biasa ${usd(s.value)} dalam 1 menit (${s.mult.toFixed(0)}x rata-rata), ${s.how}`;
-  const prompt = `Saya Adhi, trader konservatif (futures maks 3x dan spot). Analisis sinyal whale ini dan beri saran: ikut atau tidak, entry, stop loss, take profit, untuk futures dan spot.
-
-Coin: ${s.coin} (${EX[s.mk]})
-Sinyal: ${what}
-Waktu: ${wib(s.t)}
-Perubahan 24 jam: ${pct(s.chg24 || 0)}
-Volume 24 jam: ${usd(vol24(s.coin))}
-Funding rate: ${funding.has(s.coin) ? (funding.get(s.coin) * 100).toFixed(4) + "%" : "tidak ada"}
-Fear & Greed: ${FNG ? FNG.value + " (" + FNG.label + ")" : "tidak ada"}
-Tren BTC 1 jam: ${BTC_TREND.note}
-Skor dashboard: ${s.reco.score}/100 → ${s.reco.verdict}
-Alasan: ${s.reco.reasons.join("; ")}
-
-Jawab dalam Bahasa Indonesia, ringkas, dan sebutkan risikonya.`;
-  try { navigator.clipboard.writeText(prompt).catch(() => {}); } catch {}
-  window.open("https://claude.ai/new?q=" + encodeURIComponent(prompt), "_blank", "noopener");
-  toast("Prompt dibuka di Claude (juga disalin ke clipboard)");
-});
-
-/* ============ alerts ============ */
-let actx = null;
-function beep(up) {
-  if (!UI.sound) return;
-  try {
-    actx = actx || new (window.AudioContext || window.webkitAudioContext)();
-    const o = actx.createOscillator(), g = actx.createGain();
-    o.frequency.value = up ? 880 : 440; o.type = "sine";
-    g.gain.setValueAtTime(0.15, actx.currentTime); g.gain.exponentialRampToValueAtTime(0.001, actx.currentTime + 0.35);
-    o.connect(g).connect(actx.destination); o.start(); o.stop(actx.currentTime + 0.36);
-  } catch {}
-}
-function alertFor(s) {
-  if (s.hist) return;
-  const important = s.reco.verdict === "IKUT" || (s.value || 0) >= CFG.alertBig;
-  if (!important || !pass(s)) return;
-  beep(s.dir === "up");
-  if (UI.notif && "Notification" in window && Notification.permission === "granted") {
-    const title = s.kind === "liq" ? `Likuidasi ${s.pos} ${s.coin} ${usd(s.value)}` : s.kind === "pump" ? `${s.coin} ${s.dir === "up" ? "PUMP" : "DUMP"} ${pct(s.chg)}` : `${s.coin} whale ${s.dir === "up" ? "BELI" : "JUAL"} ${usd(s.value)}`;
-    try { new Notification(title, { body: `${s.reco.verdict} (skor ${s.reco.score}) · ${s.reco.fut}`, tag: s.id }); } catch {}
-  }
-}
-
-/* ============ connections ============ */
-const status = { bf: 0, bs: 0, okx: 0 };
-function setStatus(k, ok) {
-  status[k] = ok;
-  const d = document.querySelector(`.dot[data-src="${k}"]`);
-  if (d) { d.classList.toggle("ok", ok === 1); d.classList.toggle("err", ok === -1); }
-}
-
-function wsConnect(name, urls, onOpen, onMsg) {
-  let i = 0, delay = 1000, ws;
-  const go = () => {
-    const url = urls[i % urls.length];
-    try { ws = new WebSocket(url); } catch { i++; return setTimeout(go, delay); }
-    let opened = false;
-    ws.onopen = () => { opened = true; delay = 1000; setStatus(name, 1); onOpen(ws); };
-    ws.onmessage = e => { try { onMsg(e.data, ws); } catch (err) { console.warn(name, err); } };
-    ws.onclose = () => { setStatus(name, -1); if (!opened) i++; delay = Math.min(delay * 2, 30000); setTimeout(go, delay); };
-    ws.onerror = () => { try { ws.close(); } catch {} };
-  };
-  go();
-}
-const coinOf = sym => sym.endsWith("USDT") ? sym.slice(0, -4) : null;
-
-function pickTop(mk, n) {
-  return [...M[mk].entries()].filter(([c]) => !STABLE.has(c)).sort((a, b) => b[1].q - a[1].q).slice(0, n).map(([c]) => c);
-}
-
-/* Binance Futures: liquidations + all mini tickers, then aggTrade for top volume */
-wsConnect("bf", ["wss://fstream.binance.com/stream?streams=!forceOrder@arr/!miniTicker@arr"], ws => { ws._sub = false; }, (raw, ws) => {
-  const m = JSON.parse(raw);
-  if (!m.data) return;
-  const d = m.data, st = m.stream || "";
-  if (st.startsWith("!miniTicker")) {
-    const t = Date.now();
-    for (const x of d) { const c = coinOf(x.s); if (c) onTick("BF", c, +x.c, +x.o, +x.q, t); }
-    if (!ws._sub && M.BF.size > 50) {
-      ws._sub = true;
-      ws.send(JSON.stringify({ method: "SUBSCRIBE", params: pickTop("BF", TOP_FUT).map(c => c.toLowerCase() + "usdt@aggTrade"), id: 1 }));
-    }
-  } else if (d.e === "forceOrder") {
-    const o = d.o, c = coinOf(o.s); if (!c) return;
-    const price = +o.ap || +o.p, qty = +o.z || +o.q;
-    onLiq("BF", c, o.S === "SELL" ? "LONG" : "SHORT", price, price * qty, +o.T || d.E);
-  } else if (d.e === "aggTrade") {
-    const c = coinOf(d.s); if (c) onTrade("BF", c, +d.p, +d.q, d.m, +d.T);
-  }
-});
-
-/* Binance Spot: mini tickers, then aggTrade for top volume */
-wsConnect("bs", ["wss://stream.binance.com:9443/stream?streams=!miniTicker@arr", "wss://data-stream.binance.vision/stream?streams=!miniTicker@arr"], ws => { ws._sub = false; }, (raw, ws) => {
-  const m = JSON.parse(raw);
-  if (!m.data) return;
-  const d = m.data;
-  if (Array.isArray(d)) {
-    const t = Date.now();
-    for (const x of d) { const c = coinOf(x.s); if (c) onTick("BS", c, +x.c, +x.o, +x.q, t); }
-    if (!ws._sub && M.BS.size > 50) {
-      ws._sub = true;
-      ws.send(JSON.stringify({ method: "SUBSCRIBE", params: pickTop("BS", TOP_SPOT).map(c => c.toLowerCase() + "usdt@aggTrade"), id: 2 }));
-    }
-  } else if (d.e === "aggTrade") {
-    const c = coinOf(d.s); if (c) onTrade("BS", c, +d.p, +d.q, d.m, +d.T);
-  }
-});
-
-/* OKX: liquidations by websocket, tickers by REST polling */
-let okxPing = null;
-wsConnect("okx", ["wss://ws.okx.com:8443/ws/v5/public", "wss://wsaws.okx.com:8443/ws/v5/public"], ws => {
-  ws.send(JSON.stringify({ op: "subscribe", args: [{ channel: "liquidation-orders", instType: "SWAP" }] }));
-  clearInterval(okxPing);
-  okxPing = setInterval(() => { try { ws.send("ping"); } catch {} }, 25000);
-}, raw => {
-  if (raw === "pong") return;
-  const m = JSON.parse(raw);
-  if (!m.data || !m.arg || m.arg.channel !== "liquidation-orders") return;
-  for (const it of m.data) {
-    if (!/-USDT-SWAP$/.test(it.instId)) continue;
-    const c = it.instId.split("-")[0], ct = okxCtVal.get(it.instId);
-    if (!ct) continue;
-    for (const dt of it.details || []) {
-      const price = +dt.bkPx, value = +dt.sz * ct * price;
-      const pos = dt.posSide === "long" ? "LONG" : dt.posSide === "short" ? "SHORT" : (dt.side === "sell" ? "LONG" : "SHORT");
-      onLiq("OF", c, pos, price, value, +dt.ts);
-    }
-  }
-});
-
-async function getJSON(url) {
-  const r = await fetch(url, { cache: "no-store" });
-  if (!r.ok) throw new Error(url + " " + r.status);
-  return r.json();
-}
-async function okxInstruments() {
-  try {
-    const j = await getJSON("https://www.okx.com/api/v5/public/instruments?instType=SWAP");
-    for (const x of j.data) if (x.ctType === "linear") okxCtVal.set(x.instId, +x.ctVal * (+x.ctMult || 1));
-  } catch (e) { console.warn(e); setTimeout(okxInstruments, 30000); }
-}
-async function okxTickers() {
-  try {
-    const [sp, sw] = await Promise.all([
-      getJSON("https://www.okx.com/api/v5/market/tickers?instType=SPOT"),
-      getJSON("https://www.okx.com/api/v5/market/tickers?instType=SWAP")
-    ]);
-    const t = Date.now();
-    for (const x of sp.data) if (/-USDT$/.test(x.instId)) onTick("OS", x.instId.split("-")[0], +x.last, +x.open24h, +x.volCcy24h, t);
-    for (const x of sw.data) if (/-USDT-SWAP$/.test(x.instId)) onTick("OF", x.instId.split("-")[0], +x.last, +x.open24h, +x.volCcy24h * +x.last, t);
-    if (status.okx !== 1) setStatus("okx", 1);
-  } catch (e) { console.warn(e); }
-}
-
-async function loadFunding() {
-  try {
-    const j = await getJSON("https://fapi.binance.com/fapi/v1/premiumIndex");
-    for (const x of j) { const c = coinOf(x.symbol); if (c) funding.set(c, +x.lastFundingRate); }
-  } catch (e) { console.warn("funding", e); }
-}
-
-async function loadBtcTrend() {
-  const urls = ["https://api.binance.com/api/v3/klines?symbol=BTCUSDT&interval=1h&limit=60", "https://data-api.binance.vision/api/v3/klines?symbol=BTCUSDT&interval=1h&limit=60"];
-  for (const u of urls) {
-    try {
-      const k = await getJSON(u);
-      const closes = k.map(x => +x[4]);
-      const a = 2 / 21; let ema = closes[0];
-      const emas = closes.map(c => (ema = c * a + ema * (1 - a)));
-      const p = closes[closes.length - 1], e = emas[emas.length - 1], ePrev = emas[emas.length - 4];
-      const dir = p > e * 1.002 && e > ePrev ? "up" : p < e * 0.998 && e < ePrev ? "down" : "flat";
-      BTC_TREND = { dir, note: dir === "up" ? "naik, di atas EMA20" : dir === "down" ? "turun, di bawah EMA20" : "sideways" };
-      dirty = true;
-      return;
-    } catch (e) { console.warn(e); }
-  }
-}
-
-/* ============ Fear & Greed ============ */
-const FNG_ID = { "Extreme Fear": "Ketakutan Ekstrem", "Fear": "Ketakutan", "Neutral": "Netral", "Greed": "Keserakahan", "Extreme Greed": "Keserakahan Ekstrem" };
-const fngColor = v => v < 25 ? "#e5484d" : v < 45 ? "#f08c3d" : v < 55 ? "#f2b33d" : v < 75 ? "#8fcf4f" : "#22c47d";
-async function loadFng() {
-  try {
-    const j = await getJSON("https://api.alternative.me/fng/?limit=31");
-    const d = j.data.map(x => ({ v: +x.value, label: FNG_ID[x.value_classification] || x.value_classification, t: +x.timestamp * 1000, next: +x.time_until_update || 0 }));
-    FNG = { value: d[0].v, label: d[0].label, hist: d, next: d[0].next };
-    renderFng(); dirty = true;
-    // re-score cards already on screen with the new sentiment
-  } catch (e) {
-    console.warn(e);
-    if (!FNG) document.getElementById("fngBox").innerHTML = `<div class="empty">Tidak bisa memuat data dari alternative.me. Mencoba lagi dalam 1 menit.</div>`;
-    setTimeout(loadFng, 60000);
-  }
-}
-function renderFng() {
-  const f = FNG, v = f.value, h = f.hist;
-  const ang = Math.PI * (1 - v / 100);
-  const nx = 130 + 98 * Math.cos(ang), ny = 130 - 98 * Math.sin(ang);
-  const seg = [[0, 25, "#e5484d"], [25, 45, "#f08c3d"], [45, 55, "#f2b33d"], [55, 75, "#8fcf4f"], [75, 100, "#22c47d"]].map(([a, b, col]) => {
-    const a1 = Math.PI * (1 - a / 100), a2 = Math.PI * (1 - b / 100), R = 112;
-    return `<path d="M ${130 + R * Math.cos(a1)} ${130 - R * Math.sin(a1)} A ${R} ${R} 0 0 1 ${130 + R * Math.cos(a2)} ${130 - R * Math.sin(a2)}" stroke="${col}" stroke-width="18" fill="none"/>`;
-  }).join("");
-  const at = i => (h[i] ? h[i].v : null);
-  const cmp = (lbl, x) => `<div><small>${lbl}</small><b style="color:${x == null ? "var(--muted)" : fngColor(x)}">${x == null ? "--" : x}</b> <span class="num" style="font-size:12px;color:var(--muted)">${x == null ? "" : (v - x >= 0 ? "+" : "") + (v - x)}</span></div>`;
-  // sparkline, oldest -> newest
-  const pts = h.slice().reverse(), W = 600, H = 120, pad = 18;
-  const xs = i => pad + (W - pad * 2) * (i / Math.max(1, pts.length - 1));
-  const ys = val => H - 16 - (H - 30) * (val / 100);
-  const line = pts.map((p, i) => `${i ? "L" : "M"}${xs(i).toFixed(1)} ${ys(p.v).toFixed(1)}`).join(" ");
-  const area = line + ` L${xs(pts.length - 1).toFixed(1)} ${H - 16} L${xs(0).toFixed(1)} ${H - 16} Z`;
-  const grid = [25, 50, 75].map(g => `<line x1="${pad}" x2="${W - pad}" y1="${ys(g)}" y2="${ys(g)}" stroke="#222d3a" stroke-dasharray="3 4"/><text x="${W - pad + 2}" y="${ys(g) + 4}" fill="#5a6878" font-size="10">${g}</text>`).join("");
-  const lastP = pts[pts.length - 1];
-  const sparkLabels = `<text x="${pad}" y="${H - 2}" fill="#5a6878" font-size="10">${df.format(new Date(pts[0].t))}</text><text x="${W - pad}" y="${H - 2}" fill="#5a6878" font-size="10" text-anchor="end">${df.format(new Date(lastP.t))}</text>`;
-  const hrs = Math.round(f.next / 3600);
-  document.getElementById("fngBox").innerHTML = `
-  <div class="fng-top">
-    <svg class="gauge" viewBox="0 0 260 150" role="img" aria-label="Fear and Greed ${v}">
-      ${seg}
-      <line x1="130" y1="130" x2="${nx.toFixed(1)}" y2="${ny.toFixed(1)}" stroke="#e4eaf1" stroke-width="3" stroke-linecap="round"/>
-      <circle cx="130" cy="130" r="6" fill="#e4eaf1"/>
-      <text x="14" y="146" fill="#8593a5" font-size="10">0 Takut</text><text x="246" y="146" fill="#8593a5" font-size="10" text-anchor="end">Serakah 100</text>
-    </svg>
-    <div>
-      <div class="fng-val" style="color:${fngColor(v)}">${v}<span style="font-size:18px;color:var(--muted)"> / 100</span></div>
-      <div class="fng-cls" style="color:${fngColor(v)}">${f.label}</div>
-      <div class="footnote" style="margin-top:6px">Update ${df.format(new Date(h[0].t))}${hrs ? ` · berikutnya ±${hrs} jam lagi` : ""}</div>
-    </div>
-  </div>
-  <div class="fng-cmp">${cmp("Kemarin", at(1))}${cmp("7 hari lalu", at(7))}${cmp("30 hari lalu", at(30))}</div>
-  <div><svg class="spark" viewBox="0 0 ${W} ${H}" preserveAspectRatio="none" role="img" aria-label="Riwayat 30 hari">
-    ${grid}<path d="${area}" fill="${fngColor(v)}" fill-opacity=".12"/><path d="${line}" fill="none" stroke="${fngColor(v)}" stroke-width="2" vector-effect="non-scaling-stroke"/>
-    <circle cx="${xs(pts.length - 1)}" cy="${ys(lastP.v)}" r="4" fill="${fngColor(v)}"/>${sparkLabels}</svg></div>
-  <div class="fng-note"><h3>Arti untuk Adhi</h3>${fngAdvice(v)}</div>
-  <div class="footnote">Sumber: alternative.me · gabungan volatilitas, momentum, media sosial, dominasi BTC, Google Trends.</div>`;
-}
-function fngAdvice(v) {
-  if (v < 25) return "<div><b>Ketakutan ekstrem.</b> Banyak orang panik jual. Untuk spot, ini zona cicil beli coin berkualitas (BTC/ETH dulu). Untuk futures, hindari SHORT baru karena pantulan tajam sering terjadi.</div>";
-  if (v < 45) return "<div><b>Ketakutan.</b> Pasar hati-hati. Cicil beli spot secara bertahap boleh, futures pakai leverage kecil dan tunggu konfirmasi tren.</div>";
-  if (v < 55) return "<div><b>Netral.</b> Tidak ada keunggulan dari sentimen. Ikuti sinyal yang searah tren BTC saja.</div>";
-  if (v < 75) return "<div><b>Keserakahan.</b> Tren cenderung naik tapi mulai ramai. Boleh ikut LONG yang searah tren dengan stop loss ketat. Jangan kejar coin yang sudah pump besar.</div>";
-  return "<div><b>Keserakahan ekstrem.</b> Pasar euforia, risiko koreksi tinggi. Ambil sebagian profit, kurangi leverage, dan jangan buka LONG baru di coin yang sudah naik banyak.</div>";
-}
-
-/* ============ header ============ */
-let dirty = true;
-function renderHeader() {
-  const hp = c => {
-    const r = M.BF.get(c) || M.BS.get(c);
-    if (!r || !r.p) return "--";
-    const ch = r.o ? r.p / r.o - 1 : 0;
-    return `${px(r.p)} <span class="${ch >= 0 ? "up" : "down"}">${pct(ch)}</span>`;
-  };
-  document.getElementById("hBtc").innerHTML = hp("BTC");
-  document.getElementById("hEth").innerHTML = hp("ETH");
-  const tr = BTC_TREND;
-  document.getElementById("hTrend").innerHTML = `<span class="${tr.dir === "up" ? "up" : tr.dir === "down" ? "down" : "flat"}">${tr.dir === "up" ? "▲" : tr.dir === "down" ? "▼" : "■"} ${esc(tr.note)}</span>`;
-  document.getElementById("hFng").innerHTML = FNG ? `<span style="color:${fngColor(FNG.value)}">${FNG.value} · ${FNG.label}</span>` : "--";
-  const now = Date.now();
-  let L = 0, S = 0;
-  for (const x of liqWin) if (x.t >= now - 3600000) { if (x.pos === "LONG") L += x.v; else S += x.v; }
-  document.getElementById("hLiq").innerHTML = `<span class="up">${usd(L)}</span> / <span class="down">${usd(S)}</span>`;
-  const tot = L + S || 1;
-  document.getElementById("hLiqL").style.width = (L / tot * 100) + "%";
-  document.getElementById("hLiqS").style.width = (S / tot * 100) + "%";
-}
-setInterval(() => {
-  document.getElementById("clock").textContent = wib(Date.now());
-  renderHeader();
-  if (dirty) { saveHistory(); dirty = false; }
-  for (const k in FEEDS) { const box = document.getElementById(FEEDS[k].el); if (box.querySelector(".empty")) box.innerHTML = emptyHTML(k); }
-}, 1000);
-
-/* ============ history across reloads ============ */
-let lastSave = 0;
-function saveHistory() {
-  if (Date.now() - lastSave < 5000) return;
-  lastSave = Date.now();
-  const out = {};
-  for (const k in FEEDS) out[k] = FEEDS[k].items.slice(0, 60);
-  store.set("awt.hist", out);
-}
-function loadHistory() {
-  const h = store.get("awt.hist", null);
-  if (!h) return;
-  const cut = Date.now() - 12 * 3600000;
-  for (const k in FEEDS) if (Array.isArray(h[k])) FEEDS[k].items = h[k].filter(s => s && s.t > cut && s.reco).map(s => (s.hist = true, s));
-}
-
-/* ============ controls ============ */
-function saveUI() { store.set("awt.ui", { sound: UI.sound, notif: UI.notif, ex: UI.ex, side: UI.side, min: UI.min, ikut: UI.ikut }); }
-const $ = id => document.getElementById(id);
-$("fSearch").addEventListener("input", e => { UI.search = e.target.value; rerenderAll(); });
-document.querySelectorAll(".chip[data-ex]").forEach(b => {
-  b.setAttribute("aria-pressed", UI.ex[b.dataset.ex] ? "true" : "false");
-  b.addEventListener("click", () => { UI.ex[b.dataset.ex] = !UI.ex[b.dataset.ex]; b.setAttribute("aria-pressed", UI.ex[b.dataset.ex]); saveUI(); rerenderAll(); });
-});
-$("fSide").value = UI.side; $("fSide").addEventListener("change", e => { UI.side = e.target.value; saveUI(); rerenderAll(); });
-$("fMin").value = UI.min; $("fMin").addEventListener("input", e => { UI.min = e.target.value; saveUI(); rerenderAll(); });
-$("fIkut").checked = UI.ikut; $("fIkut").addEventListener("change", e => { UI.ikut = e.target.checked; saveUI(); rerenderAll(); });
-
-function syncToggles() { $("btnSound").setAttribute("aria-pressed", UI.sound); $("btnNotif").setAttribute("aria-pressed", UI.notif); $("btnSound").textContent = UI.sound ? "🔊 Bunyi" : "🔈 Bunyi"; }
-$("btnSound").addEventListener("click", () => { UI.sound = !UI.sound; if (UI.sound) beep(true); syncToggles(); saveUI(); });
-$("btnNotif").addEventListener("click", async () => {
-  if (!("Notification" in window)) return toast("Browser ini tidak mendukung notifikasi");
-  if (!UI.notif) {
-    const p = Notification.permission === "granted" ? "granted" : await Notification.requestPermission();
-    if (p !== "granted") return toast("Izin notifikasi ditolak. Aktifkan dari pengaturan browser.");
-    UI.notif = true; toast("Notifikasi aktif untuk saran IKUT dan nilai besar");
-  } else UI.notif = false;
-  syncToggles(); saveUI();
-});
-syncToggles();
-
-const KEYS = Object.keys(DEFAULTS);
-function fillForm(c) { for (const k of KEYS) $("s_" + k).value = c[k]; }
-$("btnSettings").addEventListener("click", () => { fillForm(CFG); $("drawer").hidden = false; });
-$("setClose").addEventListener("click", () => { $("drawer").hidden = true; });
-$("setReset").addEventListener("click", () => fillForm(DEFAULTS));
-$("drawer").addEventListener("click", e => { if (e.target.id === "drawer") $("drawer").hidden = true; });
-document.addEventListener("keydown", e => { if (e.key === "Escape") $("drawer").hidden = true; });
-$("setForm").addEventListener("submit", e => {
-  e.preventDefault();
-  for (const k of KEYS) { const v = parseFloat($("s_" + k).value); if (isFinite(v) && v >= 0) CFG[k] = v; }
-  store.set("awt.cfg", CFG);
-  $("drawer").hidden = true; rerenderAll(); toast("Threshold disimpan");
-});
-
-let toastT = null;
-function toast(msg) {
-  let el = document.querySelector(".toast");
-  if (!el) { el = document.createElement("div"); el.className = "toast"; el.setAttribute("role", "status"); document.body.appendChild(el); }
-  el.textContent = msg; el.hidden = false;
-  clearTimeout(toastT); toastT = setTimeout(() => (el.hidden = true), 2600);
-}
-
-/* ============ saran IKUT: technical check of IKUT signals for up to 60 minutes ============ */
-const IK = { setups: new Map(), candles: new Map(), notified: new Set(), busy: false };
-const IK_WINDOW = 60 * 60000;
-
-function emaArr(v, n) { const a = 2 / (n + 1); let e = v[0]; return v.map(x => (e = x * a + e * (1 - a))); }
-function rsiLast(c, n = 14) {
-  if (c.length <= n) return null;
-  let g = 0, l = 0;
-  for (let i = 1; i <= n; i++) { const d = c[i] - c[i - 1]; if (d > 0) g += d; else l -= d; }
-  g /= n; l /= n;
-  for (let i = n + 1; i < c.length; i++) { const d = c[i] - c[i - 1]; g = (g * (n - 1) + Math.max(d, 0)) / n; l = (l * (n - 1) + Math.max(-d, 0)) / n; }
-  return l === 0 ? 100 : 100 - 100 / (1 + g / l);
-}
-function macdOf(c) {
-  const e12 = emaArr(c, 12), e26 = emaArr(c, 26);
-  const m = c.map((_, i) => e12[i] - e26[i]), sig = emaArr(m, 9);
-  const k = c.length - 1;
-  return { macd: m[k], signal: sig[k], hist: m[k] - sig[k], prevHist: m[k - 1] - sig[k - 1] };
-}
-function levels(cs, price) {
-  const piv = [];
-  for (let i = 3; i < cs.length - 3; i++) {
-    let hi = true, lo = true;
-    for (let j = i - 3; j <= i + 3; j++) { if (cs[j].h > cs[i].h) hi = false; if (cs[j].l < cs[i].l) lo = false; }
-    if (hi) piv.push(cs[i].h); if (lo) piv.push(cs[i].l);
-  }
-  piv.sort((a, b) => a - b);
-  const zones = [];
-  for (const p of piv) { const z = zones[zones.length - 1]; if (z && p / z.avg - 1 < 0.004) { z.sum += p; z.n++; z.avg = z.sum / z.n; } else zones.push({ sum: p, n: 1, avg: p }); }
-  const lv = zones.map(z => z.avg);
-  return { sup: lv.filter(x => x < price * 0.999).reverse().slice(0, 2), res: lv.filter(x => x > price * 1.001).slice(0, 2) };
-}
-
-async function candles(mk, coin, tf) {
-  const key = `${mk}:${coin}:${tf}`, ttl = tf === "15m" ? 25000 : 240000;
-  const hit = IK.candles.get(key);
-  if (hit && Date.now() - hit.at < ttl) return hit.cs;
-  const bin = base => getJSON(`${base}?symbol=${coin}USDT&interval=${tf}&limit=210`).then(k => k.map(x => ({ t: +x[0], o: +x[1], h: +x[2], l: +x[3], c: +x[4] })));
-  const okx = inst => getJSON(`https://www.okx.com/api/v5/market/candles?instId=${inst}&bar=${tf === "1h" ? "1H" : tf}&limit=210`).then(j => j.data.map(x => ({ t: +x[0], o: +x[1], h: +x[2], l: +x[3], c: +x[4] })).reverse());
-  const order = mk === "BF" ? [() => bin("https://fapi.binance.com/fapi/v1/klines"), () => bin("https://data-api.binance.vision/api/v3/klines"), () => okx(`${coin}-USDT-SWAP`)]
-    : mk === "BS" ? [() => bin("https://data-api.binance.vision/api/v3/klines"), () => okx(`${coin}-USDT`)]
-    : mk === "OF" ? [() => okx(`${coin}-USDT-SWAP`), () => bin("https://data-api.binance.vision/api/v3/klines")]
-    : [() => okx(`${coin}-USDT`), () => bin("https://data-api.binance.vision/api/v3/klines")];
-  for (const f of order) {
-    try { const cs = await f(); if (cs.length >= 60) { IK.candles.set(key, { at: Date.now(), cs }); return cs; } } catch {}
-  }
-  return hit ? hit.cs : null;
-}
-
-function collectIkut() {
-  const now = Date.now(), seen = new Map();
-  for (const k in FEEDS) for (const s of FEEDS[k].items) {
-    if (!s.reco || s.reco.verdict !== "IKUT" || now - s.t > IK_WINDOW + 15 * 60000) continue;
-    if (s.dir !== "up" && s.dir !== "down") continue;
-    const key = s.coin + ":" + (s.dir === "up" ? "LONG" : "SHORT");
-    const g = seen.get(key) || { latest: s, ids: new Set() };
-    g.ids.add(s.id); if (s.t > g.latest.t) g.latest = s;
-    seen.set(key, g);
-  }
-  for (const [key, g] of seen) {
-    const cur = IK.setups.get(key);
-    if (cur && cur.sig.id === g.latest.id) { cur.count = g.ids.size; continue; }
-    IK.setups.set(key, { key, side: key.endsWith("LONG") ? "LONG" : "SHORT", sig: g.latest, count: g.ids.size });
-  }
-  for (const k of [...IK.setups.keys()]) if (!seen.has(k)) IK.setups.delete(k);
-}
-
-async function evalSetup(x) {
-  const s = x.sig, long = x.side === "LONG";
-  const [c15, c1h] = await Promise.all([candles(s.mk, s.coin, "15m"), candles(s.mk, s.coin, "1h")]);
-  if (!c15) { x.err = "Data candle belum bisa diambil"; return; }
-  x.err = null;
-  const cl = c15.map(c => c.c), price = cl[cl.length - 1];
-  const e20 = emaArr(cl, 20), e50 = emaArr(cl, 50);
-  const rsi = rsiLast(cl), md = macdOf(cl);
-  let h1 = null;
-  if (c1h && c1h.length > 60) {
-    const c = c1h.map(k => k.c), a20 = emaArr(c, 20), a50 = emaArr(c, 50), a200 = c.length >= 200 ? emaArr(c, 200) : null, p = c[c.length - 1], i = c.length - 1;
-    const trend = p > a50[i] && a20[i] > a50[i] ? "Bullish" : p < a50[i] && a20[i] < a50[i] ? "Bearish" : "Netral";
-    h1 = { trend, e20: a20[i], e50: a50[i], e200: a200 ? a200[i] : null, rsi: rsiLast(c), price: p };
-  }
-  const lv = levels(c15.slice(-150), price);
-  // trade plan: engine plan, stop tightened to the nearest support/resistance when it is close enough
-  const pl = s.reco.plan || {};
-  const entry = pl.entry || s.price;
-  let sl = pl.sl || (long ? entry * 0.98 : entry * 1.02);
-  const near = long ? lv.sup.find(v => v < entry) : lv.res.find(v => v > entry);
-  if (near) { const d = Math.abs(entry / near - 1); if (d >= 0.005 && d <= 0.05) sl = long ? near * 0.997 : near * 1.003; }
-  const R = Math.abs(entry - sl);
-  const tp1 = long ? entry + 1.5 * R : entry - 1.5 * R, tp2 = long ? entry + 2.5 * R : entry - 2.5 * R;
-  const zLo = long ? entry - 0.3 * R : entry - 0.3 * R, zHi = long ? entry + 0.3 * R : entry + 0.3 * R;
-  const wall = long ? lv.res[0] : lv.sup[0];
-  const checks = long ? [
-    [!h1 || h1.trend !== "Bearish", `Tren 1 jam ${h1 ? h1.trend : "belum ada data"} (tidak bearish)`],
-    [price > e20[e20.length - 1], "Harga di atas EMA20 (15m)"],
-    [md.hist > 0, `MACD 15m positif${md.hist > 0 && md.prevHist <= 0 ? " (baru cross naik)" : ""}`],
-    [rsi != null && rsi >= 45 && rsi <= 70, `RSI 15m ${rsi == null ? "--" : rsi.toFixed(0)} di 45–70 (kuat, belum jenuh beli)`],
-    [!wall || wall - price >= R, wall ? `Jarak ke resistance ${px(wall)} cukup (≥ 1R)` : "Tidak ada resistance dekat"]
-  ] : [
-    [!h1 || h1.trend !== "Bullish", `Tren 1 jam ${h1 ? h1.trend : "belum ada data"} (tidak bullish)`],
-    [price < e20[e20.length - 1], "Harga di bawah EMA20 (15m)"],
-    [md.hist < 0, `MACD 15m negatif${md.hist < 0 && md.prevHist >= 0 ? " (baru cross turun)" : ""}`],
-    [rsi != null && rsi >= 30 && rsi <= 55, `RSI 15m ${rsi == null ? "--" : rsi.toFixed(0)} di 30–55 (lemah, belum jenuh jual)`],
-    [!wall || price - wall >= R, wall ? `Jarak ke support ${px(wall)} cukup (≥ 1R)` : "Tidak ada support dekat"]
-  ];
-  const age = Date.now() - s.t;
-  let st, why;
-  if (age > IK_WINDOW) { st = "miss"; why = "KEDALUWARSA (lebih dari 60 menit)"; }
-  else if (long ? price <= sl : price >= sl) { st = "cancel"; why = "BATAL: stop loss sudah tersentuh"; }
-  else if (long ? price >= tp1 : price <= tp1) { st = "miss"; why = "TERLEWAT: harga sudah sampai TP1"; }
-  else if (long ? price > zHi : price < zLo) { st = "miss"; why = "TERLEWAT: harga sudah lari dari zona entry, jangan kejar"; }
-  else if (checks.every(c => c[0])) { st = "go"; why = "BISA DIIKUTI"; }
-  else { st = "wait"; why = `TUNGGU KONFIRMASI (${checks.filter(c => !c[0]).length} syarat belum terpenuhi)`; }
-  const prev = x.st;
-  Object.assign(x, { price, entry, sl, tp1, tp2, zLo, zHi, lv, rsi, md, e20: e20[e20.length - 1], e50: e50[e50.length - 1], h1, checks, st, why, at: Date.now() });
-  if (st === "go" && prev !== "go") notifyIkut(x);
-}
-
-function notifyIkut(x) {
-  const k = x.sig.id;
-  if (IK.notified.has(k)) return;
-  IK.notified.add(k);
-  const body = `${x.side} ${x.sig.coin} · Entry ${px(x.zLo)}–${px(x.zHi)} · SL ${px(x.sl)} · TP1 ${px(x.tp1)}`;
-  beep(x.side === "LONG");
-  toast(`Bisa diikuti: ${body}`);
-  if (UI.notif && "Notification" in window && Notification.permission === "granted") {
-    try { new Notification(`✅ ${x.sig.coin} bisa diikuti (${x.side})`, { body, tag: "ik-" + k }); } catch {}
-  }
-}
-
-function ikutCard(x) {
-  const s = x.sig, mins = Math.floor((Date.now() - s.t) / 60000), long = x.side === "LONG";
-  const head = `<div class="ik-h"><span class="coin">${esc(s.coin)}</span><span class="side ${x.side}">${x.side}</span><span class="ex">${EX[s.mk]}</span><span class="age">${mins} mnt lalu · ${wib(s.t)}</span></div>`;
-  if (!x.at) return `<div class="ik wait">${head}<div class="ik-sub">${x.err ? esc(x.err) : "Menghitung indikator…"}</div></div>`;
-  const dist = x.price / x.entry - 1;
-  const cls = x.st === "go" ? "go" : x.st === "wait" ? "wait" : "off";
-  const fmtL = a => a.length ? a.map(px).join(" · ") : "--";
-  const h1 = x.h1;
-  return `<div class="ik ${cls}">
-  ${head}
-  <span class="st ${x.st}">${esc(x.why)}</span>
-  <div class="ik-sub">Harga sekarang <b class="num">${px(x.price)}</b> (${pct(dist)} dari entry) · sinyal skor ${s.reco.score}${x.count > 1 ? ` · ${x.count} sinyal IKUT searah` : ""}</div>
-  <div class="lv">
-    <div class="e"><small>Entry (zona)</small><span>${px(x.zLo)} – ${px(x.zHi)}</span></div>
-    <div class="s"><small>Stop loss</small><span>${px(x.sl)} (${pct(x.sl / x.entry - 1, 1)})</span></div>
-    <div class="t"><small>TP1 · 1.5R</small><span>${px(x.tp1)} (${pct(x.tp1 / x.entry - 1, 1)})</span></div>
-    <div class="t"><small>TP2 · 2.5R</small><span>${px(x.tp2)} (${pct(x.tp2 / x.entry - 1, 1)})</span></div>
-    <div><small>Support</small><span>${fmtL(x.lv.sup)}</span></div>
-    <div><small>Resistance</small><span>${fmtL(x.lv.res)}</span></div>
-  </div>
-  <div class="ind">
-    <div><small>Tren 1 jam</small><span class="${h1 && h1.trend === "Bullish" ? "up" : h1 && h1.trend === "Bearish" ? "down" : "flat"}">${h1 ? h1.trend : "--"}</span></div>
-    <div><small>RSI 14 · 15m / 1j</small><span>${x.rsi == null ? "--" : x.rsi.toFixed(0)} / ${h1 && h1.rsi != null ? h1.rsi.toFixed(0) : "--"}</span></div>
-    <div><small>MACD 15m</small><span class="${x.md.hist >= 0 ? "up" : "down"}">${x.md.hist >= 0 ? "Positif" : "Negatif"}${(x.md.hist > 0) !== (x.md.prevHist > 0) ? " · baru cross" : ""}</span></div>
-    <div><small>EMA 15m · 20 / 50</small><span>${px(x.e20)} / ${px(x.e50)}</span></div>
-    <div><small>EMA 1j · 20 / 50 / 200</small><span>${h1 ? `${px(h1.e20)} / ${px(h1.e50)} / ${h1.e200 ? px(h1.e200) : "--"}` : "--"}</span></div>
-    <div><small>Leverage maks</small><span>${(s.reco.plan && s.reco.plan.lev) || 3}x · risiko 1% modal</span></div>
-  </div>
-  <ul class="checks">${x.checks.map(([ok, t]) => `<li class="${ok ? "ok" : "no"}">${esc(t)}</li>`).join("")}</ul>
-  <div class="card-a"><button type="button" data-ask="${s.id}">Tanya Claude</button><a href="${chartUrl(s)}" target="_blank" rel="noopener">Chart</a></div>
-</div>`;
-}
-
-const ikRank = { go: 0, wait: 1, miss: 2, cancel: 3 };
-function renderIkut() {
-  const list = [...IK.setups.values()].sort((a, b) => (ikRank[a.st] ?? 1) - (ikRank[b.st] ?? 1) || b.sig.t - a.sig.t);
-  const go = list.filter(x => x.st === "go").length;
-  const badge = $("ikBadge"); badge.hidden = !go; badge.textContent = go;
-  if ($("view-ikut").hidden) return;
-  $("ikList").innerHTML = list.length ? list.map(ikutCard).join("")
-    : `<div class="empty">Belum ada sinyal IKUT dalam 60 menit terakhir. Profil konservatif membuat sinyal IKUT jarang muncul; biarkan dashboard terbuka.</div>`;
-}
-
-async function ikutLoop() {
-  if (IK.busy) return;
-  IK.busy = true;
-  try {
-    collectIkut();
-    for (const x of IK.setups.values()) { try { await evalSetup(x); } catch (e) { x.err = "Gagal menghitung indikator"; } }
-    renderIkut();
-  } finally { IK.busy = false; }
-}
-setInterval(ikutLoop, 30000);
-setTimeout(ikutLoop, 3000);
-
-/* ============ riwayat & ringkasan (rekaman 24 jam dari GitHub Actions) ============ */
-// HEAD = the repo's default branch, which is where the scheduled recorder commits its data
-const REPO_RAW = "https://raw.githubusercontent.com/adhiyudho-lang/Hello/HEAD/";
-const HIST = { index: null, items: [], date: null, shown: 200, loaded: false };
-const dayName = new Intl.DateTimeFormat("id-ID", { timeZone: "Asia/Jakarta", weekday: "short", day: "numeric", month: "short", year: "numeric" });
-const dLabel = d => dayName.format(new Date(d + "T12:00:00+07:00"));
-const hourWIB = t => new Date(t + 7 * 3600e3).getUTCHours();
-
-async function fetchData(rel) {
-  for (const url of [REPO_RAW + rel, rel + "?t=" + Date.now()]) {
-    try { const r = await fetch(url, { cache: "no-store" }); if (r.ok) return await r.json(); } catch {}
-  }
-  throw new Error("Data rekaman tidak bisa dibuka");
-}
-
-function outcomeHTML(s) {
-  if (s.dir !== "up" && s.dir !== "down") return "";
-  const cells = [1, 4, 24].map(h => {
-    const r = s.o ? s.o[h] : undefined;
-    if (r === undefined) return `<span class="oc">${h}j: menunggu</span>`;
-    if (r === null) return `<span class="oc">${h}j: tidak ada data</span>`;
-    const ok = (s.dir === "up" ? r : -r) > 0;
-    return `<span class="oc ${ok ? "ok" : "bad"}">${h}j ${pct(r)} ${ok ? "✓" : "✗"}</span>`;
-  }).join("");
-  return `<div class="outcome"><em>Hasil harga</em>${cells}</div>`;
-}
-
-function accOf(items, verdict) {
-  const out = {};
-  for (const h of [1, 4, 24]) {
-    let w = 0, n = 0, sum = 0;
-    for (const s of items) {
-      if (verdict && s.reco.verdict !== verdict) continue;
-      const r = s.o && s.o[h];
-      if (r == null || (s.dir !== "up" && s.dir !== "down")) continue;
-      const dr = s.dir === "up" ? r : -r; n++; sum += dr; if (dr > 0) w++;
-    }
-    out[h] = { w, n, sum };
-  }
-  return out;
-}
-const accTxt = a => a && a.n ? `${Math.round(a.w / a.n * 100)}%` : "--";
-const accSub = a => a && a.n ? `rata-rata ${pct(a.sum / a.n)} · ${a.n} sinyal` : "belum ada data";
-
-async function ensureIndex() {
-  if (HIST.loaded) return HIST.index;
-  try {
-    HIST.index = await fetchData("data/index.json");
-  } catch {
-    HIST.index = null;
-  }
-  HIST.loaded = true;
-  const sel = $("hDate");
-  const days = (HIST.index && HIST.index.days) || [];
-  sel.innerHTML = days.length ? days.map(d => `<option value="${d.date}">${dLabel(d.date)}</option>`).join("") : `<option value="">Belum ada rekaman</option>`;
-  return HIST.index;
-}
-
-function noDataMsg() {
-  if (!HIST.index) return "Data rekaman belum bisa dibuka. Riwayat hanya muncul kalau dashboard dibuka lewat link GitHub Pages dan repo sudah public, serta perekam GitHub Actions sudah aktif.";
-  return "Belum ada rekaman. Perekam berjalan otomatis tiap jam lewat GitHub Actions; data pertama muncul ±1 jam setelah aktif.";
-}
-
-async function openHist(date) {
-  await ensureIndex();
-  const sel = $("hDate");
-  if (date) sel.value = date;
-  const d = sel.value;
-  if (!d) { $("hStats").innerHTML = ""; $("hList").innerHTML = `<div class="empty">${noDataMsg()}</div>`; return; }
-  if (HIST.date !== d) {
-    $("hList").innerHTML = `<div class="empty">Memuat ${dLabel(d)}…</div>`;
-    try {
-      const day = await fetchData(`data/days/${d}.json`);
-      HIST.items = (day.items || []).filter(s => s && s.reco).sort((a, b) => b.t - a.t);
-      HIST.date = d;
-    } catch (e) {
-      $("hList").innerHTML = `<div class="empty">Gagal memuat data ${dLabel(d)}. Coba lagi nanti.</div>`;
-      return;
-    }
-  }
-  HIST.shown = 200;
-  renderHist();
-}
-
-function histFiltered() {
-  const from = +$("hFrom").value, to = +$("hTo").value;
-  const type = $("hType").value, verdict = $("hVerdict").value, ex = $("hEx").value;
-  const q = $("hCoin").value.trim().toUpperCase();
-  return HIST.items.filter(s => {
-    const h = hourWIB(s.t);
-    if (h < from || h > to) return false;
-    if (type !== "all" && s.f !== type) return false;
-    if (verdict !== "all" && s.reco.verdict !== verdict) return false;
-    if (ex !== "all" && s.mk !== ex) return false;
-    if (q && !s.coin.includes(q)) return false;
-    return true;
-  });
-}
-
-function renderHist() {
-  const list = histFiltered();
-  const ikut = list.filter(s => s.reco.verdict === "IKUT");
-  const a = accOf(ikut);
-  $("hStats").innerHTML = `
-    <div><small>Sinyal</small><b>${list.length}</b> <span>dari ${HIST.items.length}</span></div>
-    <div><small>Saran IKUT</small><b>${ikut.length}</b></div>
-    <div><small>IKUT tepat · 1 jam</small><b>${accTxt(a[1])}</b><br><span>${accSub(a[1])}</span></div>
-    <div><small>IKUT tepat · 4 jam</small><b>${accTxt(a[4])}</b><br><span>${accSub(a[4])}</span></div>
-    <div><small>IKUT tepat · 24 jam</small><b>${accTxt(a[24])}</b><br><span>${accSub(a[24])}</span></div>`;
-  const box = $("hList");
-  if (!list.length) { box.innerHTML = `<div class="empty">Tidak ada sinyal untuk filter ini.</div>`; return; }
-  box.innerHTML = list.slice(0, HIST.shown).map(s => cardHTML(s, false, true)).join("") +
-    (list.length > HIST.shown ? `<button type="button" class="btn ghost more" id="hMore">Tampilkan ${Math.min(200, list.length - HIST.shown)} lagi (sisa ${list.length - HIST.shown})</button>` : "");
-  const more = $("hMore");
-  if (more) more.addEventListener("click", () => { HIST.shown += 200; renderHist(); });
-}
-
-async function openSum() {
-  const idx = await ensureIndex();
-  const days = (idx && idx.days) || [];
-  if (!days.length) { $("sumNote").textContent = noDataMsg(); $("accTbl").innerHTML = ""; $("dayTbl").innerHTML = ""; return; }
-  $("sumNote").innerHTML = `Rekaman 24 jam dari <b>Binance Spot</b> dan <b>OKX</b> (Binance Futures ikut kalau tidak diblokir di server GitHub), memakai threshold default. Disimpan ${idx.keepDays || 30} hari. Update terakhir <b>${dLabel(dateKey(idx.updated))} ${wib(idx.updated)}</b>.`;
-  // accuracy across all days
-  const tot = {};
-  for (const d of days) for (const v in d.acc || {}) for (const h in d.acc[v]) {
-    const a = ((tot[v] = tot[v] || {})[h] = tot[v][h] || { w: 0, n: 0, sum: 0 });
-    a.w += d.acc[v][h].w; a.n += d.acc[v][h].n; a.sum += d.acc[v][h].sum;
-  }
-  const cell = a => `<td class="num">${accTxt(a)}<br><span class="footnote">${accSub(a)}</span></td>`;
-  $("accTbl").innerHTML = `<thead><tr><th>Saran</th><th class="num">Tepat setelah 1 jam</th><th class="num">4 jam</th><th class="num">24 jam</th></tr></thead><tbody>` +
-    ["IKUT", "TUNGGU", "HINDARI", "INFO"].map(v => `<tr><td><span class="pill ${v}">${v}</span></td>${cell(tot[v] && tot[v][1])}${cell(tot[v] && tot[v][4])}${cell(tot[v] && tot[v][24])}</tr>`).join("") + "</tbody>";
-  $("dayTbl").innerHTML = `<thead><tr><th>Tanggal</th><th class="num">F&amp;G</th><th>Likuidasi Long / Short</th><th class="num">Whale</th><th class="num">Likuidasi</th><th class="num">Pump/Dump</th><th class="num">IKUT</th><th class="num">IKUT tepat 4j</th><th>Coin paling sering</th></tr></thead><tbody>` +
-    days.map(d => {
-      const L = d.liq ? d.liq.L : 0, S = d.liq ? d.liq.S : 0, t = L + S || 1;
-      const a4 = d.acc && d.acc.IKUT && d.acc.IKUT[4];
-      return `<tr class="click" data-date="${d.date}" tabindex="0">
-        <td>${dLabel(d.date)}</td>
-        <td class="num" style="color:${d.fng == null ? "var(--muted)" : fngColor(d.fng)}">${d.fng == null ? "--" : d.fng}</td>
-        <td><span class="up">${usd(L)}</span> / <span class="down">${usd(S)}</span><div class="minibar"><i style="width:${L / t * 100}%;background:var(--buy)"></i><i style="width:${S / t * 100}%;background:var(--sell)"></i></div></td>
-        <td class="num">${d.n.whale || 0}</td><td class="num">${d.n.liq || 0}</td><td class="num">${d.n.signal || 0}</td>
-        <td class="num">${d.ikut || 0}</td><td class="num">${accTxt(a4)}${a4 && a4.n ? ` <span class="footnote">(${a4.n})</span>` : ""}</td>
-        <td>${(d.top || []).slice(0, 3).map(([c, n]) => `${esc(c)} <span class="footnote">${n}×</span>`).join(", ")}</td></tr>`;
-    }).join("") + "</tbody>";
-}
-const dateKey = t => new Date(t + 7 * 3600e3).toISOString().slice(0, 10);
-
-$("dayTbl").addEventListener("click", e => { const tr = e.target.closest("tr[data-date]"); if (tr) showView("hist", tr.dataset.date); });
-$("dayTbl").addEventListener("keydown", e => { if (e.key === "Enter") { const tr = e.target.closest("tr[data-date]"); if (tr) showView("hist", tr.dataset.date); } });
-
-for (const id of ["hFrom", "hTo"]) $(id).innerHTML = Array.from({ length: 24 }, (_, h) => `<option value="${h}">${String(h).padStart(2, "0")}.00</option>`).join("");
-$("hTo").value = "23";
-$("hDate").addEventListener("change", () => openHist());
-for (const id of ["hFrom", "hTo", "hType", "hVerdict", "hEx"]) $(id).addEventListener("change", () => { HIST.shown = 200; renderHist(); });
-$("hCoin").addEventListener("input", () => { HIST.shown = 200; renderHist(); });
-
-function showView(v, date) {
-  for (const t of document.querySelectorAll(".tab")) t.setAttribute("aria-selected", t.dataset.view === v ? "true" : "false");
-  $("view-live").hidden = v !== "live";
-  $("view-ikut").hidden = v !== "ikut";
-  $("view-hist").hidden = v !== "hist";
-  $("view-sum").hidden = v !== "sum";
-  try { history.replaceState(null, "", v === "live" ? location.pathname : "#" + ({ hist: "riwayat", sum: "ringkasan", ikut: "ikut" }[v])); } catch {}
-  if (v === "hist") openHist(date);
-  if (v === "sum") openSum();
-  if (v === "ikut") renderIkut();
-}
-document.querySelectorAll(".tab").forEach(t => t.addEventListener("click", () => showView(t.dataset.view)));
-if (location.hash === "#riwayat") showView("hist");
-else if (location.hash === "#ringkasan") showView("sum");
-else if (location.hash === "#ikut") showView("ikut");
-
-/* ============ boot ============ */
-loadHistory();
-rerenderAll();
-loadFng(); setInterval(loadFng, 30 * 60000);
-loadBtcTrend(); setInterval(loadBtcTrend, 5 * 60000);
-loadFunding(); setInterval(loadFunding, 60000);
-okxInstruments().then(() => { okxTickers(); setInterval(okxTickers, 10000); });
-</script>
+<script src="app.js"></script>
 </body>
 </html>

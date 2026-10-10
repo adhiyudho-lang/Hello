@@ -26,9 +26,10 @@ function usd(v) {
 function px(p) {
   if (!isFinite(p)) return "--";
   if (p >= 1000) return "$" + p.toLocaleString("en-US", { maximumFractionDigits: 1 });
-  if (p >= 1) return "$" + p.toFixed(p >= 100 ? 2 : 4);
-  const d = Math.min(10, Math.max(4, 3 - Math.floor(Math.log10(p)) + 2));
-  return "$" + p.toFixed(d);
+  if (p >= 100) return "$" + p.toFixed(2);
+  // drop trailing zeros but keep at least 2 decimals ($1.50, $0.5195)
+  const d = p >= 1 ? 4 : Math.min(10, Math.max(4, 3 - Math.floor(Math.log10(p)) + 2));
+  return "$" + p.toFixed(d).replace(/(\.\d\d\d*?)0+$/, "$1");
 }
 const pct = (v, d = 2) => (v >= 0 ? "+" : "") + (v * 100).toFixed(d) + "%";
 const esc = s => String(s).replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
