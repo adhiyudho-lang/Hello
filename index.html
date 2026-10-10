@@ -793,7 +793,8 @@ function toast(msg) {
 }
 
 /* ============ riwayat & ringkasan (rekaman 24 jam dari GitHub Actions) ============ */
-const REPO_RAW = "https://raw.githubusercontent.com/adhiyudho-lang/Hello/main/";
+// HEAD = the repo's default branch, which is where the scheduled recorder commits its data
+const REPO_RAW = "https://raw.githubusercontent.com/adhiyudho-lang/Hello/HEAD/";
 const HIST = { index: null, items: [], date: null, shown: 200, loaded: false };
 const dayName = new Intl.DateTimeFormat("id-ID", { timeZone: "Asia/Jakarta", weekday: "short", day: "numeric", month: "short", year: "numeric" });
 const dLabel = d => dayName.format(new Date(d + "T12:00:00+07:00"));

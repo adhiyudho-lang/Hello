@@ -45,7 +45,7 @@ Data lebih dari 30 hari dihapus otomatis. Di dashboard, buka tab **Riwayat** (pi
 
 Syarat:
 - Repo harus **public** (GitHub Actions gratis tanpa batas menit untuk repo public).
-- Workflow harus ada di branch **main** (jadwal GitHub Actions hanya jalan dari branch utama).
+- Workflow jalan dari **branch default** repo (jadwal GitHub Actions hanya jalan dari situ). Dashboard membaca data dari branch default yang sama.
 - Server GitHub ada di Amerika, jadi Binance Futures biasanya diblokir. Rekaman 24 jam berisi **Binance Spot + OKX** (termasuk likuidasi OKX).
 - Jalankan manual pertama kali: tab **Actions** → *Rekam data whale* → **Run workflow**.
 
