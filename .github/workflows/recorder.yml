@@ -21,8 +21,6 @@ jobs:
   record:
     runs-on: ubuntu-latest
     timeout-minutes: 75
-    env:
-      JOURNAL: ${{ runner.temp }}/recorder-out.json
     steps:
       - uses: actions/checkout@v4
         with:
@@ -37,11 +35,13 @@ jobs:
         run: node recorder/record.cjs
         env:
           RUN_MINUTES: "55"
+          JOURNAL: ${{ runner.temp }}/recorder-out.json
 
       - name: Simpan ke repo
         if: always()
         env:
           KEEP_DAYS: "30"
+          JOURNAL: ${{ runner.temp }}/recorder-out.json
           BRANCH: ${{ github.ref_name }}
         run: |
           git config user.name "whale-recorder[bot]"
