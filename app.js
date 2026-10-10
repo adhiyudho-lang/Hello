@@ -1001,8 +1001,8 @@ for (const id of ["hFrom", "hTo", "hType", "hVerdict", "hEx"]) $(id).addEventLis
 $("hCoin").addEventListener("input", () => { HIST.shown = 120; renderHist(); });
 
 /* ============ navigation ============ */
-const VIEWS = { home: "v-home", sig: "v-sig", ikut: "v-ikut", hist: "v-hist", rekap: "v-rekap" };
-const HASH = { home: "", sig: "sinyal", ikut: "ikut", hist: "riwayat", rekap: "ringkasan" };
+const VIEWS = { home: "v-home", sig: "v-sig", ikut: "v-ikut", brief: "v-brief", hist: "v-hist", rekap: "v-rekap" };
+const HASH = { home: "", sig: "sinyal", ikut: "ikut", brief: "brief", hist: "riwayat", rekap: "ringkasan" };
 function showView(v, date) {
   VIEW = v;
   for (const k in VIEWS) $(VIEWS[k]).hidden = k !== v;
@@ -1014,6 +1014,7 @@ function showView(v, date) {
   if (v === "ikut") renderIkut();
   if (v === "hist") openHist(date);
   if (v === "rekap") openRekap();
+  if (v === "brief" && typeof openBrief === "function") openBrief();
 }
 document.querySelectorAll(".nb").forEach(b => b.addEventListener("click", () => showView(b.dataset.view)));
 

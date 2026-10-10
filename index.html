@@ -98,8 +98,8 @@ main { max-width: 1400px; margin: 0 auto; padding-inline: 16px; padding-block: 1
 .disclaimer { font-size: 11.5px; color: var(--faint); text-align: center; margin: 4px 0 0; }
 
 /* ---------- bottom nav / rail ---------- */
-.bnav { position: fixed; left: 0; right: 0; bottom: 0; z-index: 40; display: grid; grid-template-columns: repeat(5, 1fr); background: rgba(8,14,28,.94); backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px); border-top: 1px solid var(--line); padding-bottom: env(safe-area-inset-bottom, 0px); }
-.nb { position: relative; height: var(--nav-h); background: none; border: 0; color: var(--faint); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; font-size: 11px; font-weight: 600; }
+.bnav { position: fixed; left: 0; right: 0; bottom: 0; z-index: 40; display: grid; grid-template-columns: repeat(6, 1fr); background: rgba(8,14,28,.94); backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px); border-top: 1px solid var(--line); padding-bottom: env(safe-area-inset-bottom, 0px); }
+.nb { position: relative; height: var(--nav-h); background: none; border: 0; color: var(--faint); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; font-size: 10.5px; font-weight: 600; white-space: nowrap; padding: 0 2px; }
 .nb svg { width: 22px; height: 22px; }
 .nb[aria-current="page"] { color: var(--glow); }
 .nb[aria-current="page"]::before { content: ""; position: absolute; top: 0; left: 30%; right: 30%; height: 2px; border-radius: 2px; background: var(--glow); box-shadow: 0 0 12px var(--glow); }
@@ -329,6 +329,73 @@ details.why ul { margin: 6px 0 0; padding-left: 16px; font-size: 12px; color: va
 .btn.ghost { background: transparent; border: 1px solid var(--line); color: var(--fg); }
 .morebtn { justify-self: center; }
 
+/* ---------- ETF weekly brief ---------- */
+.bf-head { display: grid; gap: 10px; }
+.bf-head h1 { margin: 0; font-size: 21px; letter-spacing: .01em; text-wrap: balance; }
+.bf-meta { display: flex; flex-wrap: wrap; gap: 4px 14px; font-size: 12px; color: var(--muted); }
+.bf-meta b { color: var(--fg); font-weight: 600; }
+.bf-tools { display: flex; gap: 8px; flex-wrap: wrap; }
+.bf-tools a, .bf-tools button { font-size: 12.5px; font-weight: 600; background: var(--card2); border: 1px solid var(--line); border-radius: 10px; padding: 7px 12px; color: var(--fg); text-decoration: none; }
+.bf-tools .pri { background: var(--glow-bg); border-color: rgba(34,211,238,.45); color: var(--glow); }
+.legend2 { display: flex; flex-wrap: wrap; gap: 6px; }
+.tone-up { color: var(--buy); } .tone-down { color: var(--sell); } .tone-flat { color: var(--muted); } .tone-swing { color: var(--warn); }
+.chip.swing { background: var(--warn-bg); color: var(--warn); }
+.chip.flat { background: rgba(138,155,184,.12); color: var(--muted); }
+.chip.up { background: var(--buy-bg); color: var(--buy); } .chip.down { background: var(--sell-bg); color: var(--sell); }
+.bf-tabs { position: sticky; top: calc(env(safe-area-inset-top, 0px) + 96px); z-index: 10; display: flex; gap: 6px; overflow-x: auto; scrollbar-width: none; padding: 6px 0; background: linear-gradient(var(--bg) 70%, transparent); }
+.bf-tabs::-webkit-scrollbar { display: none; }
+.bf-tabs button { flex: none; background: var(--panel); border: 1px solid var(--line); border-radius: 999px; padding: 7px 13px; font-size: 12.5px; font-weight: 600; color: var(--muted); }
+.bf-tabs button[aria-pressed="true"] { color: #021216; background: var(--glow); border-color: var(--glow); box-shadow: 0 0 16px -4px var(--glow); }
+.bf-grid { display: grid; gap: 12px; grid-template-columns: repeat(auto-fill, minmax(min(100%, 330px), 1fr)); align-items: start; }
+.bf-card { background: linear-gradient(180deg, var(--card), var(--panel)); border: 1px solid var(--line); border-radius: 16px; padding: 14px; display: grid; gap: 10px; min-width: 0; }
+.bf-card.t-up { border-top: 3px solid var(--buy); } .bf-card.t-down { border-top: 3px solid var(--sell); } .bf-card.t-flat { border-top: 3px solid var(--faint); } .bf-card.t-swing { border-top: 3px solid var(--warn); }
+.bf-card.dashed { border-style: dashed; }
+.bf-card h3 { margin: 0; font-size: 15px; display: flex; gap: 8px; align-items: flex-start; }
+.bf-card p { margin: 0; font-size: 13px; color: #c3cfe2; }
+.bf-big { font-family: var(--font-mono); font-size: 34px; font-weight: 600; line-height: 1; }
+.bias { display: grid; gap: 6px; }
+.bias .track { position: relative; height: 12px; border-radius: 6px; background: linear-gradient(90deg, var(--sell), #2a3a5a 45% 55%, var(--buy)); }
+.bias .pin { position: absolute; top: -5px; width: 6px; height: 22px; border-radius: 3px; background: var(--fg); transform: translateX(-3px); box-shadow: 0 0 10px rgba(255,255,255,.6); }
+.bias .ends { display: flex; justify-content: space-between; font-size: 11px; font-family: var(--font-mono); color: var(--muted); }
+.rng { display: grid; gap: 4px; }
+.rng .track { position: relative; height: 6px; border-radius: 3px; background: linear-gradient(90deg, rgba(234,57,67,.5), #22314f 50%, rgba(22,199,132,.5)); }
+.rng .dot { position: absolute; top: 50%; width: 12px; height: 12px; border-radius: 50%; background: var(--fg); border: 2px solid var(--bg); transform: translate(-50%, -50%); }
+.rng .ends { display: flex; justify-content: space-between; font-size: 11px; font-family: var(--font-mono); color: var(--muted); }
+.scn { display: grid; gap: 6px; }
+.scn div { border-radius: 9px; padding: 8px 10px; font-size: 12.5px; }
+.scn .up { background: var(--buy-bg); } .scn .up b { color: var(--buy); }
+.scn .down { background: var(--sell-bg); } .scn .down b { color: var(--sell); }
+.when { font-family: var(--font-mono); font-size: 12px; color: var(--glow); }
+.siri { font-family: var(--font-mono); font-size: 12px; background: rgba(6,11,22,.55); border: 1px solid var(--line); border-radius: 9px; padding: 8px 10px; user-select: all; -webkit-user-select: all; overflow-wrap: anywhere; }
+.copyb { justify-self: start; font-size: 12.5px; font-weight: 600; background: var(--glow-bg); border: 1px solid rgba(34,211,238,.45); color: var(--glow); border-radius: 9px; padding: 6px 12px; }
+.sr { position: relative; height: 150px; min-width: 520px; }
+.sr-wrap { overflow-x: auto; }
+.sr .axis { position: absolute; left: 0; right: 0; top: 62px; height: 4px; border-radius: 2px; background: var(--line); }
+.sr .zone { position: absolute; top: 56px; height: 16px; min-width: 6px; border-radius: 4px; transform: translateX(-3px); }
+.sr .zone.up { background: var(--buy); box-shadow: 0 0 12px rgba(22,199,132,.6); } .sr .zone.down { background: var(--sell); box-shadow: 0 0 12px rgba(234,57,67,.5); }
+.sr .lb { position: absolute; transform: translateX(-50%); text-align: center; font-size: 10.5px; line-height: 1.2; white-space: nowrap; }
+.sr .lb b { display: block; font-family: var(--font-mono); font-size: 11px; }
+.sr .lb.top { top: 4px; } .sr .lb.bot { top: 82px; }
+.sr .now { position: absolute; top: 40px; height: 52px; width: 2px; background: var(--glow); box-shadow: 0 0 10px var(--glow); }
+.sr .now span { position: absolute; top: 56px; left: 50%; transform: translateX(-50%); font: 600 11px var(--font-mono); color: #021216; background: var(--glow); border-radius: 5px; padding: 1px 6px; white-space: nowrap; }
+.tbl { width: 100%; border-collapse: collapse; font-size: 12.5px; }
+.tbl th { text-align: left; color: var(--muted); font-size: 10.5px; text-transform: uppercase; letter-spacing: .07em; font-weight: 600; padding: 6px 8px; border-bottom: 1px solid var(--line); }
+.tbl td { padding: 7px 8px; border-bottom: 1px solid var(--line); vertical-align: top; }
+.tbl tr:last-child td { border-bottom: 0; }
+.tbl td.n { font-family: var(--font-mono); white-space: nowrap; text-align: right; }
+.wave-svg { width: 100%; height: 64px; display: block; }
+.bf-card ul { margin: 0; padding-left: 18px; font-size: 12.5px; color: #c3cfe2; display: grid; gap: 4px; }
+.lane { border-radius: 9px; padding: 7px 10px; font-size: 12.5px; display: grid; grid-template-columns: 112px minmax(0, 1fr); gap: 8px; }
+.lane em { font-style: normal; font-size: 10.5px; text-transform: uppercase; letter-spacing: .07em; font-weight: 700; padding-top: 1px; }
+.lane.up { background: var(--buy-bg); } .lane.up em { color: var(--buy); }
+.lane.down { background: var(--sell-bg); } .lane.down em { color: var(--sell); }
+.bucket-h { display: flex; align-items: center; gap: 8px; margin: 6px 0 -2px; font-weight: 700; }
+.bucket-h small { color: var(--muted); font-weight: 500; }
+.etf-bars { width: 100%; height: 190px; display: block; }
+.risk-box { background: var(--warn-bg); border: 1px solid rgba(243,186,47,.35); border-radius: 14px; padding: 12px 14px; font-size: 13px; }
+.risk-box h3 { margin: 0 0 6px; color: var(--warn); font-size: 14px; }
+.risk-box ul { margin: 0; padding-left: 18px; display: grid; gap: 4px; }
+
 /* ---------- sheets (chart, settings) ---------- */
 .sheet { position: fixed; inset: 0; z-index: 60; background: rgba(2,5,12,.66); display: flex; align-items: flex-end; justify-content: center; }
 .sheet-in { width: min(760px, 100%); max-height: 92vh; overflow-y: auto; background: var(--bg2); border: 1px solid var(--line); border-bottom: 0; border-radius: 22px 22px 0 0; padding: 10px 16px calc(18px + env(safe-area-inset-bottom, 0px)); display: grid; gap: 12px; }
@@ -432,6 +499,21 @@ details.why ul { margin: 6px 0 0; padding-left: 16px; font-size: 12px; color: va
     <div class="ikgrid" id="ikList"></div>
   </section>
 
+  <!-- ETF WEEKLY BRIEF -->
+  <section class="view" id="v-brief" hidden>
+    <article class="panel glow bf-head" id="bfHead"><div class="empty">Memuat Crypto ETF Weekly Brief…</div></article>
+    <div class="bf-tabs" id="bfTabs" role="group" aria-label="Kategori brief">
+      <button data-bf="ringkasan" aria-pressed="true">Ringkasan</button>
+      <button data-bf="etf" aria-pressed="false">Arus ETF</button>
+      <button data-bf="event" aria-pressed="false">Event</button>
+      <button data-bf="pengingat" aria-pressed="false">Pengingat</button>
+      <button data-bf="teknikal" aria-pressed="false">Teknikal BTC</button>
+      <button data-bf="altcoin" aria-pressed="false">Altcoin</button>
+      <button data-bf="aksi" aria-pressed="false">Aksi</button>
+    </div>
+    <div id="bfBody" class="view"></div>
+  </section>
+
   <!-- HISTORY -->
   <section class="view" id="v-hist" hidden>
     <div class="dates" id="hDates"></div>
@@ -462,6 +544,7 @@ details.why ul { margin: 6px 0 0; padding-left: 16px; font-size: 12px; color: va
   <button class="nb" data-view="home" aria-current="page"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11 12 4l9 7"/><path d="M5 10v10h14V10"/><path d="M10 20v-6h4v6"/></svg>Beranda</button>
   <button class="nb" data-view="sig"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12h4l3-8 4 16 3-8h4"/></svg>Sinyal</button>
   <button class="nb" data-view="ikut"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1.2" fill="currentColor"/></svg>IKUT<span class="badge" id="ikBadge" hidden>0</span></button>
+  <button class="nb" data-view="brief"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="3" width="16" height="18" rx="2"/><path d="M8 8h8M8 12h8M8 16h5"/></svg>ETF Brief</button>
   <button class="nb" data-view="hist"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 3-6.7"/><path d="M3 4v5h5"/><path d="M12 7v5l3 2"/></svg>Riwayat</button>
   <button class="nb" data-view="rekap"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20V10"/><path d="M10 20V4"/><path d="M16 20v-7"/><path d="M22 20H2"/></svg>Rekap</button>
 </nav>
@@ -518,5 +601,6 @@ details.why ul { margin: 6px 0 0; padding-left: 16px; font-size: 12px; color: va
 <script src="https://cdn.jsdelivr.net/npm/lightweight-charts@4.1.3/dist/lightweight-charts.standalone.production.js"></script>
 <script src="engine.js"></script>
 <script src="app.js"></script>
+<script src="brief.js"></script>
 </body>
 </html>

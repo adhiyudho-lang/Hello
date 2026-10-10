@@ -1,0 +1,587 @@
+{
+ "period": "12–18 Oktober 2026",
+ "weekStart": "2026-10-12",
+ "snapshot": "Sabtu, 10 Okt 2026 · 07:58 WIB",
+ "source": "Harga: Crypto.com Exchange (1D) · EMA99: Interactive Brokers BTC Paxos",
+ "bias": {
+  "score": -25,
+  "label": "Waspada",
+  "note": "Tren menengah naik, tapi jangka pendek tertekan dan risiko CPI tinggi. Tunggu data sebelum menambah."
+ },
+ "coins": {
+  "BTC": {
+   "c": "#f7931a",
+   "g": "₿"
+  },
+  "ETH": {
+   "c": "#627eea",
+   "g": "Ξ"
+  },
+  "SOL": {
+   "c": "#9945ff",
+   "c2": "#14f195",
+   "g": "S"
+  },
+  "HYPE": {
+   "c": "#2ab8a6",
+   "g": "H"
+  },
+  "LINK": {
+   "c": "#2a5ada",
+   "g": "L"
+  },
+  "PENDLE": {
+   "c": "#1a9e8f",
+   "c2": "#3c4de0",
+   "g": "P"
+  },
+  "INJ": {
+   "c": "#0083e0",
+   "c2": "#00d2ff",
+   "g": "I"
+  },
+  "TAO": {
+   "c": "#3a3f45",
+   "g": "τ"
+  }
+ },
+ "summary": [
+  {
+   "tone": "swing",
+   "title": "CPI Rabu malam menentukan arah",
+   "text": "Fed menaikkan suku bunga 16 Sep ke 3,75–4,00% dan minutes 7 Okt bernada hawkish. Nowcast CPI 3,6% YoY (+0,5% MoM). CPI panas menaikkan peluang hike di FOMC 28 Okt (saat ini ±26%)."
+  },
+  {
+   "tone": "down",
+   "title": "BTC koreksi wave 4",
+   "text": "Long flush 7–8 Okt (likuidasi $1,16 miliar) dan outflow ETF BTC $485 juta. Support 79,7–80,3k lalu 77,6–77,7k. Struktur naik tetap sah selama penutupan harian di atas 74,8k."
+  },
+  {
+   "tone": "flat",
+   "title": "Event token minim, risiko dari makro",
+   "text": "Tidak ada event token berdampak tinggi minggu ini. Yang perlu diwaspadai: FOMC 28 Okt, tenggat Mt. Gox 31 Okt, dan unlock HYPE ±6 Nov. Tambah posisi bertahap setelah CPI."
+  }
+ ],
+ "events": [
+  {
+   "day": "2026-10-14",
+   "short": "CPI",
+   "icon": "chart",
+   "date": "Rab 14 Okt",
+   "time": "19:30",
+   "scope": "Makro AS",
+   "tone": "swing",
+   "title": "CPI & Core CPI September",
+   "detail": "Nowcast headline +0,5% MoM / 3,6% YoY, core +0,2% MoM / 2,4% YoY. Agustus: 3,4% YoY, core 0,3% MoM.",
+   "up": "Di bawah ekspektasi: odds hike turun, BTC berpeluang uji ulang 85,6–87,4k.",
+   "down": "Headline ≥0,5% dan core ≥0,3%: odds hike naik, BTC uji 79,7–80,3k lalu 77,6k."
+  },
+  {
+   "day": "2026-10-15",
+   "short": "PPI & Retail",
+   "icon": "chart",
+   "date": "Kam 15 Okt",
+   "time": "19:30",
+   "scope": "Makro AS",
+   "tone": "swing",
+   "title": "PPI, Retail Sales, Jobless Claims",
+   "detail": "Rilis bersamaan dengan Empire State dan Philly Fed. Mengonfirmasi atau membantah sinyal CPI sehari sebelumnya.",
+   "up": "PPI dan belanja melemah: tekanan inflasi turun, risk-on.",
+   "down": "PPI panas dan retail kuat: narasi hike menguat, dolar dan yield naik."
+  },
+  {
+   "day": "2026-10-16",
+   "short": "Pidato Warsh",
+   "icon": "bank",
+   "date": "Jum 16 Okt",
+   "time": "10:30",
+   "scope": "The Fed",
+   "tone": "swing",
+   "title": "Pidato Fed Chair Kevin Warsh",
+   "detail": "Pidato pertama Warsh setelah data CPI dan PPI. Pasar membaca petunjuk untuk keputusan 28 Okt.",
+   "up": "Nada data-dependent atau dovish: tekanan jual mereda.",
+   "down": "Menegaskan hike lanjutan: risk-off di kripto, altcoin turun lebih dalam."
+  },
+  {
+   "day": "2026-10-29",
+   "short": "FOMC 28/29 Okt",
+   "icon": "bank",
+   "date": "Kam 29 Okt",
+   "time": "01:00",
+   "scope": "Upcoming · The Fed",
+   "tone": "swing",
+   "upcoming": true,
+   "title": "Keputusan FOMC",
+   "detail": "Rapat 27–28 Okt. Pengumuman 14:00 ET (01:00 WIB), konferensi pers 30 menit kemudian.",
+   "up": "Tahan suku bunga: relief rally.",
+   "down": "Hike 25 bps: koreksi lanjutan, uji support besar BTC 74,8–75k."
+  },
+  {
+   "day": "2026-10-31",
+   "short": "Mt. Gox 31 Okt",
+   "icon": "alert",
+   "date": "Sab 31 Okt",
+   "time": "—",
+   "scope": "Upcoming · BTC",
+   "tone": "down",
+   "upcoming": true,
+   "title": "Tenggat repayment Mt. Gox",
+   "detail": "Wallet estate masih memegang ±34.388 BTC (±$2,9 miliar). Perpindahan ke exchange bisa memicu FUD dan tekanan jual.",
+   "down": "Bearish untuk sentimen BTC menjelang akhir Oktober."
+  },
+  {
+   "day": "2026-11-06",
+   "short": "Unlock HYPE ±6 Nov",
+   "icon": "unlock",
+   "date": "± 6 Nov",
+   "time": "—",
+   "scope": "Upcoming · HYPE",
+   "tone": "down",
+   "upcoming": true,
+   "title": "Unlock bulanan HYPE",
+   "detail": "Unlock team/contributor bulanan. Unlock 6 Okt bernilai $337–856 juta menurut sumber berbeda. Buyback Assistance Fund menahan sebagian tekanan.",
+   "down": "Tekanan jual menjelang awal November. Jangan menambah besar HYPE di akhir Oktober."
+  }
+ ],
+ "eventsNote": "Disembunyikan karena dampak sedang/rendah: Beige Book, Industrial Production, pidato pejabat Fed lain, Glamsterdam (ETH, belum ada tanggal mainnet), Alpenglow (SOL, belum ada tanggal), burn bulanan INJ, ETF INJ/TAO yang masih pending.",
+ "reminders": [
+  {
+   "title": "Jangan buka posisi sebelum CPI",
+   "when": "Rab 14 Okt 2026",
+   "alert": "08:00 WIB",
+   "note": "CPI rilis 19:30 WIB. Tahan semua tranche baru sampai data keluar.",
+   "siri": "Ingatkan saya hari Rabu 14 Oktober jam 8 pagi: jangan buka posisi kripto sebelum CPI"
+  },
+  {
+   "title": "CPI AS rilis 19:30: cek BTC",
+   "when": "Rab 14 Okt 2026",
+   "alert": "19:00 WIB",
+   "note": "Panas (≥0,5% MoM, core ≥0,3%): pakai zona ADD bawah 77,6–77,7k. Dingin: pantau tembus 85,6k.",
+   "siri": "Ingatkan saya hari Rabu 14 Oktober jam 7 malam: CPI Amerika rilis setengah delapan, cek level BTC"
+  },
+  {
+   "title": "PPI & Retail Sales rilis 19:30",
+   "when": "Kam 15 Okt 2026",
+   "alert": "19:00 WIB",
+   "note": "Konfirmasi arah CPI. Kalau CPI dan PPI sama-sama panas, tunda ADD sampai FOMC.",
+   "siri": "Ingatkan saya hari Kamis 15 Oktober jam 7 malam: PPI dan retail sales Amerika rilis setengah delapan"
+  },
+  {
+   "title": "Pidato Warsh 10:30",
+   "when": "Jum 16 Okt 2026",
+   "alert": "10:00 WIB",
+   "note": "Dengarkan sinyal untuk FOMC 28 Okt. Evaluasi ulang rencana DCA minggu depan.",
+   "siri": "Ingatkan saya hari Jumat 16 Oktober jam 10 pagi: pidato Fed Chair Warsh setengah sebelas"
+  },
+  {
+   "title": "FOMC besok dini hari: cek leverage",
+   "when": "Rab 28 Okt 2026",
+   "alert": "20:00 WIB",
+   "note": "Keputusan 01:00 WIB Kamis. Kurangi leverage, pasang alert harga di level invalidasi.",
+   "siri": "Ingatkan saya hari Rabu 28 Oktober jam 8 malam: FOMC besok dini hari, cek leverage kripto"
+  },
+  {
+   "title": "Pantau wallet Mt. Gox",
+   "when": "Sen 26 Okt 2026",
+   "alert": "09:00 WIB",
+   "note": "Tenggat 31 Okt. Cek Arkham untuk transfer BTC ke exchange.",
+   "siri": "Ingatkan saya hari Senin 26 Oktober jam 9 pagi: pantau wallet Mt. Gox di Arkham"
+  },
+  {
+   "title": "Unlock HYPE ±6 Nov",
+   "when": "Rab 4 Nov 2026",
+   "alert": "09:00 WIB",
+   "note": "Tahan ADD HYPE sampai unlock lewat dan harga stabil.",
+   "siri": "Ingatkan saya hari Rabu 4 November jam 9 pagi: unlock HYPE sekitar 6 November, tahan beli"
+  }
+ ],
+ "btc": {
+  "price": 82507.03,
+  "d7": -2.37,
+  "d30": 5.39,
+  "hi50": 87427.66,
+  "lo50": 74897.07,
+  "range": [
+   73500,
+   88500
+  ],
+  "zones": [
+   {
+    "side": "up",
+    "lo": 74700,
+    "hi": 75000,
+    "label": "S3",
+    "basis": "Low 15 Sep · Fib 0,5 · EMA99"
+   },
+   {
+    "side": "up",
+    "lo": 77580,
+    "hi": 77710,
+    "label": "S2",
+    "basis": "Konfluensi Fib 0,382 W3 + 0,786"
+   },
+   {
+    "side": "up",
+    "lo": 79700,
+    "hi": 80320,
+    "label": "S1",
+    "basis": "Low 8 Okt · Fib 0,618"
+   },
+   {
+    "side": "down",
+    "lo": 83500,
+    "hi": 83500,
+    "label": "R1",
+    "basis": "High 8–9 Okt"
+   },
+   {
+    "side": "down",
+    "lo": 85600,
+    "hi": 85600,
+    "label": "R2",
+    "basis": "High 7 Okt & 30 Sep"
+   },
+   {
+    "side": "down",
+    "lo": 87240,
+    "hi": 87430,
+    "label": "R3",
+    "basis": "Triple top Sep–Okt"
+   }
+  ],
+  "ema": [
+   {
+    "name": "EMA5",
+    "value": "83.050",
+    "tone": "down",
+    "status": "Melandai turun, harga di bawahnya"
+   },
+   {
+    "name": "EMA25",
+    "value": "82.740",
+    "tone": "flat",
+    "status": "Datar, EMA5 hampir memotong ke bawah"
+   },
+   {
+    "name": "EMA99",
+    "value": "74.968",
+    "tone": "up",
+    "status": "Harga +10% di atasnya, tren menengah naik"
+   }
+  ],
+  "emaNote": "EMA99 dari 200 bar IB Paxos (versi gabungan IB + Crypto.com: 76.805). EMA5/25 dari seri gabungan.",
+  "main": {
+   "title": "Skenario utama: impuls naik, wave 5 menyusul",
+   "tone": "up",
+   "path": [
+    0,
+    0.33,
+    0.15,
+    0.97,
+    0.72,
+    1.1
+   ],
+   "items": [
+    "Hitungan: 57.500 (24 Jun) → W1 67.539 → W2 62.000 → W3 87.428 (21 Sep) → W4 berjalan, low sementara 80.320.",
+    "W4 kemungkinan menyamping di 77,6–87,4k karena W2 tajam.",
+    "Target W5: 89.361 → 90.360 → 91.820.",
+    "Batal jika penutupan harian < 74.800."
+   ]
+  },
+  "alt": {
+   "title": "Skenario alternatif: korektif ABC selesai",
+   "tone": "down",
+   "path": [
+    0,
+    0.82,
+    0.58,
+    1,
+    0.5,
+    0.3
+   ],
+   "items": [
+    "Rally 57,5k→87,4k adalah ABC (A 82,3k, B 74,9k, C 87,4k), wave B dari koreksi besar sejak ATH 98,5k (retrace 73%).",
+    "Konfirmasi: penutupan harian < 74,9k.",
+    "Target turun: 72.464 lalu 68.932 (Fib 0,5 / 0,618 swing besar)."
+   ]
+  },
+  "fib": [
+   {
+    "name": "0,236 leg 74,9k→87,4k",
+    "lv": "84.470",
+    "role": "down",
+    "fn": "Resistance"
+   },
+   {
+    "name": "0,618 leg terakhir",
+    "lv": "79.684",
+    "role": "up",
+    "fn": "Support / ADD T1"
+   },
+   {
+    "name": "0,382 W3 (62,0k→87,4k)",
+    "lv": "77.714",
+    "role": "up",
+    "fn": "Support / ADD T2"
+   },
+   {
+    "name": "0,5 W3",
+    "lv": "74.714",
+    "role": "up",
+    "fn": "Support terakhir"
+   },
+   {
+    "name": "Ext 1,272 koreksi W4",
+    "lv": "89.361",
+    "role": "up",
+    "fn": "Target W5 #1"
+   },
+   {
+    "name": "W5 = W1",
+    "lv": "90.360",
+    "role": "up",
+    "fn": "Target W5 #2"
+   },
+   {
+    "name": "Ext 1,272 swing besar",
+    "lv": "95.568",
+    "role": "up",
+    "fn": "Target lanjutan"
+   }
+  ]
+ },
+ "tokens": [
+  {
+   "sym": "ETH",
+   "bucket": "Core",
+   "price": "2.487,71",
+   "p": 2487.71,
+   "lo50": 2355.62,
+   "hi50": 2807.53,
+   "d7": -6.77,
+   "d30": 0.81,
+   "sup": "2.405 · 2.356",
+   "res": "2.528 · 2.585 · 2.635",
+   "tone": "down",
+   "trend": "Bearish (5: 2.536 < 25: 2.604)"
+  },
+  {
+   "sym": "SOL",
+   "bucket": "Core",
+   "price": "109,37",
+   "p": 109.37,
+   "lo50": 87.54,
+   "hi50": 124.95,
+   "d7": -7.8,
+   "d30": 7.69,
+   "sup": "105,6–106,2 · 101,8",
+   "res": "110,7 · 116,8 · 122",
+   "tone": "down",
+   "trend": "Bearish (112,2 < 113,8)"
+  },
+  {
+   "sym": "HYPE",
+   "bucket": "Satellite",
+   "price": "84,18",
+   "p": 84.178,
+   "lo50": 70,
+   "hi50": 97.901,
+   "d7": -5.28,
+   "d30": 0.64,
+   "sup": "82,6 · 80,7 · 78,2",
+   "res": "87,2–88,7 · 92,2",
+   "tone": "down",
+   "trend": "Bearish (86,09 < 87,94)"
+  },
+  {
+   "sym": "LINK",
+   "bucket": "Satellite",
+   "price": "12,80",
+   "p": 12.799,
+   "lo50": 10.61,
+   "hi50": 15.763,
+   "d7": -7.23,
+   "d30": 8.43,
+   "sup": "12,08 · 11,71",
+   "res": "13,19–13,37 · 13,79–14,04",
+   "tone": "down",
+   "trend": "Bearish (13,08 < 13,25)"
+  },
+  {
+   "sym": "PENDLE",
+   "bucket": "10x",
+   "price": "2,118",
+   "p": 2.1184,
+   "lo50": 1.4976,
+   "hi50": 2.7953,
+   "d7": -9.82,
+   "d30": 6.28,
+   "sup": "1,99–2,005 · 1,78–1,82",
+   "res": "2,24–2,30 · 2,48",
+   "tone": "down",
+   "trend": "Bearish (2,183 < 2,301)"
+  },
+  {
+   "sym": "INJ",
+   "bucket": "10x",
+   "price": "6,96",
+   "p": 6.96,
+   "lo50": 4.599,
+   "hi50": 8.679,
+   "d7": -6.53,
+   "d30": 13.6,
+   "sup": "6,42–6,64 · 6,16",
+   "res": "7,12–7,20 · 7,54",
+   "tone": "flat",
+   "trend": "Bearish lemah (7,134 ≈ 7,163)"
+  },
+  {
+   "sym": "TAO",
+   "bucket": "10x",
+   "price": "275,76",
+   "p": 275.76,
+   "lo50": 213.44,
+   "hi50": 341.12,
+   "d7": -5.61,
+   "d30": 8.46,
+   "sup": "262 · 254,5 · 240,8",
+   "res": "292–294 · 309–311",
+   "tone": "down",
+   "trend": "Bearish (281,9 < 284,5)"
+  }
+ ],
+ "actions": [
+  {
+   "bucket": "Core",
+   "sym": "BTC",
+   "action": "HOLD + ADD",
+   "tone": "up",
+   "long": "T1 79,7–80,3k (30%) · T2 77,6–77,7k (40%) · T3 74,9–75,5k (30%), setelah CPI",
+   "trim": "Opsional jual 10–15% jika ditolak lagi di 87,2–87,4k",
+   "inval": "< 74.800"
+  },
+  {
+   "bucket": "Core",
+   "sym": "ETH",
+   "action": "WAIT",
+   "tone": "flat",
+   "long": "ADD kecil 2.360–2.410 setelah CPI, atau saat close > 2.590",
+   "inval": "< 2.340"
+  },
+  {
+   "bucket": "Core",
+   "sym": "SOL",
+   "action": "HOLD + ADD",
+   "tone": "up",
+   "long": "101,8–106,0 bertahap",
+   "inval": "< 95,5"
+  },
+  {
+   "bucket": "Satellite",
+   "sym": "HYPE",
+   "action": "HOLD + ADD kecil",
+   "tone": "up",
+   "long": "78–81 (hindari add besar menjelang unlock ±6 Nov)",
+   "inval": "< 75,9"
+  },
+  {
+   "bucket": "Satellite",
+   "sym": "LINK",
+   "action": "HOLD + ADD",
+   "tone": "up",
+   "long": "11,7–12,1",
+   "inval": "< 10,6"
+  },
+  {
+   "bucket": "10x",
+   "sym": "PENDLE",
+   "action": "WAIT",
+   "tone": "flat",
+   "long": "Hanya di 1,78–1,99 atau saat close > 2,30 (aktivitas on-chain melemah)",
+   "inval": "< 1,70"
+  },
+  {
+   "bucket": "10x",
+   "sym": "INJ",
+   "action": "HOLD + ADD · TRIM",
+   "tone": "up",
+   "long": "6,16–6,42",
+   "trim": "Jual 15–20% di 8,1–8,6",
+   "inval": "< 5,47"
+  },
+  {
+   "bucket": "10x",
+   "sym": "TAO",
+   "action": "HOLD + ADD",
+   "tone": "up",
+   "long": "241–262",
+   "inval": "< 238"
+  }
+ ],
+ "risk": [
+  "Jangan buka tranche baru sebelum CPI Rabu 19:30 WIB. Leverage long baru saja di-flush dan volatilitas tinggi.",
+  "CPI ≥0,5% MoM dengan core ≥0,3%: geser zona ADD ke tranche bawah (BTC T2/T3).",
+  "CPI di bawah konsensus: BTC berpeluang uji ulang 85,6–87,4k. Tembus 87,4k berarti wave 5 aktif.",
+  "Akhir Oktober: FOMC 28 Okt dan transfer wallet Mt. Gox menjelang 31 Okt."
+ ],
+ "sources": [
+  [
+   "BLS Release Schedule Okt 2026",
+   "https://www.bls.gov/schedule/2026/10_sched_list.htm"
+  ],
+  [
+   "Kiplinger: Economic Calendar 12–16 Okt",
+   "https://www.kiplinger.com/investing/economy/this-weeks-economic-calendar"
+  ],
+  [
+   "LiteFinance: Kalender 12–18.10.2026",
+   "https://litefinance.org/blog/analysts-opinions/weekly-economic-calendar-for-12102026-18102026"
+  ],
+  [
+   "Admiral Markets: Preview CPI Sep 2026",
+   "https://admiralmarkets.com/analytics/traders-blog/us-cpi-september-2026-scenarios-fed-october"
+  ],
+  [
+   "CryptoTicker: Penyebab koreksi Okt 2026",
+   "https://cryptoticker.io/en/crypto-crash-reason-bitcoin-ethereum-october-2026/"
+  ],
+  [
+   "Cointelegraph: Outflow ETF BTC $485M",
+   "https://cointelegraph.com/markets/bitcoin-etfs-outflow-largest-june-october"
+  ],
+  [
+   "Crypto Briefing: Saldo Mt. Gox & tenggat 31 Okt",
+   "https://cryptobriefing.com/mt-gox-still-holds-bitcoin-decade-later/"
+  ],
+  [
+   "UseTheBitcoin: HYPE burn & unlock",
+   "https://usethebitcoin.com/market-analysis/hyperliquid-price-october-6-2026/"
+  ],
+  [
+   "U.Today: Unlock HYPE $856M",
+   "https://u.today/hyperliquid-to-unlock-856-million-worth-of-hype-in-six-days"
+  ],
+  [
+   "Ethereum Blog: Glamsterdam testnet",
+   "https://blog.ethereum.org/en/2026/09/17/glamsterdam-testnet-announcement"
+  ],
+  [
+   "CryptoTicker: Alpenglow belum mainnet",
+   "https://cryptoticker.io/en/solana-alpenglow-mainnet-date-missed/"
+  ],
+  [
+   "CMC: INJ ETF & supply",
+   "https://coinmarketcap.com/top-stories/6ac56390ab37453c382f2fe2/"
+  ],
+  [
+   "CMC AI: Pendle updates",
+   "https://coinmarketcap.com/cmc-ai/pendle/latest-updates/"
+  ],
+  [
+   "CMC AI: Bittensor updates",
+   "https://coinmarketcap.com/cmc-ai/bittensor/latest-updates/"
+  ]
+ ],
+ "artifact": "https://claude.ai/artifact/SDiCExUkGBn94iuhEyqmEK",
+ "syncedAt": "2026-10-10T03:53:00.468Z"
+}

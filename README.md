@@ -37,6 +37,13 @@ Fear & Greed, dan funding rate. Tombol **Tanya Claude** membuka claude.ai dengan
 Catatan: Binance hanya mengirim maks 1 likuidasi per coin per detik, jadi total likuidasi bisa lebih kecil dari Coinglass.
 Sinyal mulai muncul setelah ±1 menit dashboard dibuka (butuh riwayat harga). Threshold bisa diatur lewat tombol ⚙ Threshold.
 
+### Menu ETF Brief (Crypto ETF Weekly Brief)
+
+Isi brief mingguan dari artifact claude.ai (`data/brief.json`, disinkronkan tiap Sabtu pagi oleh Routine Claude
+lewat `recorder/brief-extract.cjs`) ditambah arus harian ETF Bitcoin spot per penerbit (`data/etf.json`, diambil
+dari bitbo.io oleh perekam tiap jam lewat `recorder/etf.cjs`). Sub-tab: Ringkasan, Arus ETF, Event, Pengingat,
+Teknikal BTC, Altcoin, Aksi.
+
 ### Tab Saran IKUT
 
 Semua sinyal dengan saran IKUT dari 60 menit terakhir, dicek ulang tiap 30 detik dengan candle 15 menit dan 1 jam:

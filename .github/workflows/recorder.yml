@@ -4,6 +4,7 @@ name: Rekam data whale
 # collect price outcomes (1h/4h/24h) into a journal, then merge that journal onto the
 # newest data/ and commit it. Merging after a fresh fetch means overlapping or delayed
 # runs never overwrite each other's data. Data older than 30 days is removed.
+# Each run also refreshes data/etf.json (spot BTC ETF daily flows from bitbo.io).
 on:
   schedule:
     - cron: "7 * * * *"
@@ -49,6 +50,7 @@ jobs:
             git fetch -q origin "$BRANCH"
             git reset -q --hard "origin/$BRANCH"
             node recorder/record.cjs merge "$JOURNAL"
+            node recorder/etf.cjs
             git add -A data
             if git diff --cached --quiet; then echo "Tidak ada data baru"; exit 0; fi
             git commit -q -m "Data whale $(TZ=Asia/Jakarta date '+%Y-%m-%d %H:%M') WIB"
