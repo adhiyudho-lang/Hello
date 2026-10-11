@@ -63,6 +63,8 @@ let dirtyHome = true, dirtySave = true;
 function onSignal(feed, s) {
   const f = FEEDS[feed];
   if (s.kind !== "liq" && !s.flow) s.flow = E.takerFlow(s.mk, s.coin, s.t);
+  s.feed = feed;
+  if (typeof WACUI !== "undefined") WACUI.queue(s);
   f.items.unshift(s);
   if (f.items.length > MAX_ITEMS) f.items.length = MAX_ITEMS;
   if (pass(s)) {
@@ -150,7 +152,9 @@ function cardHTML(s, fresh, withOutcome) {
 function emptyHTML(feed) {
   const n = M.BF.size + M.BS.size + M.OF.size + M.OS.size;
   const what = { whale: "transaksi besar atau volume tak biasa", liq: "likuidasi di atas " + usd(CFG.liqMin), signal: `pergerakan ≥ ${CFG.pumpPct}% dalam ${CFG.pumpWin} menit` }[feed];
-  return `<div class="empty">Menunggu ${what}…<br><span class="num">${n}</span> pasar sedang dipantau. Cek filter kalau lama kosong.</div>`;
+  const hidden = FEEDS[feed].items.length;
+  if (hidden) return `<div class="empty"><b>${hidden}</b> sinyal tersembunyi oleh filter${UI.ikut ? " (aktif: <b>Hanya lolos WAC</b>)" : ""}.<br><button type="button" class="btn ghost" data-clearf style="margin-top:10px">Tampilkan semua sinyal</button></div>`;
+  return `<div class="empty">Menunggu ${what}…<br><span class="num">${n}</span> pasar sedang dipantau. Sinyal pertama biasanya muncul 1–2 menit setelah dashboard dibuka.</div>`;
 }
 function rerender(feed) {
   const f = FEEDS[feed], box = $(f.el);
@@ -160,6 +164,13 @@ function rerender(feed) {
   updateCount(feed);
 }
 function rerenderAll() { for (const k in FEEDS) rerender(k); }
+// "show everything": reset coin search, exchanges, direction, minimum value and the WAC-only filter
+document.addEventListener("click", e => {
+  if (!e.target.closest("[data-clearf]")) return;
+  UI.search = ""; $("fSearch").value = ""; UI.side = "all"; $("fSide").value = "all"; UI.min = ""; $("fMin").value = ""; UI.ikut = false; $("fIkut").setAttribute("aria-pressed", "false");
+  for (const b of document.querySelectorAll(".fc[data-ex]")) { UI.ex[b.dataset.ex] = true; b.setAttribute("aria-pressed", "true"); }
+  saveUI(); rerenderAll();
+});
 function updateCount(feed) {
   const f = FEEDS[feed], n = f.items.filter(pass).length;
   $(f.n).textContent = n; $(f.h).textContent = n + " sinyal";
@@ -818,7 +829,7 @@ setInterval(() => {
   renderTicker();
   if (VIEW === "home") { renderStats(); renderHeat(); if (dirtyHome) { renderLatest(); dirtyHome = false; } }
   if (dirtySave) { saveHistory(); dirtySave = false; }
-  for (const k in FEEDS) { const box = $(FEEDS[k].el); if (box.querySelector(".empty")) box.innerHTML = emptyHTML(k); }
+  for (const k in FEEDS) { const box = $(FEEDS[k].el); if (box.querySelector(".empty")) { const h = emptyHTML(k); if (box.innerHTML !== h) box.innerHTML = h; } }
 }, 1000);
 
 loadHistory();

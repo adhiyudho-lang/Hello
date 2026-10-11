@@ -93,6 +93,8 @@ const WACUI = (() => {
   function paint(s) {
     for (const el of document.querySelectorAll(`[data-wac="${CSS.escape(s.id)}"]`)) el.innerHTML = inner(s);
     dirtyHome = true;
+    // with "Hanya lolos WAC" on, a card can only appear once its verdict is known
+    if (UI.ikut && s.feed && !S.reflow) S.reflow = setTimeout(() => { S.reflow = 0; for (const k in FEEDS) rerender(k); }, 800);
   }
 
   /* ---------- card block ---------- */
@@ -443,6 +445,7 @@ const WACUI = (() => {
   (async () => {
     if (!(await loadConfig())) { toast("Aturan WAC (config/wac.json) gagal dimuat"); return; }
     rerenderAll();
+    for (const k in FEEDS) for (const x of FEEDS[k].items) if (x.kind !== "liq" && !x.wac) { x.wacQ = 0; queue(x); }
     await loadState();
     regime().then(() => { if (VIEW === "ikut") renderIkut(); }).catch(() => {});
     setInterval(loadState, 2 * 60e3);
@@ -451,5 +454,5 @@ const WACUI = (() => {
   })();
 
   function refresh() { renderIkut(); if (VIEW === "hist") renderTimeline(); if (VIEW === "rekap") renderRekap(); }
-  return { block, renderIkut, renderHome, renderTimeline, renderRekap, verdictOf: s => s.wac && s.wac.verdict ? VERD[s.wac.verdict] : null, label: s => s.wac && s.wac.verdict };
+  return { queue: s => { if (s.kind !== "liq") queue(s); }, block, renderIkut, renderHome, renderTimeline, renderRekap, verdictOf: s => s.wac && s.wac.verdict ? VERD[s.wac.verdict] : null, label: s => s.wac && s.wac.verdict };
 })();
