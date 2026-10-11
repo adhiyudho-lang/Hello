@@ -168,12 +168,15 @@ const WACUI = (() => {
     return S.state.signals.filter(x => WAC.ACTIVE.includes(x.status)).map(x => ({ sig: x, ...dist(x) })).sort((a, b) => a.d - b.d);
   }
   function ladder(sig, p) {
-    const pl = sig.plan, pts = [pl.sl, sig.zone.lo, sig.zone.hi, pl.tp1, ...(p ? [p] : [])];
+    const pos0 = sig.pos, sl = pos0 ? pos0.sl : sig.inval, tp1 = pos0 ? pos0.tp1 : sig.plan.tp1;
+    const marks = [[sl, pos0 && pos0.half ? "SL (BE)" : "SL"], [sig.zone.lo, "Zona"], ...(pos0 ? [[pos0.entry, "Entry"]] : []), [tp1, "TP1"]];
+    const pts = [...marks.map(m => m[0]), sig.zone.hi, ...(p ? [p] : [])];
     const lo = Math.min(...pts), hi = Math.max(...pts), span = hi - lo || 1, pos = v => clamp((v - lo) / span * 100, 0, 100).toFixed(1);
-    return `<div class="ladder"><div class="bar"><i style="left:0;width:${pos(sig.zone.lo)}%;background:rgba(234,57,67,.4)"></i><i style="left:${pos(sig.zone.lo)}%;width:${(pos(sig.zone.hi) - pos(sig.zone.lo)).toFixed(1)}%;background:#22d3ee"></i><i style="left:${pos(sig.zone.hi)}%;right:0;background:rgba(22,199,132,.35)"></i></div>
-      ${[[pl.sl, "SL"], [sig.zone.lo, "Zona"], [pl.tp1, "TP1"]].map(([v, t]) => `<span class="tick" style="left:${pos(v)}%"></span><span class="lab" style="left:${pos(v)}%">${t}</span>`).join("")}
+    return `<div class="ladder"><div class="bar"><i style="left:0;width:${pos(sl)}%;background:rgba(234,57,67,.4)"></i><i style="left:${pos(sig.zone.lo)}%;width:${(pos(sig.zone.hi) - pos(sig.zone.lo)).toFixed(1)}%;background:#22d3ee"></i><i style="left:${pos(sig.zone.hi)}%;right:0;background:rgba(22,199,132,.35)"></i></div>
+      ${marks.map(([v, t]) => `<span class="tick" style="left:${pos(v)}%"></span><span class="lab" style="left:${pos(v)}%">${t}</span>`).join("")}
       ${p ? `<span class="now" style="left:${pos(p)}%">${px(p)}</span>` : ""}</div>`;
   }
+
   const LEGEND = [
     ["WATCH", "Coin lolos syarat awal (likuid, arus taker beli). Zona pullback dihitung; belum boleh beli."],
     ["CONFIRMED", "Teknikal 4h sudah mendukung. Tunggu harga masuk zona lalu candle 1h hijau."],
@@ -214,7 +217,7 @@ const WACUI = (() => {
       ${ladder(s, x.p)}
       <div class="lv">
         <div class="e"><small>Zona entry</small><span>${px(s.zone.lo)} – ${px(s.zone.hi)}</span></div>
-        <div class="s"><small>Invalidasi</small><span>${px(s.inval)}</span></div>
+        <div class="s"><small>${s.pos ? "Stop loss posisi" : "Invalidasi"}</small><span>${px(s.pos ? s.pos.sl : s.inval)}${s.pos && s.pos.half ? " (BE)" : ""}</span></div>
         <div class="t"><small>TP1 · TP2</small><span>${px(pl.tp1)} · ${px(pl.tp2)}</span></div>
         <div><small>R:R · Pola</small><span>${pl.rr.toFixed(2)} · ${s.pattern}</span></div>
         <div><small>Kelas · coverage</small><span class="${WAC.CLASS_TONE[s.cls] || ""}">${esc(s.cls)} · ${s.coverage}%</span></div>
@@ -224,6 +227,30 @@ const WACUI = (() => {
       <div class="acts"><button type="button" class="pri" data-wacchart="${s.no}">Chart + zona</button><button type="button" data-go="hist">Timeline</button></div>
     </article>`;
   }
+  /* IKUT list: filters (coin, number, status) and a frozen order so new signals never push cards away */
+  const F = Object.assign({ coin: "", no: "", st: "aktif" }, store.get("awt.ikF", {}));
+  S.ikOrder = null; S.ikKey = "";
+  function matches(sig) {
+    const no = String(F.no || "").replace(/\D/g, "");
+    if (no) return String(sig.no) === no;
+    if (F.coin && !sig.coin.includes(F.coin.trim().toUpperCase())) return false;
+    return F.st === "semua" || WAC.ACTIVE.includes(sig.status);
+  }
+  function orderNow() {
+    const rank = x => (WAC.ACTIVE.includes(x.sig.status) ? 0 : 1);
+    return S.state.signals.filter(matches).map(x => ({ sig: x, ...dist(x) }))
+      .sort((a, b) => rank(a) - rank(b) || (rank(a) ? b.sig.no - a.sig.no : a.d - b.d)).map(x => x.sig.no);
+  }
+  function ikFilterBar() {
+    if ($("ikF").dataset.ready) return;
+    $("ikF").dataset.ready = 1;
+    $("ikF").innerHTML = `<input type="search" id="ikCoin" placeholder="Cari coin (mis. TIA)" autocomplete="off" aria-label="Cari coin" value="${esc(F.coin)}">
+      <input type="search" id="ikNo" inputmode="numeric" placeholder="No. sinyal (#12)" autocomplete="off" aria-label="Nomor sinyal" value="${esc(F.no)}">
+      <select id="ikSt" aria-label="Status"><option value="aktif">Dipantau</option><option value="semua">Semua (termasuk selesai/batal)</option></select>`;
+    $("ikSt").value = F.st;
+    const upd = () => { F.coin = $("ikCoin").value; F.no = $("ikNo").value; F.st = $("ikSt").value; store.set("awt.ikF", F); S.ikOrder = null; renderIkut(); };
+    $("ikCoin").addEventListener("input", upd); $("ikNo").addEventListener("input", upd); $("ikSt").addEventListener("change", upd);
+  }
   function renderIkut() {
     const list = zoneList(), ready = list.filter(x => x.sig.status === "ENTRY_READY").length;
     const badge = $("ikBadge"); badge.hidden = !ready; badge.textContent = ready;
@@ -232,9 +259,19 @@ const WACUI = (() => {
     const reg = S.regime || (S.state && S.state.regime);
     $("ikReg").innerHTML = reg ? `Rezim BTC: <b class="${reg.state === "BULLISH" ? "up" : reg.state === "NEUTRAL" ? "" : "down"}">${reg.state}</b> · ${esc(reg.detail)}${reg.state === "BEARISH" ? ` · skor minimal +${C().regime.bearScoreAdd}, ukuran ½` : reg.state === "RISK-OFF" ? " · tidak ada entry baru" : ""}` : "Rezim BTC: memuat…";
     if (!$("ikLegend").firstChild) $("ikLegend").innerHTML = legendHTML();
-    $("ikList").innerHTML = !S.state ? `<article class="panel"><div class="empty">Status WAC dari perekam belum bisa dibuka (data/wac.json). Perekam GitHub Actions menulisnya tiap 10 menit.</div></article>`
-      : list.length ? list.map(zoneCard).join("")
-      : `<article class="panel"><div class="empty">Belum ada zona pullback yang dipantau. Aturan WAC konservatif: sinyal hanya dicatat bila lolos likuiditas dan arus taker beli. Update terakhir ${S.state.updated ? wib(S.state.updated) : "--"}.</div></article>`;
+    ikFilterBar();
+    if (!S.state) { $("ikList").innerHTML = `<article class="panel"><div class="empty">Status WAC dari perekam belum bisa dibuka (data/wac.json). Perekam GitHub Actions menulisnya tiap 10 menit.</div></article>`; $("ikNew").hidden = true; return; }
+    const now = orderNow();
+    if (!S.ikOrder) S.ikOrder = now;
+    // cards already on screen keep their place (and stay even if their status changes); new ones wait behind a button
+    const fresh = now.filter(n => !S.ikOrder.includes(n));
+    $("ikNew").hidden = !fresh.length;
+    $("ikNew").textContent = `${fresh.length} sinyal baru · ketuk untuk tampilkan`;
+    const byNo = new Map(S.state.signals.map(x => [x.no, x]));
+    const shown = S.ikOrder.map(n => byNo.get(n)).filter(Boolean).map(x => ({ sig: x, ...dist(x) }));
+    const filtered = F.coin || F.no || F.st !== "aktif";
+    $("ikList").innerHTML = shown.length ? shown.map(zoneCard).join("")
+      : `<article class="panel"><div class="empty">${filtered ? "Tidak ada sinyal yang cocok dengan filter." : `Belum ada zona pullback yang dipantau. Aturan WAC konservatif: sinyal hanya dicatat bila lolos likuiditas dan arus taker beli. Update terakhir ${S.state.updated ? wib(S.state.updated) : "--"}.`}</div></article>`;
   }
   function renderHome() {
     const list = zoneList();
@@ -391,6 +428,7 @@ const WACUI = (() => {
   }
 
   /* ---------- boot ---------- */
+  $("ikNew").addEventListener("click", () => { S.ikOrder = null; renderIkut(); $("ikF").scrollIntoView({ block: "start", behavior: "smooth" }); });
   document.addEventListener("click", e => {
     const w = e.target.closest("[data-wacwhy]");
     if (!w) return;
