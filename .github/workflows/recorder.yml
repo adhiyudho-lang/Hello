@@ -4,7 +4,8 @@ name: Rekam data whale
 # collect price outcomes (1h/4h/24h) into a journal, then merge that journal onto the
 # newest data/ and commit it. Merging after a fresh fetch means overlapping or delayed
 # runs never overwrite each other's data. Data older than 30 days is removed.
-# Each run also refreshes data/etf.json (spot BTC ETF daily flows from bitbo.io).
+# The WAC lifecycle (numbered signals #N, pullback zones, entry/exit) runs here 24/7 and
+# data/wac.json is pushed every 10 minutes. Each run also refreshes data/etf.json (spot BTC ETF daily flows from bitbo.io).
 on:
   schedule:
     - cron: "7 * * * *"
@@ -30,12 +31,20 @@ jobs:
         with:
           node-version: 22
 
+      - name: Identitas git (status WAC dipush tiap 10 menit)
+        run: |
+          git config user.name "whale-recorder[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
       - name: Rekam sinyal
         timeout-minutes: 63
         run: node recorder/record.cjs
         env:
           RUN_MINUTES: "55"
           JOURNAL: ${{ runner.temp }}/recorder-out.json
+          # Optional: notifikasi Telegram. Isi di Settings -> Secrets and variables -> Actions.
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
 
       - name: Simpan ke repo
         if: always()

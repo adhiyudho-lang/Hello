@@ -320,7 +320,7 @@ function create(opts) {
     opts.emit(feed, s);
   }
 
-  return { M, funding, taker, liqWin, recent, onTick, onTrade, onLiq, flushBursts, assess, vol24 };
+  return { M, funding, taker, liqWin, recent, onTick, onTrade, onLiq, flushBursts, assess, vol24, takerFlow };
 }
 
 const api = { create, DEFAULTS, EX, STABLE, MAJORS, wib, usd, px, pct, esc, clamp, tf, df };

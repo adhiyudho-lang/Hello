@@ -2,25 +2,23 @@
 
 ## Adhi Whale Terminal
 
-Tampilan mobile-first ala app exchange: menu bawah (Beranda, Sinyal, IKUT, Riwayat, Rekap), logo coin,
+Tampilan mobile-first ala app exchange: menu bawah (Beranda, Sinyal, IKUT, ETF Brief, Riwayat, Rekap), logo coin,
 grafik mini 1 jam di tiap sinyal, heatmap pasar, gauge Fear & Greed, dan chart candle (TradingView
 Lightweight Charts) dengan garis Entry/SL/TP serta support & resistance. File: `index.html` (tampilan),
-`app.js` (logika browser), `engine.js` (aturan sinyal, dipakai juga oleh perekam).
+`app.js` (logika browser), `engine.js` (deteksi sinyal), `wac.js` + `config/wac.json` (aturan WAC, dipakai juga oleh perekam), `wacui.js` (tampilan WAC).
 
 Dashboard crypto live dalam satu file (`index.html`), mirip feed KJo Terminal:
 
-1. **#whale-sniper**: transaksi besar (market order whale) & volume 1 menit tak biasa. Hijau = beli, merah = jual.
+1. **#whale-sniper**: order besar (proxy) & volume 1 menit tak biasa. Hijau = arus taker beli, merah = arus taker jual (proxy, bukan bukti whale).
 2. **#liquidation-feed**: likuidasi Binance Futures & OKX. Hijau = LONG terlikuidasi, merah = SHORT terlikuidasi.
 3. **#sinyal-whale**: PUMP / DUMP (harga bergerak ≥ X% dalam N menit) di Binance Futures, Binance Spot, OKX Futures, OKX Spot.
 4. **#fear-greed-index**: gauge, perbandingan kemarin / 7 hari / 30 hari, grafik 30 hari, dan artinya.
 
-Setiap sinyal punya **saran untuk Adhi** (IKUT / TUNGGU / HINDARI, skor 0–100) versi futures dan spot,
-dihitung dengan aturan profil konservatif: konfirmasi antar-sinyal, likuiditas, risiko mengejar, tren BTC 1 jam,
-Fear & Greed, dan funding rate. Tombol **Tanya Claude** membuka claude.ai dengan data sinyal sudah terisi.
+Setiap sinyal punya **saran WAC untuk Adhi** (BELI SPOT / TUNGGU PULLBACK / HINDARI, skor 0–100), SPOT dulu lalu futures (lihat bagian WAC di bawah). Tombol **Tanya Claude** membuka claude.ai dengan data sinyal sudah terisi.
 
 ### Cara membuka
 
-- **GitHub Pages**: Settings → Pages → Source "Deploy from a branch" → pilih branch dan folder `/ (root)`.
+- **GitHub Pages**: Settings → Pages → Source "GitHub Actions" (workflow `pages.yml` men-deploy tiap push).
   Dashboard akan ada di `https://adhiyudho-lang.github.io/hello/`.
 - **Lokal**: download `index.html`, buka dengan Chrome/Safari.
 
@@ -46,19 +44,45 @@ di `data/etf.json`, diambil perekam tiap jam lewat `recorder/etf.cjs`. Tiap coin
 framework Adhi di `data/fundamental.json` (70%) + teknikal brief (30%) untuk saran MASUK / TAHAN / HINDARI 2 tahun. Sub-tab: Ringkasan, Arus ETF, Event, Pengingat,
 Teknikal BTC, Altcoin, Aksi.
 
-### Aturan IKUT v2 (sejak 10 Okt 2026)
+### Saran IKUT = strategi WAC (Whale Accumulation Confirmation)
 
-IKUT butuh skor ≥ 80. Ditahan jadi TUNGGU bila: SHORT tanpa tren BTC turun & Fear & Greed < 55, harga sudah
-bergerak > 10% searah, arah volume hanya dari taker flow 1 menit, atau coin yang sama sudah dapat IKUT < 60 menit.
-Konfirmasi dihitung per jenis sinyal, bukan per exchange. Alert hanya saat tab IKUT menyatakan BISA DIIKUTI.
-Perekam mencatat TP1/SL mana yang tersentuh dulu dalam 4 jam; tab Rekap membandingkan aturan lama vs baru.
+Sejak 11 Okt 2026 semua saran memakai aturan WAC (`wac.js`, parameter di `config/wac.json`). **SPOT prioritas**,
+futures sekunder. Hanya sinyal dan notifikasi, tidak pernah menempatkan order.
 
-### Tab Saran IKUT
+- **Kejujuran data.** Volume tak biasa & arus taker hanya *proxy* order agresif di exchange (label "Arus: Taker Beli/Jual",
+  "Order besar (proxy)"), bukan bukti whale membeli. Verdict (BELI SPOT / TUNGGU PULLBACK / HINDARI) hanya di blok saran.
+  Komponen tanpa data = N/A; ETF untuk coin non-ETF = "tidak berlaku". Coverage & keyakinan selalu ditampilkan. Data stale → tidak ada BELI.
+- **Skor WAC 0–100.** Aset ETF (`etfAssets`: BTC, ETH, SOL): ETF 35 · arus 35 · teknikal 20 · rezim 10.
+  Non-ETF: arus 54 · teknikal 31 · rezim 15. Kelas: ≥80 STRONG ACCUMULATION, 65–79 ACCUMULATION, 50–64 WATCH,
+  35–49 DISTRIBUTION RISK, <35 DISTRIBUTION. Coverage < 50% → maksimal WATCH. Proxy tidak pernah STRONG.
+- **Siklus sinyal bernomor (#N)** dicatat perekam 24/7 di `data/wac.json`:
+  WATCH → CONFIRMED → ENTRY READY → POSITION (virtual) → TP1 → EXIT, cabang BATAL / KEDALUWARSA (72 jam).
+  Sinyal baru di coin yang sama ditautkan "lanjutan dari #N".
+- **Jangan kejar:** naik 24 jam > 20%, close 4h > EMA20 × 1,10 atau > 2 ATR, RSI 4h > 75 → maksimal WATCH / TUNGGU PULLBACK.
+- **Konfirmasi (4h close):** close > EMA20, volume > 1,3× rata-rata 20, rezim BTC bukan BEARISH/RISK-OFF, taker beli positif.
+  Pola A breakout di atas high 20 candle; **Pola B pullback (utama)**: harga masuk zona lalu candle 1h hijau close di atas zona
+  dengan volume jual menurun → ENTRY READY.
+- **Rencana:** SL = entry − max(1,5 ATR, 5%), tolak bila > 9%; TP1 +9% (jual 50%, SL ke entry), TP2 +18%, R:R ≥ 2;
+  time stop 72 jam; entry 40/30/30, tanpa average down. Ukuran = 1% equity ÷ jarak SL, maks 25% equity per coin,
+  maks 3 posisi, risiko portofolio 3%. Rezim BEARISH: skor minimal +10 dan ukuran ½; RISK-OFF: tidak ada entry baru.
+- **Futures:** LONG hanya saat spot ENTRY READY; leverage maks = ⌊50% ÷ jarak SL⌋ (diturunkan bila likuidasi < 1,5× jarak SL);
+  SHORT hanya saat DISTRIBUTION + rezim tidak bullish + konfirmasi bearish. Funding N/A bila tidak ada.
+- **Pengingat:** WATCH, pullback mendekati zona, masuk zona, entry ready, batal, kedaluwarsa, TP/exit. Selalu menyebut
+  nomor sinyal, tanpa duplikat (jeda `cooldownMin`). Di browser selama dashboard terbuka; 24/7 via Telegram bila secret diisi.
 
-Semua sinyal dengan saran IKUT dari 60 menit terakhir, dicek ulang tiap 30 detik dengan candle 15 menit dan 1 jam:
-entry (zona), stop loss, TP1/TP2, support & resistance, tren 1 jam (bullish/bearish), RSI 14, MACD, EMA 20/50/200.
-Status **BISA DIIKUTI** muncul (plus bunyi & notifikasi) kalau harga masih di zona entry dan semua syarat terpenuhi;
-**TUNGGU KONFIRMASI**, **TERLEWAT**, **BATAL** atau **KEDALUWARSA** kalau tidak.
+**Pengaturan (⚙):** equity, risiko 0,5–1%, batas leverage, ambang jangan-kejar, jeda pengingat, saklar notifikasi per tipe
+(disimpan di browser). Parameter lain di `config/wac.json` (mis. tambah aset ke `etfAssets` → profil ETF).
+
+**Telegram (opsional):** buat bot lewat @BotFather, lalu isi repo Settings → Secrets and variables → Actions:
+`TELEGRAM_BOT_TOKEN` dan `TELEGRAM_CHAT_ID` (lihat `.env.example`). Tanpa secret, perekam tetap jalan tanpa kirim pesan.
+
+**Data berbayar:** on-chain whale & ETF tambahan hanya berupa interface di `recorder/adapters.cjs` (belum terintegrasi).
+
+**Tes:** `node --test tests/wac.test.cjs`. **Backtest:** `node backtest/run.cjs` → `data/backtest.json`, tampil di tab Rekap
+(acak, buy & hold, CHASE, teknikal saja, WAC A, WAC B, WAC + rezim; train/validasi/test, biaya 2×). Bila kriteria
+(t-stat test ≥ 2, positif dengan biaya 2×, tidak bergantung satu coin/trade) gagal → **BELUM TERBUKTI**.
+
+Saran lama (IKUT v1/v2) tetap ada sebagai arsip di Riwayat & Rekap.
 
 ### Rekaman 24 jam (Riwayat & Ringkasan harian)
 

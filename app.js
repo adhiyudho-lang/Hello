@@ -67,6 +67,7 @@ let dirtyHome = true, dirtySave = true;
 
 function onSignal(feed, s) {
   const f = FEEDS[feed];
+  if (s.kind !== "liq" && !s.flow) s.flow = E.takerFlow(s.mk, s.coin, s.t);
   f.items.unshift(s);
   if (f.items.length > MAX_ITEMS) f.items.length = MAX_ITEMS;
   if (pass(s)) {
@@ -78,7 +79,6 @@ function onSignal(feed, s) {
   }
   updateCount(feed);
   alertFor(s);
-  if (s.reco.verdict === "IKUT") setTimeout(ikutLoop, 500);
   dirtyHome = dirtySave = true;
 }
 
@@ -91,7 +91,7 @@ function pass(s) {
   if (q && !s.coin.includes(q)) return false;
   if (UI.side !== "all" && sideOf(s) !== UI.side) return false;
   if (UI.min && s.kind !== "pump" && (s.value || 0) < +UI.min) return false;
-  if (UI.ikut && s.reco.verdict !== "IKUT") return false;
+  if (UI.ikut && !(s.wac && s.wac.verdict && s.wac.verdict !== "HINDARI")) return false;
   return true;
 }
 
@@ -114,21 +114,23 @@ function describe(s) {
       kv: [["Harga", px(s.price)], ["Perubahan", pct(s.chg)], ["24 jam", pct(s.chg24 || 0)], ["Sinyal", w]]
     };
   }
-  const act = s.dir === "up" ? "BELI" : s.dir === "down" ? "JUAL" : "CAMPURAN";
+  // taker / volume flow is a PROXY for aggressive CEX orders, never proof that a whale bought
+  const act = s.dir === "up" ? "Taker Beli" : s.dir === "down" ? "Taker Jual" : "Campuran";
   const tone = s.dir === "up" ? "buy" : s.dir === "down" ? "sell" : "neu";
+  const chip = `<span class="${s.dir === "up" ? "up" : s.dir === "down" ? "down" : ""}">${s.dir === "up" ? "▲" : s.dir === "down" ? "▼" : "■"}</span> Arus: ${act}`;
   if (s.kind === "trade") {
     return {
-      tone, chip: (s.dir === "up" ? "▲ " : "▼ ") + act,
-      title: `Whale ${s.dir === "up" ? "beli" : "jual"} ${usd(s.value)}`,
-      desc: `Market order besar sekaligus di ${ex}`,
-      kv: [["Harga", px(s.price)], ["Nilai", usd(s.value)], ["24 jam", pct(s.chg24 || 0)], ["Arah", act]]
+      tone, chip, flow: true,
+      title: `Order besar ${usd(s.value)} (proxy)`,
+      desc: `Market order besar sekaligus di ${ex} · arus: ${act.toLowerCase()}`,
+      kv: [["Harga", px(s.price)], ["Nilai", usd(s.value)], ["24 jam", pct(s.chg24 || 0)], ["Arus", act]]
     };
   }
   return {
-    tone, chip: (s.dir === "up" ? "▲ " : s.dir === "down" ? "▼ " : "") + act,
+    tone, chip, flow: true,
     title: `Volume tak biasa ${usd(s.value)}/menit`,
     desc: `${(s.mult || 0).toFixed(0)}× rata-rata · ${esc(s.how || "")}`,
-    kv: [["Harga", px(s.price)], ["Nilai 1m", usd(s.value)], ["24 jam", pct(s.chg24 || 0)], ["Arah", act]]
+    kv: [["Harga", px(s.price)], ["Nilai 1m", usd(s.value)], ["24 jam", pct(s.chg24 || 0)], ["Arus", act]]
   };
 }
 
@@ -153,20 +155,19 @@ function cardHTML(s, fresh, withOutcome) {
   return `<article class="sc ${d.tone === "neu" ? "" : d.tone}${r.verdict === "IKUT" ? " ikut" : ""}${fresh ? " fresh" : ""}" data-id="${s.id}">
   <div class="sc-top">${logo(s.coin)}
     <div class="id"><b>${esc(s.coin)}</b><span class="chip dim">${isFut(s.mk) ? "PERP" : "SPOT"}</span><small>${EX[s.mk]} · ${wib(s.t)}${s.hist ? " · riwayat" : ""}</small></div>
-    <span class="chip ${d.tone}">${d.chip}</span>
+    <span class="chip ${d.flow ? "flow" : d.tone}">${d.chip}</span>
   </div>
   <div><div class="sc-title ${d.tone}">${d.title}</div><div class="sc-desc">${d.desc}</div></div>
   <div class="sc-mid">
     <svg class="spark" data-spark="${s.mk}|${esc(s.coin)}|${s.t}" viewBox="0 0 120 54" preserveAspectRatio="none" aria-hidden="true"></svg>
     <div class="kv">${d.kv.map(([k, v]) => `<div><small>${k}</small><span>${v}</span></div>`).join("")}</div>
   </div>
-  <div class="reco">
-    <div class="reco-h">${ring(r.score)}<span class="pill ${r.verdict}">${r.verdict}</span><span class="who">Saran untuk Adhi</span></div>
+  ${withOutcome || (s.hist && !s.wac) ? `<div class="reco">
+    <div class="reco-h">${ring(r.score)}<span class="pill ${r.verdict}">${r.verdict}</span><span class="who">Saran lama (sebelum WAC)</span></div>
     ${planHTML(s)}
     <div class="rl"><em>Futures</em><span>${esc(r.fut)}</span></div>
     <div class="rl"><em>Spot</em><span>${esc(r.spot)}</span></div>
-    ${r.reasons && r.reasons.length ? `<details class="why"><summary>Kenapa skor ${r.score}?</summary><ul>${r.reasons.map(x => `<li>${esc(x)}</li>`).join("")}</ul></details>` : ""}
-  </div>
+  </div>` : `<div class="reco"><div class="reco-h"><span class="who">Saran WAC untuk Adhi · SPOT prioritas</span></div>${typeof WACUI !== "undefined" ? WACUI.block(s) : `<div class="wac" data-wac="${s.id}"><div class="wac-note">Memuat aturan WAC…</div></div>`}</div>`}
   ${withOutcome ? outcomeHTML(s) : ""}
   <div class="acts"><button type="button" class="pri" data-chart="${s.id}">Lihat chart</button><button type="button" data-ask="${s.id}">Tanya Claude</button></div>
 </article>`;
@@ -268,8 +269,6 @@ document.addEventListener("click", e => {
   if (ask) return askClaude(findSignal(ask.dataset.ask));
   const ch = e.target.closest("[data-chart]");
   if (ch) { const s = findSignal(ch.dataset.chart); if (s) openChart({ mk: s.mk, coin: s.coin, sig: s }); return; }
-  const ikc = e.target.closest("[data-ikchart]");
-  if (ikc) { const x = IK.setups.get(ikc.dataset.ikchart); if (x) openChart({ mk: x.sig.mk, coin: x.sig.coin, sig: x.sig, setup: x }); return; }
   const ht = e.target.closest("[data-heat]");
   if (ht) { const [mk, coin] = ht.dataset.heat.split("|"); openChart({ mk, coin }); return; }
   const go = e.target.closest("[data-go]");
@@ -281,7 +280,7 @@ function askClaude(s) {
     : s.kind === "pump" ? `${s.dir === "up" ? "PUMP" : "DUMP"} ${pct(s.chg)} dalam ${s.win || CFG.pumpWin} menit, harga ${px(s.price)}`
     : s.kind === "trade" ? `Transaksi ${s.dir === "up" ? "BELI" : "JUAL"} besar ${usd(s.value)} di ${px(s.price)}`
     : `Volume tak biasa ${usd(s.value)} dalam 1 menit (${(s.mult || 0).toFixed(0)}x rata-rata), ${s.how}`;
-  const prompt = `Saya Adhi, trader konservatif (futures maks 3x dan spot). Analisis sinyal whale ini dan beri saran: ikut atau tidak, entry, stop loss, take profit, untuk futures dan spot.
+  const prompt = `Saya Adhi, trader konservatif (spot prioritas, futures sekunder dengan risiko 1% per posisi). Analisis sinyal ini dan beri saran: beli spot / tunggu pullback / hindari, zona entry, stop loss, take profit.
 
 Coin: ${s.coin} (${EX[s.mk]})
 Sinyal: ${what}
@@ -291,8 +290,10 @@ Volume 24 jam: ${usd(vol24(s.coin))}
 Funding rate: ${funding.has(s.coin) ? (funding.get(s.coin) * 100).toFixed(4) + "%" : "tidak ada"}
 Fear & Greed: ${FNG ? FNG.value + " (" + FNG.label + ")" : "tidak ada"}
 Tren BTC 1 jam: ${BTC_TREND.note}
-Skor dashboard: ${s.reco.score}/100 → ${s.reco.verdict}
-Alasan: ${(s.reco.reasons || []).join("; ")}
+${s.wac && s.wac.score ? `Skor WAC: ${s.wac.score.score}/100 (${s.wac.score.cls}, coverage ${s.wac.score.coverage}%) → ${s.wac.verdict}
+Alasan: ${s.wac.why}${s.wac.plan ? `
+Zona entry ${px(s.wac.zone.lo)}–${px(s.wac.zone.hi)}, SL ${px(s.wac.plan.sl)}, TP1 ${px(s.wac.plan.tp1)}, TP2 ${px(s.wac.plan.tp2)}` : ""}` : `Skor WAC: belum dihitung`}
+Catatan: arus taker/volume adalah proxy, bukan bukti whale membeli.
 
 Jawab dalam Bahasa Indonesia, ringkas, dan sebutkan risikonya.`;
   try { navigator.clipboard.writeText(prompt).catch(() => {}); } catch {}
@@ -306,7 +307,7 @@ function openChart(ctx) {
   CH = Object.assign({ tf: store.get("awt.chtf", "15m") }, ctx);
   $("chLogo").innerHTML = logo(ctx.coin, "lg");
   $("chTitle").textContent = `${ctx.coin}/USDT`;
-  $("chSub").textContent = `${EX[ctx.mk]} · ${isFut(ctx.mk) ? "Perpetual" : "Spot"}${ctx.setup ? ` · setup ${ctx.setup.side}` : ctx.sig ? ` · sinyal ${wib(ctx.sig.t)}` : ""}`;
+  $("chSub").textContent = `${EX[ctx.mk]} · ${isFut(ctx.mk) ? "Perpetual" : "Spot"}${ctx.wac ? ` · sinyal #${ctx.wac.no}` : ctx.sig ? ` · sinyal ${wib(ctx.sig.t)}` : ""}`;
   $("chTv").href = `https://www.tradingview.com/chart/?symbol=${ctx.mk[0] === "B" ? "BINANCE" : "OKX"}:${encodeURIComponent(ctx.coin)}USDT${isFut(ctx.mk) ? ".P" : ""}`;
   for (const b of $("chTf").querySelectorAll("button")) b.setAttribute("aria-pressed", b.dataset.tf === CH.tf);
   $("chartSheet").hidden = false;
@@ -355,8 +356,9 @@ async function drawChart() {
   };
   addEma(5, "#f472b6"); addEma(20, "#f3ba2f"); if (cs.length > 200) addEma(200, "#a78bfa");
   const lines = [], add = (price, color, title, style = 0) => { if (price > 0) { series.createPriceLine({ price, color, lineWidth: 1, lineStyle: style, axisLabelVisible: true, title }); lines.push([color, title]); } };
-  const x = ctx.setup;
-  const plan = x && x.at ? { entry: x.entry, sl: x.sl, tp1: x.tp1, tp2: x.tp2 } : ctx.sig && ctx.sig.reco && ctx.sig.reco.plan;
+  const w = ctx.wac || (ctx.sig && ctx.sig.wac && ctx.sig.wac.plan ? { zone: ctx.sig.wac.zone, plan: ctx.sig.wac.plan } : null);
+  if (w) { add(w.zone.hi, "#22d3ee", "Zona atas", 1); add(w.zone.lo, "#22d3ee", "Zona bawah", 1); }
+  const plan = w ? w.plan : ctx.sig && ctx.sig.reco && ctx.sig.reco.plan;
   if (plan) { add(plan.entry, "#22d3ee", "Entry"); add(plan.sl, "#ea3943", "SL"); add(plan.tp1, "#16c784", "TP1"); add(plan.tp2, "#16c784", "TP2"); }
   else if (ctx.sig) add(ctx.sig.price, "#22d3ee", "Sinyal");
   const lv = levels(cs.slice(-150), closes[closes.length - 1]);
@@ -389,12 +391,12 @@ function notify(title, body, tag) {
 }
 function alertFor(s) {
   if (s.hist) return;
-  // IKUT itself no longer alerts: the IKUT tab alerts once the setup is confirmed (BISA DIIKUTI)
+  // big prints alert as context only; entry advice and its notifications come from WAC (wacui.js)
   const important = (s.value || 0) >= CFG.alertBig;
   if (!important || !pass(s)) return;
   beep(s.dir === "up");
-  const title = s.kind === "liq" ? `Likuidasi ${s.pos} ${s.coin} ${usd(s.value)}` : s.kind === "pump" ? `${s.coin} ${s.dir === "up" ? "PUMP" : "DUMP"} ${pct(s.chg)}` : `${s.coin} whale ${s.dir === "up" ? "BELI" : "JUAL"} ${usd(s.value)}`;
-  notify(title, `${s.reco.verdict} (skor ${s.reco.score}) · ${s.reco.fut}`, s.id);
+  const title = s.kind === "liq" ? `Likuidasi ${s.pos} ${s.coin} ${usd(s.value)}` : s.kind === "pump" ? `${s.coin} ${s.dir === "up" ? "PUMP" : "DUMP"} ${pct(s.chg)}` : `${s.coin} order besar ${usd(s.value)} · arus taker ${s.dir === "up" ? "beli" : "jual"} (proxy)`;
+  notify(title, "Konteks pasar saja, bukan sinyal entry. Saran ada di tab IKUT (WAC).", s.id);
 }
 
 /* ============ connections ============ */
@@ -634,23 +636,10 @@ function renderLatest() {
   if (!list.length) return;
   $("latest").innerHTML = list.map(s => {
     const d = describe(s);
-    return `<button class="rw" data-chart="${s.id}">${logo(s.coin)}<span class="m"><b>${esc(s.coin)} <span class="chip ${d.tone}">${d.chip}</span></b><small>${d.title} · ${EX[s.mk]}</small></span><span class="r"><span class="pill ${s.reco.verdict}">${s.reco.verdict}</span><small class="num" style="color:var(--muted);font-size:11px">${wib(s.t).replace(" WIB", "")}</small></span></button>`;
+    return `<button class="rw" data-chart="${s.id}">${logo(s.coin)}<span class="m"><b>${esc(s.coin)} <span class="chip ${d.flow ? "flow" : d.tone}">${d.chip}</span></b><small>${d.title} · ${EX[s.mk]}</small></span><span class="r">${s.wac && s.wac.verdict ? `<span class="pill ${WACUI.verdictOf(s)}">${s.wac.verdict === "TUNGGU PULLBACK" ? "TUNGGU" : s.wac.verdict}</span>` : ""}<small class="num" style="color:var(--muted);font-size:11px">${wib(s.t).replace(" WIB", "")}</small></span></button>`;
   }).join("");
 }
-function renderHomeIk() {
-  const list = ikSorted().filter(x => x.st !== "cancel");
-  $("homeIkN").textContent = list.length ? `${list.filter(x => x.st === "go").length} bisa diikuti · ${list.length} total` : "";
-  if (!list.length) { $("homeIk").innerHTML = `<article class="panel"><div class="empty" style="padding:12px 4px">Belum ada saran IKUT dalam 60 menit terakhir. Profil konservatif membuat IKUT jarang muncul.</div></article>`; return; }
-  $("homeIk").innerHTML = list.slice(0, 8).map(x => {
-    const s = x.sig;
-    return `<article class="panel mini-ik${x.st === "go" ? " glow" : ""}">
-      <div class="row">${logo(s.coin)}<div style="flex:1;min-width:0"><b>${esc(s.coin)}</b> <span class="chip ${x.side === "LONG" ? "buy" : "sell"}">${x.side}</span><div class="foot">${EX[s.mk]} · ${Math.floor((Date.now() - s.t) / 60000)} mnt lalu</div></div>${ring(s.reco.score)}</div>
-      <span class="st ${x.st || "wait"}" style="padding:6px 9px;font-size:11.5px">${esc(x.why || "Menghitung indikator…")}</span>
-      ${x.at ? `<div class="lv3"><div><small class="k">Entry</small><span style="color:var(--glow)">${px(x.entry)}</span></div><div><small class="k">SL</small><span class="down">${px(x.sl)}</span></div><div><small class="k">TP1</small><span class="up">${px(x.tp1)}</span></div></div>` : ""}
-      <div class="acts"><button class="pri" data-ikchart="${esc(x.key)}">Chart + level</button><button data-go="ikut">Detail</button></div>
-    </article>`;
-  }).join("");
-}
+function renderHomeIk() { if (typeof WACUI !== "undefined") WACUI.renderHome(); }
 
 /* ============ saved feed across reloads ============ */
 let lastSave = 0;
@@ -686,13 +675,13 @@ function setFeed(f) {
 $("sigSeg").addEventListener("click", e => { const b = e.target.closest("button[data-feed]"); if (b) setFeed(b.dataset.feed); });
 
 function syncToggles() { $("btnSound").setAttribute("aria-pressed", UI.sound); $("btnNotif").setAttribute("aria-pressed", UI.notif); }
-$("btnSound").addEventListener("click", () => { UI.sound = !UI.sound; if (UI.sound) beep(true); syncToggles(); saveUI(); toast(UI.sound ? "Bunyi aktif untuk BISA DIIKUTI & nilai besar" : "Bunyi dimatikan"); });
+$("btnSound").addEventListener("click", () => { UI.sound = !UI.sound; if (UI.sound) beep(true); syncToggles(); saveUI(); toast(UI.sound ? "Bunyi aktif untuk sinyal WAC & nilai besar" : "Bunyi dimatikan"); });
 $("btnNotif").addEventListener("click", async () => {
   if (!("Notification" in window)) return toast("Browser ini tidak mendukung notifikasi. Di iPhone, buka dari ikon Home Screen.");
   if (!UI.notif) {
     const p = Notification.permission === "granted" ? "granted" : await Notification.requestPermission();
     if (p !== "granted") return toast("Izin notifikasi ditolak. Aktifkan dari pengaturan browser.");
-    UI.notif = true; toast("Notifikasi aktif untuk BISA DIIKUTI & nilai besar");
+    UI.notif = true; toast("Notifikasi aktif untuk sinyal WAC (#N) & nilai besar");
   } else { UI.notif = false; toast("Notifikasi dimatikan"); }
   syncToggles(); saveUI();
 });
@@ -720,9 +709,7 @@ function toast(msg) {
   clearTimeout(toastT); toastT = setTimeout(() => (el.hidden = true), 3000);
 }
 
-/* ============ IKUT setups: technical check for up to 60 minutes ============ */
-const IK = { setups: new Map(), notified: new Set(), busy: false };
-const IK_WINDOW = 60 * 60000;
+/* ============ indicator helpers (chart sheet) ============ */
 function emaArr(v, n) { const a = 2 / (n + 1); let e = v[0]; return v.map(x => (e = x * a + e * (1 - a))); }
 function rsiLast(c, n = 14) {
   if (c.length <= n) return null;
@@ -750,143 +737,7 @@ function levels(cs, price) {
   const lv = zones.map(z => z.avg);
   return { sup: lv.filter(x => x < price * 0.999).reverse().slice(0, 2), res: lv.filter(x => x > price * 1.001).slice(0, 2) };
 }
-function collectIkut() {
-  const now = Date.now(), seen = new Map();
-  for (const k in FEEDS) for (const s of FEEDS[k].items) {
-    if (!s.reco || s.reco.verdict !== "IKUT" || now - s.t > IK_WINDOW + 15 * 60000) continue;
-    if (s.dir !== "up" && s.dir !== "down") continue;
-    const key = s.coin + ":" + (s.dir === "up" ? "LONG" : "SHORT");
-    const g = seen.get(key) || { latest: s, ids: new Set() };
-    g.ids.add(s.id); if (s.t > g.latest.t) g.latest = s;
-    seen.set(key, g);
-  }
-  for (const [key, g] of seen) {
-    const cur = IK.setups.get(key);
-    if (cur && cur.sig.id === g.latest.id) { cur.count = g.ids.size; continue; }
-    IK.setups.set(key, { key, side: key.endsWith("LONG") ? "LONG" : "SHORT", sig: g.latest, count: g.ids.size });
-  }
-  for (const k of [...IK.setups.keys()]) if (!seen.has(k)) IK.setups.delete(k);
-}
-async function evalSetup(x) {
-  const s = x.sig, long = x.side === "LONG";
-  const [c15, c1h] = await Promise.all([candles(s.mk, s.coin, "15m"), candles(s.mk, s.coin, "1h")]);
-  if (!c15 || c15.length < 60) { x.err = "Data candle belum bisa diambil"; return; }
-  x.err = null;
-  const cl = c15.map(c => c.c), price = cl[cl.length - 1];
-  const e20 = emaArr(cl, 20), e50 = emaArr(cl, 50), rsi = rsiLast(cl), md = macdOf(cl);
-  let h1 = null;
-  if (c1h && c1h.length > 60) {
-    const c = c1h.map(k => k.c), a20 = emaArr(c, 20), a50 = emaArr(c, 50), a200 = c.length >= 200 ? emaArr(c, 200) : null, p = c[c.length - 1], i = c.length - 1;
-    const trend = p > a50[i] && a20[i] > a50[i] ? "Bullish" : p < a50[i] && a20[i] < a50[i] ? "Bearish" : "Netral";
-    h1 = { trend, e20: a20[i], e50: a50[i], e200: a200 ? a200[i] : null, rsi: rsiLast(c), price: p };
-  }
-  const lv = levels(c15.slice(-150), price);
-  const pl = s.reco.plan || {};
-  const entry = pl.entry || s.price;
-  let sl = pl.sl || (long ? entry * 0.98 : entry * 1.02);
-  const near = long ? lv.sup.find(v => v < entry) : lv.res.find(v => v > entry);
-  if (near) { const d = Math.abs(entry / near - 1); if (d >= 0.005 && d <= 0.05) sl = long ? near * 0.997 : near * 1.003; }
-  const R = Math.abs(entry - sl);
-  const tp1 = long ? entry + 1.5 * R : entry - 1.5 * R, tp2 = long ? entry + 2.5 * R : entry - 2.5 * R;
-  const zLo = entry - 0.3 * R, zHi = entry + 0.3 * R;
-  const wall = long ? lv.res[0] : lv.sup[0];
-  const checks = long ? [
-    [!h1 || h1.trend !== "Bearish", `Tren 1 jam ${h1 ? h1.trend : "belum ada data"} (tidak bearish)`],
-    [price > e20[e20.length - 1], "Harga di atas EMA20 (15m)"],
-    [md.hist > 0, `MACD 15m positif${md.hist > 0 && md.prevHist <= 0 ? " (baru cross naik)" : ""}`],
-    [rsi != null && rsi >= 45 && rsi <= 70, `RSI 15m ${rsi == null ? "--" : rsi.toFixed(0)} di 45–70 (kuat, belum jenuh beli)`],
-    [!wall || wall - price >= R, wall ? `Jarak ke resistance ${px(wall)} cukup (≥ 1R)` : "Tidak ada resistance dekat"]
-  ] : [
-    [!h1 || h1.trend !== "Bullish", `Tren 1 jam ${h1 ? h1.trend : "belum ada data"} (tidak bullish)`],
-    [price < e20[e20.length - 1], "Harga di bawah EMA20 (15m)"],
-    [md.hist < 0, `MACD 15m negatif${md.hist < 0 && md.prevHist >= 0 ? " (baru cross turun)" : ""}`],
-    [rsi != null && rsi >= 30 && rsi <= 55, `RSI 15m ${rsi == null ? "--" : rsi.toFixed(0)} di 30–55 (lemah, belum jenuh jual)`],
-    [!wall || price - wall >= R, wall ? `Jarak ke support ${px(wall)} cukup (≥ 1R)` : "Tidak ada support dekat"]
-  ];
-  const age = Date.now() - s.t;
-  let st, why;
-  if (age > IK_WINDOW) { st = "miss"; why = "KEDALUWARSA · lebih dari 60 menit"; }
-  else if (long ? price <= sl : price >= sl) { st = "cancel"; why = "BATAL · stop loss tersentuh"; }
-  else if (long ? price >= tp1 : price <= tp1) { st = "miss"; why = "TERLEWAT · sudah sampai TP1"; }
-  else if (long ? price > zHi : price < zLo) { st = "miss"; why = "TERLEWAT · harga lari dari zona entry"; }
-  else if (checks.every(c => c[0])) { st = "go"; why = "✓ BISA DIIKUTI SEKARANG"; }
-  else { st = "wait"; why = `TUNGGU KONFIRMASI · ${checks.filter(c => !c[0]).length} syarat belum terpenuhi`; }
-  const prev = x.st;
-  Object.assign(x, { price, entry, sl, tp1, tp2, zLo, zHi, R, lv, rsi, md, e20: e20[e20.length - 1], e50: e50[e50.length - 1], h1, checks, st, why, at: Date.now() });
-  if (st === "go" && prev !== "go") notifyIkut(x);
-}
-function notifyIkut(x) {
-  if (IK.notified.has(x.sig.id)) return;
-  IK.notified.add(x.sig.id);
-  const body = `${x.side} ${x.sig.coin} · Entry ${px(x.zLo)}–${px(x.zHi)} · SL ${px(x.sl)} · TP1 ${px(x.tp1)}`;
-  beep(x.side === "LONG");
-  toast(`Bisa diikuti: ${body}`);
-  notify(`✅ ${x.sig.coin} bisa diikuti (${x.side})`, body, "ik-" + x.sig.id);
-}
-function ladderHTML(x) {
-  const pts = [x.sl, x.zLo, x.zHi, x.tp1, x.tp2, x.price];
-  const lo = Math.min(...pts), hi = Math.max(...pts), span = hi - lo || 1;
-  const pos = v => clamp((v - lo) / span * 100, 0, 100).toFixed(1);
-  const long = x.side === "LONG";
-  const slSide = long ? `left:0;width:${pos(x.zLo)}%` : `left:${pos(x.zHi)}%;right:0`;
-  const tpSide = long ? `left:${pos(x.zHi)}%;width:${(pos(x.tp2) - pos(x.zHi)).toFixed(1)}%` : `left:${pos(x.tp2)}%;width:${(pos(x.zLo) - pos(x.tp2)).toFixed(1)}%`;
-  return `<div class="ladder" aria-label="Posisi harga terhadap level">
-    <div class="bar"><i style="${slSide};background:rgba(234,57,67,.45)"></i><i style="${tpSide};background:rgba(22,199,132,.45)"></i><i style="left:${pos(x.zLo)}%;width:${(pos(x.zHi) - pos(x.zLo)).toFixed(1)}%;background:#22d3ee"></i></div>
-    ${[[x.sl, "SL"], [x.entry, "Entry"], [x.tp1, "TP1"], [x.tp2, "TP2"]].map(([v, t]) => `<span class="tick" style="left:${pos(v)}%"></span><span class="lab" style="left:${pos(v)}%">${t}</span>`).join("")}
-    <span class="now" style="left:${pos(x.price)}%">${px(x.price)}</span>
-  </div>`;
-}
-function ikutCard(x) {
-  const s = x.sig, mins = Math.floor((Date.now() - s.t) / 60000);
-  const head = `<div class="ik-h">${logo(s.coin, "lg")}<div class="id"><b>${esc(s.coin)}</b><span class="chip ${x.side === "LONG" ? "buy" : "sell"}">${x.side === "LONG" ? "▲ LONG" : "▼ SHORT"}</span><small>${EX[s.mk]} · ${mins} mnt lalu · ${wib(s.t)}</small></div>${ring(s.reco.score, 42)}</div>`;
-  if (!x.at) return `<article class="ik wait">${head}<div class="foot">${x.err ? esc(x.err) : "Menghitung indikator…"}</div></article>`;
-  const cls = x.st === "go" ? "go" : x.st === "wait" ? "wait" : "off";
-  const fmtL = a => a.length ? a.map(px).join(" · ") : "--";
-  const h1 = x.h1;
-  const emaUp = x.e20 > x.e50;
-  return `<article class="ik ${cls}">
-  ${head}
-  <div class="st ${x.st}">${esc(x.why)}</div>
-  ${ladderHTML(x)}
-  <div class="lv">
-    <div class="e"><small>Zona entry</small><span>${px(x.zLo)} – ${px(x.zHi)}</span></div>
-    <div class="s"><small>Stop loss</small><span>${px(x.sl)} (${pct(x.sl / x.entry - 1, 1)})</span></div>
-    <div class="t"><small>TP1 · 1.5R</small><span>${px(x.tp1)} (${pct(x.tp1 / x.entry - 1, 1)})</span></div>
-    <div class="t"><small>TP2 · 2.5R</small><span>${px(x.tp2)} (${pct(x.tp2 / x.entry - 1, 1)})</span></div>
-    <div><small>Support</small><span>${fmtL(x.lv.sup)}</span></div>
-    <div><small>Resistance</small><span>${fmtL(x.lv.res)}</span></div>
-  </div>
-  <div class="ind">
-    <div><small>Tren 1 jam</small><span class="${h1 && h1.trend === "Bullish" ? "up" : h1 && h1.trend === "Bearish" ? "down" : "flat"}">${h1 ? (h1.trend === "Bullish" ? "▲ " : h1.trend === "Bearish" ? "▼ " : "■ ") + h1.trend : "--"}</span></div>
-    <div><small>RSI 14 · 15m</small><span>${x.rsi == null ? "--" : x.rsi.toFixed(0)}${h1 && h1.rsi != null ? ` <span style="color:var(--muted);font-size:11px">1j ${h1.rsi.toFixed(0)}</span>` : ""}</span>${x.rsi == null ? "" : `<div class="meter"><i style="left:${clamp(x.rsi, 0, 100)}%"></i></div>`}</div>
-    <div><small>MACD 15m</small><span class="${x.md.hist >= 0 ? "up" : "down"}">${x.md.hist >= 0 ? "▲ Positif" : "▼ Negatif"}${(x.md.hist > 0) !== (x.md.prevHist > 0) ? " · cross" : ""}</span></div>
-    <div><small>EMA 15m 20/50</small><span class="${emaUp ? "up" : "down"}">${emaUp ? "20 > 50 ▲" : "20 < 50 ▼"}</span></div>
-    <div><small>EMA 1j 20/50/200</small><span style="font-size:11.5px">${h1 ? `${px(h1.e20)} / ${px(h1.e50)} / ${h1.e200 ? px(h1.e200) : "--"}` : "--"}</span></div>
-    <div><small>Leverage · risiko</small><span>${(s.reco.plan && s.reco.plan.lev) || 3}x · 1% modal</span></div>
-  </div>
-  <ul class="checks">${x.checks.map(([ok, t]) => `<li class="${ok ? "ok" : "no"}">${esc(t)}</li>`).join("")}</ul>
-  <div class="acts"><button type="button" class="pri" data-ikchart="${esc(x.key)}">Chart + level</button><button type="button" data-ask="${s.id}">Tanya Claude</button></div>
-</article>`;
-}
-const ikRank = { go: 0, wait: 1, miss: 2, cancel: 3 };
-const ikSorted = () => [...IK.setups.values()].sort((a, b) => (ikRank[a.st] ?? 1) - (ikRank[b.st] ?? 1) || b.sig.t - a.sig.t);
-function renderIkut() {
-  const list = ikSorted(), go = list.filter(x => x.st === "go").length;
-  const badge = $("ikBadge"); badge.hidden = !go; badge.textContent = go;
-  if (VIEW === "home") renderHomeIk();
-  if (VIEW !== "ikut") return;
-  $("ikList").innerHTML = list.length ? list.map(ikutCard).join("")
-    : `<article class="panel"><div class="empty">Belum ada sinyal IKUT dalam 60 menit terakhir. Profil konservatif membuat IKUT jarang muncul, biarkan dashboard terbuka.</div></article>`;
-}
-async function ikutLoop() {
-  if (IK.busy) return;
-  IK.busy = true;
-  try {
-    collectIkut();
-    for (const x of IK.setups.values()) { try { await evalSetup(x); } catch { x.err = "Gagal menghitung indikator"; } }
-    renderIkut();
-  } finally { IK.busy = false; }
-}
+function renderIkut() { if (typeof WACUI !== "undefined") WACUI.renderIkut(); }
 
 /* ============ history & recap (24/7 recordings from GitHub Actions) ============ */
 // HEAD = the repo's default branch, which is where the scheduled recorder commits its data
@@ -1026,8 +877,8 @@ function showView(v, date) {
   if (v === "home") { renderHomeIk(); renderLatest(); heatAt = 0; renderHeat(); }
   if (v === "sig") observeSparks($("v-sig"));
   if (v === "ikut") renderIkut();
-  if (v === "hist") openHist(date);
-  if (v === "rekap") openRekap();
+  if (v === "hist") { openHist(date); if (typeof WACUI !== "undefined") WACUI.renderTimeline(); }
+  if (v === "rekap") { openRekap(); if (typeof WACUI !== "undefined") WACUI.renderRekap(); }
   if (v === "brief" && typeof openBrief === "function") openBrief();
 }
 document.querySelectorAll(".nb").forEach(b => b.addEventListener("click", () => showView(b.dataset.view)));
@@ -1040,8 +891,6 @@ setInterval(() => {
   if (dirtySave) { saveHistory(); dirtySave = false; }
   for (const k in FEEDS) { const box = $(FEEDS[k].el); if (box.querySelector(".empty")) box.innerHTML = emptyHTML(k); }
 }, 1000);
-setInterval(ikutLoop, 30000);
-setTimeout(ikutLoop, 3000);
 
 loadHistory();
 setFeed(FEEDS[UI.feed] ? UI.feed : "whale");

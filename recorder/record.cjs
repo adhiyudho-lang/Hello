@@ -15,6 +15,9 @@
 const fs = require("fs");
 const path = require("path");
 const W = require("../engine.js");
+const WAC = require("../wac.js");
+WAC.setConfig(require("../config/wac.json"));
+const { execSync } = require("child_process");
 
 const RUN_MS = (+process.env.RUN_MINUTES || 55) * 60000;
 const KEEP_DAYS = +process.env.KEEP_DAYS || 30;
@@ -32,7 +35,7 @@ const dateWIB = t => new Date(t + 7 * 3600e3).toISOString().slice(0, 10);
 const CFG = { ...W.DEFAULTS };
 let FNG = null, BTC = null;
 // journal of this run: new signals, outcome values found for older signals, liquidation totals
-const J = { items: [], outcomes: {}, liq: {}, fng: null };
+const J = { items: [], outcomes: {}, liq: {}, fng: null, wac: null };
 const stats = { whale: 0, liq: 0, signal: 0 };
 
 const E = W.create({
@@ -47,6 +50,7 @@ const E = W.create({
     if (s.mult != null) s.mult = +s.mult.toFixed(1);
     J.items.push(s);
     stats[feed]++;
+    if (s.kind !== "liq") wacQueue.push(s);
   },
   onLiqRaw: (mk, coin, pos, v, t) => {
     const a = J.liq[dateWIB(t)] || (J.liq[dateWIB(t)] = { L: 0, S: 0, nL: 0, nS: 0 });
@@ -196,6 +200,7 @@ function writeJournal() {
 
 /* apply a journal onto data/ (idempotent for a fresh checkout) */
 function applyJournal(j) {
+  if (j.wac) writeJSON(path.join(DATA, "wac.json"), j.wac);
   const byDay = {};
   for (const s of j.items) (byDay[dateWIB(s.t)] = byDay[dateWIB(s.t)] || []).push(s);
   const outByDay = {};
@@ -328,8 +333,124 @@ function buildIndex() {
   writeJSON(path.join(DATA, "index.json"), { updated: Date.now(), keepDays: KEEP_DAYS, days: days.reverse() });
 }
 
+/* ---------- WAC lifecycle (authoritative numbering + 24/7 zone monitoring) ---------- */
+const WAC_FILE = path.join(DATA, "wac.json");
+const WS = readJSON(WAC_FILE, { seq: 0, daily: {}, signals: [] });
+J.wac = WS;
+const wacQueue = [];
+const cCache = new Map();
+let REGIME = null, regimeAt = 0, ETF = null;
+async function wacCandles(mk, coin, tf, limit) {
+  const key = `${coin}:${tf}:${limit}`, ttl = tf === "1h" ? 4 * 60e3 : tf === "4h" ? 10 * 60e3 : 30 * 60e3;
+  const hit = cCache.get(key);
+  if (hit && Date.now() - hit.at < ttl) return hit.cs;
+  const bar = { "1h": "1H", "4h": "4H", "1d": "1Dutc" }[tf];
+  const okx = inst => getJSON(`https://www.okx.com/api/v5/market/candles?instId=${inst}&bar=${bar}&limit=${Math.min(limit, 300)}`, 1)
+    .then(j => (j.data || []).map(x => ({ t: +x[0], o: +x[1], h: +x[2], l: +x[3], c: +x[4], v: +x[5] })).reverse());
+  const bin = () => getJSON(`https://data-api.binance.vision/api/v3/klines?symbol=${coin}USDT&interval=${tf}&limit=${limit}`, 1)
+    .then(k => k.map(x => ({ t: +x[0], o: +x[1], h: +x[2], l: +x[3], c: +x[4], v: +x[5] })));
+  const order = mk === "BS" ? [bin, () => okx(`${coin}-USDT`), () => okx(`${coin}-USDT-SWAP`)] : [() => okx(`${coin}-USDT`), () => okx(`${coin}-USDT-SWAP`), bin];
+  for (const f of order) { try { const cs = await f(); if (cs && cs.length >= 20) { cCache.set(key, { at: Date.now(), cs }); return cs; } } catch {} }
+  return hit ? hit.cs : null;
+}
+async function wacRegime() {
+  if (REGIME && Date.now() - regimeAt < 15 * 60e3) return REGIME;
+  const [d1, h4] = await Promise.all([wacCandles("BS", "BTC", "1d", 250), wacCandles("BS", "BTC", "4h", 60)]);
+  const now = Date.now();
+  const r = WAC.regime(d1 && WAC.closed(d1, "1d", now), h4 && WAC.closed(h4, "4h", now), now);
+  if (r.state) {
+    if (REGIME && REGIME.state !== r.state) await tgSend(`🧭 Rezim BTC berubah: ${REGIME.state} → ${r.state}`, r.detail);
+    REGIME = r; regimeAt = now;
+  }
+  return REGIME;
+}
+function etfFor(coin) {
+  if (!WAC.cfg().etfAssets.includes(coin)) return null;
+  if (ETF === null) ETF = readJSON(path.join(DATA, "etf.json"), {});
+  const a = ETF.assets && ETF.assets[coin];
+  return a ? WAC.etfScore(a.days, Date.now()) : null;
+}
+function lastPrice(coin) {
+  for (const mk of ["BS", "OS", "OF", "BF"]) { const r = E.M[mk].get(coin); if (r && r.p) return { p: r.p, t: r.hist.length ? r.hist[r.hist.length - 1][0] : Date.now() }; }
+  return null;
+}
+const srcText = sig => { const s = sig.src || {}; return s.kind === "volume" ? `Volume tak biasa ${W.usd(s.value || 0)}/menit (${Math.round(s.mult || 0)}x)` : s.kind === "trade" ? `Order besar ${W.usd(s.value || 0)} (proxy)` : `Gerak harga ${((s.chg || 0) * 100).toFixed(1)}%`; };
+const whenText = t => W.wib(t).replace(" WIB", "") + " WIB";
+async function tgSend(title, body) {
+  const tok = process.env.TELEGRAM_BOT_TOKEN, chat = process.env.TELEGRAM_CHAT_ID;
+  if (!tok || !chat) return;
+  try { await fetch(`https://api.telegram.org/bot${tok}/sendMessage`, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ chat_id: chat, text: title + "\n" + body }), signal: AbortSignal.timeout(10000) }); } catch {}
+}
+async function wacNotify(sig, kind) {
+  if (!sig.notified) sig.notified = {};
+  const key = kind === "NEAR_ZONE" || kind === "IN_ZONE" ? kind + ":" + (sig.remInZone || sig.remNear || 0) : kind;
+  if (sig.notified[key]) return;
+  sig.notified[key] = Date.now();
+  const p = lastPrice(sig.coin);
+  const extra = kind === "ENTRY_READY" ? WAC.entryTexts(sig, { regime: REGIME && REGIME.state, funding: E.funding.get(sig.coin) }) : {};
+  const n = WAC.notifText(sig, kind, Object.assign({ when: whenText, srcText, price: p && p.p }, extra));
+  await tgSend(n.title, n.body);
+}
+async function wacDetect(s) {
+  const now = Date.now(), act = WAC.activeFor(WS, s.coin);
+  if (act) {
+    const lastLink = [...act.events].reverse().find(e => e.type === "link");
+    if (!lastLink || now - lastLink.t > 30 * 60e3) WAC.addEvent(act, now, "link", act.status, `Sinyal lanjutan dari #${act.no}: ${srcText({ src: s })} di ${W.EX[s.mk]}`);
+    return;
+  }
+  const [c4, c1] = await Promise.all([wacCandles(s.mk, s.coin, "4h", 120), wacCandles(s.mk, s.coin, "1h", 60)]);
+  const reg = await wacRegime();
+  const flow = (s.mk === "BF" || s.mk === "BS") ? E.takerFlow(s.mk, s.coin, s.t) : null;
+  const open = WS.signals.filter(x => ["POSITION_OPEN", "TAKE_PROFIT_PARTIAL", "EXIT_WARNING"].includes(x.status));
+  const ev = WAC.evalSpot({
+    coin: s.coin, now, price: s.price, priceAt: s.t, chg24: s.chg24, vol24: E.vol24(s.coin), spreadPct: null,
+    taker: flow ? { buy: flow.b, sell: flow.s } : null, dirUp: s.dir === "up" ? true : s.dir === "down" ? false : null, mult: s.mult,
+    c4h: c4 && WAC.closed(c4, "4h", now), regime: reg, etf: etfFor(s.coin), openCount: open.length, openRisk: open.length * WAC.cfg().risk.riskPct
+  });
+  if (!WAC.PRE.includes(ev.status)) return;
+  const sig = WAC.createSignal(WS, s, ev, now);
+  log(`WAC #${sig.no} ${sig.coin} ${sig.status} skor ${sig.score}`);
+  await wacNotify(sig, ev.status === "ENTRY_READY" ? "ENTRY_READY" : "WATCH");
+}
+let wacBusy = false;
+async function wacTick() {
+  if (wacBusy) return;
+  wacBusy = true;
+  try {
+    while (wacQueue.length) { const s = wacQueue.shift(); try { await wacDetect(s); } catch (e) { log("wac detect", e.message); } }
+    const now = Date.now(), reg = await wacRegime().catch(() => REGIME);
+    for (const sig of WS.signals.filter(x => WAC.ACTIVE.includes(x.status))) {
+      try {
+        const lp = lastPrice(sig.coin);
+        const [c1, c4] = await Promise.all([wacCandles(sig.mk, sig.coin, "1h", 60), wacCandles(sig.mk, sig.coin, "4h", 120)]);
+        const c4c = c4 && WAC.closed(c4, "4h", now);
+        const evs = WAC.step(sig, { now, price: lp && now - lp.t < 5 * 60e3 ? lp.p : null, c1h: c1 && WAC.closed(c1, "1h", now), t4: c4c && WAC.tech4h(c4c), regime: reg });
+        for (const e of evs) await wacNotify(sig, e.status);
+      } catch (e) { log("wac step", sig.no, e.message); }
+    }
+    // keep 30 days of signals
+    const cut = now - 30 * 24 * 3600e3;
+    WS.signals = WS.signals.filter(x => WAC.ACTIVE.includes(x.status) || x.t > cut).slice(-1500);
+    WS.updated = now; WS.regime = REGIME;
+  } finally { wacBusy = false; }
+}
+function pushWac() {
+  writeJSON(WAC_FILE, WS);
+  const br = process.env.GITHUB_REF_NAME;
+  if (!process.env.GITHUB_ACTIONS || !br) return;
+  const sh = c => execSync(c, { cwd: path.join(__dirname, ".."), stdio: "pipe" });
+  try {
+    sh("git add data/wac.json");
+    try { sh("git diff --cached --quiet"); return; } catch {}
+    sh(`git commit -q -m "WAC state ${new Date().toISOString().slice(11, 16)} UTC"`);
+    sh(`git pull -q --rebase --autostash origin ${br}`);
+    sh(`git push -q origin HEAD:${br}`);
+    log("wac state pushed");
+  } catch (e) { log("wac push failed", String(e.message).split("\n")[0]); try { sh("git rebase --abort"); } catch {} }
+}
+
 /* ---------- main ---------- */
-if (require.main !== module) { module.exports = { fillOutcomes, buildIndex, loadDay, dayFile, writeJSON, applyJournal, J }; return; }
+if (require.main !== module) { module.exports = { fillOutcomes, buildIndex, loadDay, dayFile, writeJSON, applyJournal, J, WS, wacDetect, wacTick }; return; }
 if (process.argv[2] === "merge") {
   const file = process.argv[3] || JOURNAL;
   if (fs.existsSync(file)) { applyJournal(JSON.parse(fs.readFileSync(file, "utf8"))); log("merged", file); }
@@ -347,6 +468,8 @@ if (process.argv[2] === "merge") {
   setInterval(okxTickers, 10000); okxTickers();
   setInterval(loadBtcTrend, 5 * 60000);
   setInterval(writeJournal, 5 * 60000);
+  setInterval(wacTick, 60000); setTimeout(wacTick, 20000);
+  setInterval(pushWac, 10 * 60000);
 
   const end = () => {
     stopping = true;
@@ -357,6 +480,7 @@ if (process.argv[2] === "merge") {
   await sleep(Math.max(0, RUN_MS - (Date.now() - START)));
   end();
   E.flushBursts();
+  await wacTick().catch(() => {});
   writeJournal();
   await fillOutcomes(3 * 60000);
   writeJournal();

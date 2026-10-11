@@ -453,6 +453,48 @@ details.why ul { margin: 6px 0 0; padding-left: 16px; font-size: 12px; color: va
 .setform .row { display: flex; gap: 8px; justify-content: flex-end; flex-wrap: wrap; }
 .toast { position: fixed; left: 50%; bottom: calc(var(--nav-h) + 14px + env(safe-area-inset-bottom, 0px)); transform: translateX(-50%); background: var(--card2); border: 1px solid rgba(34,211,238,.4); box-shadow: 0 10px 30px -10px rgba(34,211,238,.5); padding: 10px 14px; border-radius: 12px; font-size: 13px; z-index: 70; max-width: calc(100% - 32px); }
 @media (min-width: 1000px) { .toast { bottom: 24px; } }
+
+/* ---------- WAC ---------- */
+.chip.flow { background: rgba(138,155,184,.12); color: var(--fg); font-weight: 600; }
+.chip.flow .up { color: var(--buy); } .chip.flow .down { color: var(--sell); }
+.wac { display: grid; gap: 8px; }
+.wac-h { display: flex; align-items: center; gap: 10px; min-width: 0; }
+.wac-t { flex: 1; min-width: 0; display: grid; gap: 3px; }
+.wac-t small { color: var(--muted); font-size: 11.5px; }
+.wac-n { display: flex; gap: 4px; align-items: center; flex-wrap: wrap; justify-content: flex-end; }
+.wac-no { font-family: var(--font-mono); font-weight: 700; color: var(--glow); margin-right: 4px; }
+.wac-why { font-size: 13px; }
+.wac-note { font-size: 11.5px; color: var(--muted); }
+.wac-mm { font-size: 11.5px; color: var(--warn); background: var(--warn-bg); border-radius: 9px; padding: 6px 8px; margin-top: 6px; }
+.pill.TUNGGU, .pill.IKUT, .pill.HINDARI { white-space: nowrap; }
+details.wac-fut { border: 1px solid var(--line); border-radius: 12px; padding: 8px 10px; }
+details.wac-fut summary { cursor: pointer; font-size: 12.5px; color: var(--muted); list-style: none; }
+details.wac-fut summary::-webkit-details-marker { display: none; }
+details.wac-fut summary::before { content: "▸ "; } details.wac-fut[open] summary::before { content: "▾ "; }
+details.wac-fut .plan { margin-top: 8px; }
+.tl { list-style: none; margin: 0; padding: 0 0 0 10px; border-left: 2px solid var(--line); display: grid; gap: 6px; font-size: 12px; }
+.tl li { position: relative; } .tl li::before { content: ""; position: absolute; left: -15px; top: 5px; width: 8px; height: 8px; border-radius: 50%; background: var(--glow); }
+.tl time { font-family: var(--font-mono); color: var(--muted); margin-right: 6px; font-size: 11px; }
+.tlbox summary { cursor: pointer; list-style: none; } .tlbox summary small { color: var(--muted); }
+.tl-item { border-top: 1px solid var(--line); padding: 8px 0; display: grid; gap: 6px; }
+.tl-item summary { cursor: pointer; list-style: none; display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+.tl-item summary small { color: var(--muted); font-size: 11.5px; width: 100%; }
+#wacStats, #btBox, #wacTl { min-width: 0; max-width: 100%; }
+.wac .plan { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+@media (min-width: 700px) { .wac .plan { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
+.wac-rec { border: 0; color: var(--fg); text-align: left; font: inherit; font-size: 12px; cursor: pointer; background: var(--glow-bg); border-radius: 9px; padding: 6px 8px; }
+.tblw { max-width: 100%; overflow-x: auto; -webkit-overflow-scrolling: touch; margin-top: 6px; }
+.tbl { border-collapse: collapse; width: 100%; font-size: 11.5px; font-family: var(--font-mono); }
+.tbl th, .tbl td { padding: 5px 6px; border-bottom: 1px solid var(--line); text-align: right; white-space: nowrap; }
+.tbl th:first-child, .tbl td:first-child { text-align: left; font-family: inherit; }
+.tbl th { color: var(--muted); font-weight: 600; } .tbl tr.hl td { background: var(--glow-bg); }
+.bt-verdict { font-weight: 800; font-size: 18px; letter-spacing: .04em; margin-bottom: 4px; }
+.bt-verdict.no { color: var(--warn); } .bt-verdict.ok { color: var(--buy); }
+.cks { display: flex; flex-wrap: wrap; gap: 6px 12px; font-size: 12.5px; }
+.ck { display: flex !important; align-items: center; gap: 6px; flex-direction: row !important; }
+.ck input { width: auto !important; }
+.hint { color: var(--muted); font-size: 11.5px; }
+.swing { color: var(--warn); }
 </style>
 </head>
 <body>
@@ -490,7 +532,7 @@ details.why ul { margin: 6px 0 0; padding-left: 16px; font-size: 12px; color: va
       </article>
     </div>
 
-    <div class="sec-h"><h2>Saran IKUT aktif</h2><small id="homeIkN"></small><button class="more" data-go="ikut">Lihat semua ›</button></div>
+    <div class="sec-h"><h2>Zona pullback dipantau</h2><small id="homeIkN"></small><button class="more" data-go="ikut">Lihat semua ›</button></div>
     <div class="hscroll" id="homeIk"></div>
 
     <div class="sec-h"><h2>Heatmap pasar</h2><small>24 jam · ketuk untuk chart</small></div>
@@ -516,7 +558,7 @@ details.why ul { margin: 6px 0 0; padding-left: 16px; font-size: 12px; color: va
       <button class="fc" data-ex="OS" aria-pressed="true">OKX Spot</button>
       <select id="fSide" aria-label="Arah"><option value="all">Semua arah</option><option value="buy">Beli / Long / Pump</option><option value="sell">Jual / Short / Dump</option></select>
       <input type="number" id="fMin" min="0" step="10000" placeholder="Nilai min $" aria-label="Nilai minimum USD">
-      <button class="fc" id="fIkut" aria-pressed="false">Hanya IKUT</button>
+      <button class="fc" id="fIkut" aria-pressed="false">Hanya lolos WAC</button>
     </div>
     <div class="cols">
       <div class="col" id="colWhale"><div class="col-h">Whale sniper <small id="hWhale"></small></div><div class="col" id="feedWhale"></div></div>
@@ -528,8 +570,9 @@ details.why ul { margin: 6px 0 0; padding-left: 16px; font-size: 12px; color: va
   <!-- IKUT -->
   <section class="view" id="v-ikut" hidden>
     <article class="panel glow">
-      <div class="sec-h" style="margin:0 0 6px"><h2>Saran IKUT · 60 menit terakhir</h2></div>
-      <div class="foot" style="font-size:12.5px;color:var(--muted)">Dicek ulang tiap 30 detik dengan candle 15 menit &amp; 1 jam. Status <b style="color:var(--buy)">BISA DIIKUTI</b> muncul kalau harga masih di zona entry dan RSI, MACD, EMA serta tren ikut mengonfirmasi, lalu kamu dapat bunyi &amp; notifikasi. <b style="color:var(--fg)">Aturan v2:</b> masuk hanya saat BISA DIIKUTI, ambil 50% di TP1, geser SL ke entry, tutup sisa maksimal 4 jam. Dashboard harus tetap terbuka.</div>
+      <div class="sec-h" style="margin:0 0 6px"><h2>IKUT · Zona WAC dipantau</h2><small>terdekat dulu</small></div>
+      <div class="foot" id="ikReg" style="font-size:12.5px;margin-bottom:6px">Rezim BTC: memuat…</div>
+      <div class="foot" style="font-size:12.5px;color:var(--muted)"><b style="color:var(--fg)">SPOT prioritas.</b> Sinyal bernomor (#N) dicatat perekam 24/7. Alur: WATCH → TERKONFIRMASI → <b style="color:var(--buy)">ENTRY READY</b> (pullback ke zona + candle 1h hijau) → posisi → TP1 (+9%, jual 50%, SL ke entry) → TP2 (+18%) / time stop 72 jam. Batal bila close 1h di bawah invalidasi. Pengingat pullback menyebut nomor sinyal. Futures hanya sekunder, risiko maks 1% equity.</div>
     </article>
     <div class="ikgrid" id="ikList"></div>
   </section>
@@ -551,6 +594,7 @@ details.why ul { margin: 6px 0 0; padding-left: 16px; font-size: 12px; color: va
 
   <!-- HISTORY -->
   <section class="view" id="v-hist" hidden>
+    <details class="panel tlbox" open><summary><b>Timeline sinyal WAC</b> <small>per nomor · ketuk untuk detail</small></summary><div id="wacTl"><div class="empty">Memuat…</div></div></details>
     <div class="dates" id="hDates"></div>
     <div class="hctl" role="group" aria-label="Filter riwayat">
       <select id="hFrom" aria-label="Dari jam"></select>
@@ -567,8 +611,12 @@ details.why ul { margin: 6px 0 0; padding-left: 16px; font-size: 12px; color: va
 
   <!-- RECAP -->
   <section class="view" id="v-rekap" hidden>
+    <div class="sec-h"><h2>Statistik WAC live</h2><small>spot &amp; futures · per rezim</small></div>
+    <div id="wacStats"><div class="empty">Memuat…</div></div>
+    <div class="sec-h"><h2>Backtest WAC vs pembanding</h2><small>12 bulan · train / validasi / test</small></div>
+    <div id="btBox"><div class="empty">Memuat…</div></div>
     <article class="panel" id="sumNote"><div class="empty">Memuat ringkasan…</div></article>
-    <div class="sec-h"><h2>Seberapa tepat saran dashboard?</h2><small>semua hari tersimpan</small></div>
+    <div class="sec-h"><h2>Saran lama (sebelum WAC)</h2><small>arsip aturan v1/v2</small></div>
     <div class="acc" id="accBox"></div>
     <div class="sec-h"><h2>Kenapa saran IKUT bisa meleset?</h2><small>analisa otomatis dari rekaman</small></div>
     <div class="view" id="missBox"></div>
@@ -606,7 +654,17 @@ details.why ul { margin: 6px 0 0; padding-left: 16px; font-size: 12px; color: va
 <div class="sheet" id="setSheet" hidden role="dialog" aria-modal="true" aria-labelledby="setTitle">
   <form class="sheet-in setform" id="setForm">
     <div class="grab"></div>
-    <div class="sheet-h"><div class="id"><b id="setTitle">Atur threshold</b><small>Disimpan di browser ini. Berlaku untuk sinyal berikutnya.</small></div></div>
+    <div class="sheet-h"><div class="id"><b id="setTitle">Pengaturan</b><small>Disimpan di browser ini. Berlaku untuk sinyal berikutnya.</small></div></div>
+    <fieldset>
+      <legend>Strategi WAC (saran IKUT)</legend>
+      <label for="w_equity">Equity / modal ($)<input id="w_equity" type="number" min="0" step="100" placeholder="contoh 10000"></label>
+      <label for="w_riskPct">Risiko per posisi (% equity, 0,5–1)<input id="w_riskPct" type="number" min="0.5" max="1" step="0.1"></label>
+      <label for="w_levCap">Batas keras leverage futures (x)<input id="w_levCap" type="number" min="1" max="50" step="1"></label>
+      <label for="w_chase24">Filter jangan kejar: naik 24 jam &gt; (%)<input id="w_chase24" type="number" min="5" max="100" step="1"></label>
+      <label for="w_cooldown">Jeda pengingat sama (menit)<input id="w_cooldown" type="number" min="5" max="240" step="5"></label>
+      <div class="cks" id="w_notif"></div>
+      <small class="hint">Read-only &amp; notifikasi saja: dashboard tidak pernah menempatkan order dan tidak menyimpan API key.</small>
+    </fieldset>
     <fieldset>
       <legend>Whale sniper</legend>
       <label for="s_bigMajor">Transaksi besar BTC/ETH ($)<input id="s_bigMajor" type="number" min="0" step="50000"></label>
@@ -637,7 +695,9 @@ details.why ul { margin: 6px 0 0; padding-left: 16px; font-size: 12px; color: va
 
 <script src="https://cdn.jsdelivr.net/npm/lightweight-charts@4.1.3/dist/lightweight-charts.standalone.production.js"></script>
 <script src="engine.js"></script>
+<script src="wac.js"></script>
 <script src="app.js"></script>
+<script src="wacui.js"></script>
 <script src="brief.js"></script>
 <script src="miss.js"></script>
 </body>
