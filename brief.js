@@ -1,5 +1,5 @@
-/* Crypto ETF Weekly Brief view. Reads data/brief.json (synced weekly from the claude.ai
-   artifact), data/etf.json (spot ETF flows per coin + BTC issuers, refreshed hourly by the
+/* Crypto ETF Daily Brief view. Reads data/brief.json (written every weekday ~07:00 WIB by a
+   Claude Routine via recorder/brief-build.cjs; older weekly briefs came from a claude.ai artifact), data/etf.json (spot ETF flows per coin + BTC issuers, refreshed hourly by the
    recorder) and data/fundamental.json (Adhi's fundamental framework scores).
    Tones: up = green, down = red, flat = grey, swing = amber. Uses helpers from app.js. */
 "use strict";
@@ -32,7 +32,7 @@ function idLevels(str) {
 
 async function openBrief(force) {
   if (force || !BF.data || Date.now() - BF.at > 10 * 60000) {
-    $("bfHead").innerHTML = `<div class="empty">Memuat Crypto ETF Weekly Brief…</div>`;
+    $("bfHead").innerHTML = `<div class="empty">Memuat Crypto ETF Daily Brief…</div>`;
     try {
       const [d, e, f] = await Promise.all([fetchData("data/brief.json"), fetchData("data/etf.json").catch(() => null), fetchData("data/fundamental.json").catch(() => null)]);
       BF.data = d; BF.etf = e; BF.fund = f; BF.at = Date.now();
@@ -50,21 +50,26 @@ function etfLastDate() {
 function renderBrief() {
   killCharts();
   if (!BF.data) {
-    $("bfHead").innerHTML = `<div class="empty">Data brief belum ada. Brief disinkronkan otomatis tiap Sabtu pagi; coba muat ulang nanti.</div><div class="bf-tools"><button class="pri" data-bfreload>Muat ulang</button></div>`;
+    $("bfHead").innerHTML = `<div class="empty">Data brief belum ada. Brief harian dibuat otomatis Senin–Jumat ±07.00 WIB; coba muat ulang nanti.</div><div class="bf-tools"><button class="pri" data-bfreload>Muat ulang</button></div>`;
     $("bfBody").innerHTML = "";
     return;
   }
-  const D = BF.data, ld = etfLastDate();
+  const D = BF.data, ld = etfLastDate(), daily = D.kind === "daily";
+  // stale when the brief is older than the latest weekday 07:00 WIB (plus a 1 hour grace)
+  const wib = new Date(Date.now() + 7 * 36e5); let due = new Date(Date.UTC(wib.getUTCFullYear(), wib.getUTCMonth(), wib.getUTCDate(), 8) - 7 * 36e5);
+  while (due > Date.now() || [0, 6].includes(new Date(due.getTime() + 7 * 36e5).getUTCDay())) due = new Date(due - 864e5);
+  const stale = !D.syncedAt || Date.parse(D.syncedAt) < due.getTime() - 36e5;
   $("bfHead").innerHTML = `
-    <div class="k">Crypto ETF Weekly Brief</div>
-    <h1>Minggu ${esc(D.period)}</h1>
+    <div class="k">Crypto ETF ${daily ? "Daily" : "Weekly"} Brief · update Senin–Jumat ±07.00 WIB</div>
+    <h1>${daily ? esc(D.period) : "Minggu " + esc(D.period)}</h1>
+    ${stale ? `<div class="bf-stale">Brief ini belum diperbarui sejak ${esc(D.snapshot)}. Update berikutnya hari kerja ±07.00 WIB.</div>` : ""}
     <div class="bf-meta"><span>Snapshot <b>${esc(D.snapshot)}</b></span><span>${esc(D.source)}</span>${ld ? `<span>Arus ETF <b>CoinMarketCap</b> · s/d ${dLabel(ld)}</span>` : ""}</div>
     <div class="legend2">${tchip("up", "Naik · Beli · Long")}${tchip("down", "Turun · Jual · Short")}${tchip("flat", "Netral · Tahan")}${tchip("swing", "Dua arah")}</div>
-    <div class="bf-tools"><button data-bfreload>Muat ulang</button><a class="pri" href="${esc(D.artifact || "https://claude.ai/artifact/SDiCExUkGBn94iuhEyqmEK")}" target="_blank" rel="noopener">Buka versi lengkap ↗</a></div>`;
+    <div class="bf-tools"><button data-bfreload>Muat ulang</button>${D.artifact ? `<a class="pri" href="${esc(D.artifact)}" target="_blank" rel="noopener">Buka versi lengkap ↗</a>` : ""}</div>`;
   for (const b of $("bfTabs").querySelectorAll("button")) b.setAttribute("aria-pressed", b.dataset.bf === BF.tab);
   const R = { ringkasan: bfRingkasan, etf: bfEtf, event: bfEvent, pengingat: bfPengingat, teknikal: bfTeknikal, altcoin: bfAltcoin, aksi: bfAksi }[BF.tab] || bfRingkasan;
   try { $("bfBody").innerHTML = R(D); }
-  catch (e) { console.warn(e); $("bfBody").innerHTML = `<div class="empty">Bagian ini tidak bisa ditampilkan karena format data berubah. Buka versi lengkap di artifact.</div>`; return; }
+  catch (e) { console.warn(e); $("bfBody").innerHTML = `<div class="empty">Bagian ini tidak bisa ditampilkan karena format data berubah. Coba muat ulang.</div>`; return; }
   if (BF.tab === "teknikal") mountBtcChart(D);
   if (BF.tab === "altcoin") mountAltCharts(D);
 }
@@ -227,7 +232,7 @@ function bfRingkasan(D) {
       <div style="display:flex;gap:14px;font-size:13px"><span><span class="k">7H</span> ${tPct(B.d7)}</span><span><span class="k">30H</span> ${tPct(B.d30)}</span></div>
       <div class="rng"><div class="k">Posisi di range 50 hari</div><div class="track"><span class="dot" style="left:${pos}%"></span></div><div class="ends"><span>Low ${rp(B.lo50)}</span><span>High ${rp(B.hi50)}</span></div></div>
     </article>
-    <article class="bf-card"><div class="k">Bias pasar minggu ini</div>${biasHTML(D.bias)}<p>${esc(D.bias.note)}</p></article>
+    <article class="bf-card"><div class="k">Bias pasar ${D.kind === "daily" ? "hari ini" : "minggu ini"}</div>${biasHTML(D.bias)}<p>${esc(D.bias.note)}</p></article>
     ${ms.length ? `<article class="bf-card"><div class="k">Skor akumulasi ETF · 2–3 tahun</div>
       ${ms.map(m => `<div style="display:flex;align-items:center;gap:10px">${logo(m.sym, "sm")}<b style="width:38px">${m.sym}</b><span class="chip ${PHASE[m.phase].tone}" style="flex:1;justify-content:center">${PHASE[m.phase].label}</span><b class="num" style="width:32px;text-align:right">${m.score}</b></div>`).join("")}
       <button class="copyb" data-bfgo="etf">Lihat arus ETF ›</button></article>` : ""}

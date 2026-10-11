@@ -245,7 +245,13 @@ function createSignal(state, det, ev, now) {
     status: ev.status, verdict: ev.verdict, why: ev.why, pattern: ev.pattern, zone: { lo: ev.zone.lo, hi: ev.zone.hi, basis: ev.zone.basis },
     inval: ev.inval, plan: { entry: ev.plan.entry, sl: ev.plan.sl, slPct: ev.plan.slPct, tp1: ev.plan.tp1, tp2: ev.plan.tp2, rr: ev.plan.rr },
     atr: ev.t4.atr, score: ev.score.score, cls: ev.score.cls, coverage: ev.score.coverage, confidence: ev.score.confidence,
-    regime: ev.score.comps.regime.note, expiresAt: ev.expiresAt, touched: false, events: []
+    regime: ev.score.comps.regime.note, expiresAt: ev.expiresAt, touched: false, events: [],
+    // score breakdown at detection, so "Kenapa skor X?" can be answered later
+    breakdown: {
+      profile: ev.score.profile, weights: ev.score.weights, confLabel: ev.score.confLabel,
+      comps: Object.fromEntries(Object.entries(ev.score.comps || {}).map(([k, c]) => [k, { score: c.score, status: c.status, note: c.note }])),
+      filters: (ev.filters || []).map(f => ({ label: f.label, ok: f.ok, detail: f.detail }))
+    }
   };
   addEvent(sig, now, "status", ev.status, `${STATUS_ID[ev.status]}: ${ev.why}`);
   state.signals.push(sig);

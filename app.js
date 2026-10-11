@@ -46,11 +46,6 @@ function ring(score, size = 34, color) {
   const r = 14, c = 2 * Math.PI * r, col = color || (score >= 75 ? "var(--buy)" : score >= 55 ? "var(--warn)" : "var(--sell)");
   return `<svg class="ring" viewBox="0 0 34 34" width="${size}" height="${size}" aria-label="Skor ${score}"><circle cx="17" cy="17" r="${r}" fill="none" stroke="#1b2945" stroke-width="3.5"/><circle cx="17" cy="17" r="${r}" fill="none" stroke="${col}" stroke-width="3.5" stroke-linecap="round" stroke-dasharray="${(score / 100 * c).toFixed(1)} ${c.toFixed(1)}" transform="rotate(-90 17 17)"/><text x="17" y="21" text-anchor="middle" font-size="10" font-weight="700" fill="#e7eef8" font-family="IBM Plex Mono, monospace">${score}</text></svg>`;
 }
-function pctRing(a, label) {
-  const p = a && a.n ? a.w / a.n : null, r = 26, c = 2 * Math.PI * r;
-  const col = p == null ? "#56688a" : p >= .55 ? "#16c784" : p >= .45 ? "#f3ba2f" : "#ea3943";
-  return `<div><svg viewBox="0 0 64 64"><circle cx="32" cy="32" r="${r}" fill="none" stroke="#1b2945" stroke-width="6"/>${p == null ? "" : `<circle cx="32" cy="32" r="${r}" fill="none" stroke="${col}" stroke-width="6" stroke-linecap="round" stroke-dasharray="${(p * c).toFixed(1)} ${c.toFixed(1)}" transform="rotate(-90 32 32)"/>`}<text x="32" y="37" text-anchor="middle" font-size="15" font-weight="700" fill="#e7eef8" font-family="IBM Plex Mono, monospace">${p == null ? "--" : Math.round(p * 100) + "%"}</text></svg><small>${label}${a && a.n ? ` · ${a.n}` : ""}</small></div>`;
-}
 const fngColor = v => v < 25 ? "#ea3943" : v < 45 ? "#f0883d" : v < 55 ? "#f3ba2f" : v < 75 ? "#93d14f" : "#16c784";
 function bestRec(coin) {
   for (const mk of ["BF", "BS", "OF", "OS"]) { const r = M[mk].get(coin); if (r && r.p) return { mk, r }; }
@@ -134,25 +129,9 @@ function describe(s) {
   };
 }
 
-function planHTML(s) {
-  const p = s.reco.plan;
-  if (!p || s.reco.verdict !== "IKUT") return "";
-  const fr = funding.get(s.coin);
-  return `<div class="plan">
-    <div class="e"><small>Entry</small><span>${px(p.entry)}</span></div>
-    <div class="s"><small>Stop loss</small><span>${px(p.sl)}</span></div>
-    <div class="t"><small>TP 1</small><span>${px(p.tp1)}</span></div>
-    <div class="t"><small>TP 2</small><span>${px(p.tp2)}</span></div>
-    <div><small>Leverage</small><span>maks ${p.lev}x</span></div>
-    <div><small>Margin</small><span>Isolated</span></div>
-    <div><small>Funding</small><span>${fr == null ? "--" : (fr * 100).toFixed(3) + "%"}</span></div>
-    <div><small>Risiko</small><span>1% modal</span></div>
-  </div>`;
-}
-
 function cardHTML(s, fresh, withOutcome) {
-  const d = describe(s), r = s.reco;
-  return `<article class="sc ${d.tone === "neu" ? "" : d.tone}${r.verdict === "IKUT" ? " ikut" : ""}${fresh ? " fresh" : ""}" data-id="${s.id}">
+  const d = describe(s);
+  return `<article class="sc ${d.tone === "neu" ? "" : d.tone}${s.wac && s.wac.verdict === "BELI SPOT" ? " ikut" : ""}${fresh ? " fresh" : ""}" data-id="${s.id}">
   <div class="sc-top">${logo(s.coin)}
     <div class="id"><b>${esc(s.coin)}</b><span class="chip dim">${isFut(s.mk) ? "PERP" : "SPOT"}</span><small>${EX[s.mk]} · ${wib(s.t)}${s.hist ? " · riwayat" : ""}</small></div>
     <span class="chip ${d.flow ? "flow" : d.tone}">${d.chip}</span>
@@ -162,12 +141,7 @@ function cardHTML(s, fresh, withOutcome) {
     <svg class="spark" data-spark="${s.mk}|${esc(s.coin)}|${s.t}" viewBox="0 0 120 54" preserveAspectRatio="none" aria-hidden="true"></svg>
     <div class="kv">${d.kv.map(([k, v]) => `<div><small>${k}</small><span>${v}</span></div>`).join("")}</div>
   </div>
-  ${withOutcome || (s.hist && !s.wac) ? `<div class="reco">
-    <div class="reco-h">${ring(r.score)}<span class="pill ${r.verdict}">${r.verdict}</span><span class="who">Saran lama (sebelum WAC)</span></div>
-    ${planHTML(s)}
-    <div class="rl"><em>Futures</em><span>${esc(r.fut)}</span></div>
-    <div class="rl"><em>Spot</em><span>${esc(r.spot)}</span></div>
-  </div>` : `<div class="reco"><div class="reco-h"><span class="who">Saran WAC untuk Adhi · SPOT prioritas</span></div>${typeof WACUI !== "undefined" ? WACUI.block(s) : `<div class="wac" data-wac="${s.id}"><div class="wac-note">Memuat aturan WAC…</div></div>`}</div>`}
+  ${withOutcome || (s.hist && !s.wac) ? "" : `<div class="reco"><div class="reco-h"><span class="who">Saran WAC untuk Adhi · SPOT prioritas</span></div>${typeof WACUI !== "undefined" ? WACUI.block(s) : `<div class="wac" data-wac="${s.id}"><div class="wac-note">Memuat aturan WAC…</div></div>`}</div>`}
   ${withOutcome ? outcomeHTML(s) : ""}
   <div class="acts"><button type="button" class="pri" data-chart="${s.id}">Lihat chart</button><button type="button" data-ask="${s.id}">Tanya Claude</button></div>
 </article>`;
@@ -358,7 +332,7 @@ async function drawChart() {
   const lines = [], add = (price, color, title, style = 0) => { if (price > 0) { series.createPriceLine({ price, color, lineWidth: 1, lineStyle: style, axisLabelVisible: true, title }); lines.push([color, title]); } };
   const w = ctx.wac || (ctx.sig && ctx.sig.wac && ctx.sig.wac.plan ? { zone: ctx.sig.wac.zone, plan: ctx.sig.wac.plan } : null);
   if (w) { add(w.zone.hi, "#22d3ee", "Zona atas", 1); add(w.zone.lo, "#22d3ee", "Zona bawah", 1); }
-  const plan = w ? w.plan : ctx.sig && ctx.sig.reco && ctx.sig.reco.plan;
+  const plan = w ? w.plan : null;
   if (plan) { add(plan.entry, "#22d3ee", "Entry"); add(plan.sl, "#ea3943", "SL"); add(plan.tp1, "#16c784", "TP1"); add(plan.tp2, "#16c784", "TP2"); }
   else if (ctx.sig) add(ctx.sig.price, "#22d3ee", "Sinyal");
   const lv = levels(cs.slice(-150), closes[closes.length - 1]);
@@ -764,22 +738,6 @@ function outcomeHTML(s) {
   }).join("");
   return `<div class="outcome"><em>Hasil harga</em>${cells}</div>`;
 }
-function accOf(items, verdict) {
-  const out = {};
-  for (const h of [1, 4, 24]) {
-    let w = 0, n = 0, sum = 0;
-    for (const s of items) {
-      if (verdict && s.reco.verdict !== verdict) continue;
-      const r = s.o && s.o[h];
-      if (r == null || (s.dir !== "up" && s.dir !== "down")) continue;
-      const dr = s.dir === "up" ? r : -r; n++; sum += dr; if (dr > 0) w++;
-    }
-    out[h] = { w, n, sum };
-  }
-  return out;
-}
-const accTxt = a => a && a.n ? `${Math.round(a.w / a.n * 100)}%` : "--";
-const accSub = a => a && a.n ? `rata-rata ${pct(a.sum / a.n)} · ${a.n}` : "belum ada";
 async function ensureIndex() {
   if (HIST.loaded) return HIST.index;
   try { HIST.index = await fetchData("data/index.json"); } catch { HIST.index = null; }
@@ -794,7 +752,7 @@ async function openHist(date) {
   const idx = await ensureIndex();
   const days = (idx && idx.days) || [];
   const d = date || HIST.date || (days[0] && days[0].date);
-  $("hDates").innerHTML = days.map(x => `<button class="dt" data-date="${x.date}" aria-pressed="${x.date === d}"><b>${dLabel(x.date)}</b><small>${(x.n.whale || 0) + (x.n.liq || 0) + (x.n.signal || 0)} sinyal · ${x.ikut || 0} IKUT</small></button>`).join("");
+  $("hDates").innerHTML = days.map(x => `<button class="dt" data-date="${x.date}" aria-pressed="${x.date === d}"><b>${dLabel(x.date)}</b><small>${(x.n.whale || 0) + (x.n.liq || 0) + (x.n.signal || 0)} sinyal</small></button>`).join("");
   if (!d) { $("hStats").innerHTML = ""; $("hList").innerHTML = `<div class="empty">${noDataMsg()}</div>`; return; }
   if (HIST.date !== d) {
     $("hList").innerHTML = `<div class="empty">Memuat ${dLabel(d)}…</div>`;
@@ -809,23 +767,21 @@ async function openHist(date) {
 }
 $("hDates").addEventListener("click", e => { const b = e.target.closest("[data-date]"); if (b) openHist(b.dataset.date); });
 function histFiltered() {
-  const from = +$("hFrom").value, to = +$("hTo").value, type = $("hType").value, verdict = $("hVerdict").value, ex = $("hEx").value;
+  const from = +$("hFrom").value, to = +$("hTo").value, type = $("hType").value, ex = $("hEx").value;
   const q = $("hCoin").value.trim().toUpperCase();
   return HIST.items.filter(s => {
     const h = hourWIB(s.t);
     if (h < from || h > to) return false;
     if (type !== "all" && s.f !== type) return false;
-    if (verdict !== "all" && s.reco.verdict !== verdict) return false;
     if (ex !== "all" && s.mk !== ex) return false;
     if (q && !s.coin.includes(q)) return false;
     return true;
   });
 }
 function renderHist() {
-  const list = histFiltered(), ikut = list.filter(s => s.reco.verdict === "IKUT"), a = accOf(ikut);
+  const list = histFiltered(), cnt = f => list.filter(s => s.f === f).length;
   const tile = (w, label, val, sub) => `<div class="tile ${w}"><div class="tx"><b>${val}</b><small>${label}${sub ? ` · ${sub}` : ""}</small></div></div>`;
-  $("hStats").innerHTML = tile("w3", "sinyal", list.length, `dari ${HIST.items.length}`) + tile("w3", "saran IKUT", ikut.length, "") +
-    [1, 4, 24].map(h => tile("w2", `IKUT tepat ${h}j`, accTxt(a[h]), a[h].n ? `${a[h].n} sinyal` : "")).join("");
+  $("hStats").innerHTML = tile("w3", "sinyal", list.length, `dari ${HIST.items.length}`) + tile("w3", "whale", cnt("whale"), "") + tile("w2", "likuidasi", cnt("liq"), "") + tile("w2", "pump/dump", cnt("signal"), "");
   const box = $("hList");
   if (!list.length) { box.innerHTML = `<div class="empty">Tidak ada sinyal untuk filter ini.</div>`; return; }
   box.innerHTML = list.slice(0, HIST.shown).map(s => cardHTML(s, false, true)).join("") +
@@ -833,36 +789,9 @@ function renderHist() {
   observeSparks(box);
   const more = $("hMore"); if (more) more.addEventListener("click", () => { HIST.shown += 120; renderHist(); });
 }
-async function openRekap() {
-  const idx = await ensureIndex(), days = (idx && idx.days) || [];
-  if (!days.length) { $("sumNote").innerHTML = `<div class="empty">${noDataMsg()}</div>`; $("accBox").innerHTML = ""; $("dayBox").innerHTML = ""; return; }
-  $("sumNote").innerHTML = `<div class="foot" style="font-size:12.5px;color:var(--muted)">Rekaman 24 jam dari <b style="color:var(--fg)">Binance Spot</b> dan <b style="color:var(--fg)">OKX</b> dengan threshold default, disimpan ${idx.keepDays || 30} hari. Update terakhir <b style="color:var(--fg)">${dLabel(dateKey(idx.updated))} ${wib(idx.updated)}</b>.</div>`;
-  const tot = {};
-  for (const d of days) for (const v in d.acc || {}) for (const h in d.acc[v]) {
-    const a = ((tot[v] = tot[v] || {})[h] = tot[v][h] || { w: 0, n: 0, sum: 0 });
-    a.w += d.acc[v][h].w; a.n += d.acc[v][h].n; a.sum += d.acc[v][h].sum;
-  }
-  const desc = { IKUT: "Saran ikut whale", TUNGGU: "Tunggu konfirmasi", HINDARI: "Jangan ikut", INFO: "Hanya informasi" };
-  $("accBox").innerHTML = ["IKUT", "TUNGGU", "HINDARI", "INFO"].map(v => `<article class="panel${v === "IKUT" ? " glow" : ""}">
-    <div style="display:flex;align-items:center;gap:8px"><span class="pill ${v}">${v}</span><span class="foot">${desc[v]}</span></div>
-    <div class="rings">${pctRing(tot[v] && tot[v][1], "1 jam")}${pctRing(tot[v] && tot[v][4], "4 jam")}${pctRing(tot[v] && tot[v][24], "24 jam")}</div>
-    <div class="foot">% sinyal yang harganya bergerak sesuai arah. ${tot[v] && tot[v][4] && tot[v][4].n ? `Rata-rata 4 jam ${pct(tot[v][4].sum / tot[v][4].n)}.` : ""}</div>
-  </article>`).join("");
-  if (typeof openMiss === "function") openMiss(days);
-  $("dayBox").innerHTML = days.map(d => {
-    const L = d.liq ? d.liq.L : 0, S = d.liq ? d.liq.S : 0, t = L + S || 1, a4 = d.acc && d.acc.IKUT && d.acc.IKUT[4];
-    return `<button class="day" data-day="${d.date}">
-      <div class="day-h"><b>${dLabel(d.date)}</b><span class="fg" style="color:${d.fng == null ? "var(--muted)" : fngColor(d.fng)}">F&amp;G ${d.fng == null ? "--" : d.fng}</span></div>
-      <div><div class="foot">Likuidasi long <span class="up">${usd(L)}</span> · short <span class="down">${usd(S)}</span></div><div class="lsbar"><i style="width:${L / t * 100}%;background:var(--buy)"></i><i style="width:${S / t * 100}%;background:var(--sell)"></i></div></div>
-      <div class="day-c"><span class="chip dim">Whale ${d.n.whale || 0}</span><span class="chip dim">Likuidasi ${d.n.liq || 0}</span><span class="chip dim">Pump/Dump ${d.n.signal || 0}</span><span class="chip buy">IKUT ${d.ikut || 0}</span><span class="chip dim">IKUT tepat 4j ${accTxt(a4)}</span></div>
-      <div class="day-top">Paling sering: ${(d.top || []).slice(0, 4).map(([c, n]) => `${logo(c, "sm")}<span>${esc(c)} ${n}×</span>`).join(" ")}</div>
-    </button>`;
-  }).join("");
-}
-$("dayBox").addEventListener("click", e => { const b = e.target.closest("[data-day]"); if (b) showView("hist", b.dataset.day); });
 for (const id of ["hFrom", "hTo"]) $(id).innerHTML = Array.from({ length: 24 }, (_, h) => `<option value="${h}">${id === "hFrom" ? "Dari" : "s/d"} ${String(h).padStart(2, "0")}.00</option>`).join("");
 $("hTo").value = "23";
-for (const id of ["hFrom", "hTo", "hType", "hVerdict", "hEx"]) $(id).addEventListener("change", () => { HIST.shown = 120; renderHist(); });
+for (const id of ["hFrom", "hTo", "hType", "hEx"]) $(id).addEventListener("change", () => { HIST.shown = 120; renderHist(); });
 $("hCoin").addEventListener("input", () => { HIST.shown = 120; renderHist(); });
 
 /* ============ navigation ============ */
@@ -878,7 +807,7 @@ function showView(v, date) {
   if (v === "sig") observeSparks($("v-sig"));
   if (v === "ikut") renderIkut();
   if (v === "hist") { openHist(date); if (typeof WACUI !== "undefined") WACUI.renderTimeline(); }
-  if (v === "rekap") { openRekap(); if (typeof WACUI !== "undefined") WACUI.renderRekap(); }
+  if (v === "rekap" && typeof WACUI !== "undefined") WACUI.renderRekap();
   if (v === "brief" && typeof openBrief === "function") openBrief();
 }
 document.querySelectorAll(".nb").forEach(b => b.addEventListener("click", () => showView(b.dataset.view)));

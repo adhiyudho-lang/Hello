@@ -9,7 +9,7 @@ const WACUI = (() => {
   const S = {
     base: null, ready: false, state: null, stateAt: 0, regime: null, regAt: 0, etf: undefined, q: [], busy: false, bt: undefined,
     set: Object.assign({ equity: null, riskPct: 1, levCap: null, chase24: null, cooldown: null, notif: {} }, store.get("awt.wac", {})),
-    seen: store.get("awt.wacSeen", {}), rem: store.get("awt.wacRem", {})
+    seen: store.get("awt.wacSeen", {}), rem: store.get("awt.wacRem", {}), openWhy: new Set()
   };
   for (const [k] of NOTIF_KINDS) if (S.set.notif[k] == null) S.set.notif[k] = true;
   const C = () => WAC.cfg();
@@ -174,11 +174,42 @@ const WACUI = (() => {
       ${[[pl.sl, "SL"], [sig.zone.lo, "Zona"], [pl.tp1, "TP1"]].map(([v, t]) => `<span class="tick" style="left:${pos(v)}%"></span><span class="lab" style="left:${pos(v)}%">${t}</span>`).join("")}
       ${p ? `<span class="now" style="left:${pos(p)}%">${px(p)}</span>` : ""}</div>`;
   }
+  const LEGEND = [
+    ["WATCH", "Coin lolos syarat awal (likuid, arus taker beli). Zona pullback dihitung; belum boleh beli."],
+    ["CONFIRMED", "Teknikal 4h sudah mendukung. Tunggu harga masuk zona lalu candle 1h hijau."],
+    ["ENTRY_READY", "Syarat beli spot lengkap. Boleh entry bertahap 40/30/30 dengan SL di invalidasi."],
+    ["POSITION_OPEN", "Simulasi dashboard: dianggap sudah beli di harga berikutnya untuk mengukur hasil. Bukan order sungguhan, kamu tetap memutuskan sendiri."],
+    ["TAKE_PROFIT_PARTIAL", "TP1 +9% tercapai: jual 50%, pindahkan SL ke harga entry."],
+    ["EXIT_WARNING", "72 jam tanpa TP1: siapkan keluar."],
+    ["EXIT_CONFIRMED", "Posisi simulasi ditutup (TP2, SL, atau time stop). Hasilnya masuk Rekap."],
+    ["ENTRY_INVALIDATED", "Batal: harga close 1h di bawah invalidasi atau rezim BTC memburuk."],
+    ["EXPIRED", "Kedaluwarsa: 72 jam tanpa konfirmasi."]
+  ];
+  function legendHTML() {
+    return `<details class="ik-legend" open><summary>Arti status sinyal &amp; skor</summary>
+      <ul>${LEGEND.map(([k, t]) => `<li>${statusChip(k)}<span>${t}</span></li>`).join("")}
+      <li><span class="chip dim">Skor</span><span>Lingkaran angka = skor WAC 0–100 (≥80 akumulasi kuat, 65–79 akumulasi, 50–64 watch, &lt;50 risiko distribusi). Ketuk lingkaran untuk melihat kenapa.</span></li></ul>
+    </details>`;
+  }
+  function whyHTML(s) {
+    const b = s.breakdown, name = { whale: "Arus (proxy whale)", tech: "Teknikal 4h", regime: "Rezim BTC", etf: "Arus ETF/ETP" };
+    const head = `<div class="wac-note"><b style="color:var(--fg)">Skor ${s.score}</b> = rata-rata berbobot komponen yang datanya ada. Kelas <span class="${WAC.CLASS_TONE[s.cls] || ""}">${esc(s.cls)}</span> · coverage ${s.coverage}% (porsi bobot yang datanya tersedia) · keyakinan ${s.confidence}${b ? ` (${b.confLabel})` : ""}.</div>`;
+    if (!b) return `<div class="wac-whybox">${head}<div class="wac-note">Rincian per komponen hanya tersimpan untuk sinyal baru (setelah pembaruan ini). Rezim saat deteksi: ${esc(s.regime || "N/A")}.</div></div>`;
+    const rows = Object.entries(b.weights).map(([k, w]) => { const c = b.comps[k]; const ok = c && c.status === "ok";
+      return `<tr><td>${name[k] || k}</td><td>${w}</td><td>${ok ? c.score : "N/A"}</td><td>${ok ? Math.round(w * c.score / Math.max(1, s.coverage)) : "–"}</td></tr><tr class="sub"><td colspan="4">${esc(c ? c.note : "")}</td></tr>`; }).join("");
+    return `<div class="wac-whybox">${head}
+      <div class="tblw"><table class="tbl"><thead><tr><th>Komponen (profil ${esc(b.profile)})</th><th>Bobot</th><th>Skor</th><th>Sumbang</th></tr></thead><tbody>${rows}
+      ${b.profile === "Non-ETF" ? `<tr><td>Arus ETF/ETP</td><td colspan="3">tidak berlaku (bukan aset ETF)</td></tr>` : ""}</tbody></table></div>
+      <ul class="checks">${b.filters.map(f => `<li class="${f.ok ? "ok" : "no"}">${esc(f.label)}${f.detail ? ` · ${esc(f.detail)}` : ""}</li>`).join("")}</ul>
+      <div class="wac-note">Arus taker/volume adalah proxy order agresif di exchange, bukan bukti whale membeli.</div></div>`;
+  }
+  const ringBtn = (s, size) => `<button type="button" class="ringbtn" data-wacwhy="${s.no}" aria-expanded="${S.openWhy.has(String(s.no))}" aria-label="Kenapa skor ${s.score}?">${ring(s.score, size)}<small>kenapa?</small></button>`;
   function zoneCard(x) {
     const s = x.sig, pl = s.plan, cls = s.status === "ENTRY_READY" ? "go" : ["POSITION_OPEN", "TAKE_PROFIT_PARTIAL"].includes(s.status) ? "go" : "wait";
     const ev = s.events.slice(-3).reverse();
     return `<article class="ik ${cls}">
-      <div class="ik-h">${logo(s.coin, "lg")}<div class="id"><b>${esc(s.coin)}</b><span class="wac-no">#${s.no}</span>${statusChip(s.status)}<small>${esc(s.id)} · ${wib(s.t)} · ${EX[s.mk] || ""}</small></div>${ring(s.score, 42)}</div>
+      <div class="ik-h">${logo(s.coin, "lg")}<div class="id"><b>${esc(s.coin)}</b><span class="wac-no">#${s.no}</span>${statusChip(s.status)}<small>${esc(s.id)} · ${wib(s.t)} · ${EX[s.mk] || ""}</small></div>${ringBtn(s, 42)}</div>
+      ${S.openWhy.has(String(s.no)) ? whyHTML(s) : ""}
       <div class="st ${cls === "go" ? "go" : "wait"}">${x.p ? `${px(x.p)} · ${x.txt}` : x.txt}</div>
       ${ladder(s, x.p)}
       <div class="lv">
@@ -200,6 +231,7 @@ const WACUI = (() => {
     if (VIEW !== "ikut") return;
     const reg = S.regime || (S.state && S.state.regime);
     $("ikReg").innerHTML = reg ? `Rezim BTC: <b class="${reg.state === "BULLISH" ? "up" : reg.state === "NEUTRAL" ? "" : "down"}">${reg.state}</b> · ${esc(reg.detail)}${reg.state === "BEARISH" ? ` · skor minimal +${C().regime.bearScoreAdd}, ukuran ½` : reg.state === "RISK-OFF" ? " · tidak ada entry baru" : ""}` : "Rezim BTC: memuat…";
+    if (!$("ikLegend").firstChild) $("ikLegend").innerHTML = legendHTML();
     $("ikList").innerHTML = !S.state ? `<article class="panel"><div class="empty">Status WAC dari perekam belum bisa dibuka (data/wac.json). Perekam GitHub Actions menulisnya tiap 10 menit.</div></article>`
       : list.length ? list.map(zoneCard).join("")
       : `<article class="panel"><div class="empty">Belum ada zona pullback yang dipantau. Aturan WAC konservatif: sinyal hanya dicatat bila lolos likuiditas dan arus taker beli. Update terakhir ${S.state.updated ? wib(S.state.updated) : "--"}.</div></article>`;
@@ -211,7 +243,8 @@ const WACUI = (() => {
     $("homeIk").innerHTML = list.slice(0, 8).map(x => {
       const s = x.sig;
       return `<article class="panel mini-ik${s.status === "ENTRY_READY" ? " glow" : ""}">
-        <div class="row">${logo(s.coin)}<div style="flex:1;min-width:0"><b>${esc(s.coin)}</b> <span class="wac-no">#${s.no}</span> ${statusChip(s.status)}<div class="foot">${x.txt}</div></div>${ring(s.score)}</div>
+        <div class="row">${logo(s.coin)}<div style="flex:1;min-width:0"><b>${esc(s.coin)}</b> <span class="wac-no">#${s.no}</span> ${statusChip(s.status)}<div class="foot">${x.txt}</div></div>${ringBtn(s)}</div>
+        ${S.openWhy.has(String(s.no)) ? whyHTML(s) : ""}
         <div class="lv3"><div><small class="k">Zona</small><span style="color:var(--glow)">${px(s.zone.lo)}</span></div><div><small class="k">Invalidasi</small><span class="down">${px(s.inval)}</span></div><div><small class="k">TP1</small><span class="up">${px(s.plan.tp1)}</span></div></div>
         <div class="acts"><button class="pri" data-wacchart="${s.no}">Chart + zona</button><button data-go="ikut">Detail</button></div>
       </article>`;
@@ -358,6 +391,13 @@ const WACUI = (() => {
   }
 
   /* ---------- boot ---------- */
+  document.addEventListener("click", e => {
+    const w = e.target.closest("[data-wacwhy]");
+    if (!w) return;
+    const k = w.dataset.wacwhy;
+    if (S.openWhy.has(k)) S.openWhy.delete(k); else S.openWhy.add(k);
+    renderIkut(); if (VIEW === "home") renderHome();
+  });
   document.addEventListener("click", e => { const b = e.target.closest("[data-wacchart]"); if (b) { const c = chartCtx(b.dataset.wacchart); if (c) openChart(c); } });
   $("btnSettings").addEventListener("click", () => { if (S.ready) fillSettings(); });
   $("setForm").addEventListener("submit", () => { if (S.ready) saveSettings(); });

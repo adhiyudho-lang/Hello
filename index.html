@@ -495,6 +495,15 @@ details.wac-fut .plan { margin-top: 8px; }
 .ck input { width: auto !important; }
 .hint { color: var(--muted); font-size: 11.5px; }
 .swing { color: var(--warn); }
+.ringbtn { background: none; border: 0; padding: 0; display: grid; justify-items: center; gap: 2px; cursor: pointer; color: var(--muted); }
+.ringbtn small { font-size: 10px; } .ringbtn[aria-expanded="true"] small { color: var(--glow); }
+.wac-whybox { border: 1px solid var(--line); border-radius: 12px; padding: 10px; display: grid; gap: 6px; background: rgba(6,11,22,.45); }
+.tbl tr.sub td { color: var(--muted); font-family: inherit; text-align: left; border-bottom-style: dashed; white-space: normal; padding-top: 0; }
+.ik-legend { margin-top: 8px; font-size: 12.5px; } .ik-legend summary { cursor: pointer; color: var(--glow); }
+.ik-legend ul { list-style: none; padding: 0; margin: 8px 0 0; display: grid; gap: 7px; }
+.ik-legend li { display: grid; grid-template-columns: 128px 1fr; gap: 8px; align-items: start; color: var(--muted); }
+.ik-legend li .chip { justify-self: start; }
+.bf-stale { font-size: 12.5px; color: var(--warn); background: var(--warn-bg); border-radius: 9px; padding: 6px 9px; margin: 6px 0; }
 </style>
 </head>
 <body>
@@ -573,13 +582,14 @@ details.wac-fut .plan { margin-top: 8px; }
       <div class="sec-h" style="margin:0 0 6px"><h2>IKUT · Zona WAC dipantau</h2><small>terdekat dulu</small></div>
       <div class="foot" id="ikReg" style="font-size:12.5px;margin-bottom:6px">Rezim BTC: memuat…</div>
       <div class="foot" style="font-size:12.5px;color:var(--muted)"><b style="color:var(--fg)">SPOT prioritas.</b> Sinyal bernomor (#N) dicatat perekam 24/7. Alur: WATCH → TERKONFIRMASI → <b style="color:var(--buy)">ENTRY READY</b> (pullback ke zona + candle 1h hijau) → posisi → TP1 (+9%, jual 50%, SL ke entry) → TP2 (+18%) / time stop 72 jam. Batal bila close 1h di bawah invalidasi. Pengingat pullback menyebut nomor sinyal. Futures hanya sekunder, risiko maks 1% equity.</div>
+      <div id="ikLegend"></div>
     </article>
     <div class="ikgrid" id="ikList"></div>
   </section>
 
   <!-- ETF WEEKLY BRIEF -->
   <section class="view" id="v-brief" hidden>
-    <article class="panel glow bf-head" id="bfHead"><div class="empty">Memuat Crypto ETF Weekly Brief…</div></article>
+    <article class="panel glow bf-head" id="bfHead"><div class="empty">Memuat Crypto ETF Daily Brief…</div></article>
     <div class="bf-tabs" id="bfTabs" role="group" aria-label="Kategori brief">
       <button data-bf="ringkasan" aria-pressed="true">Ringkasan</button>
       <button data-bf="etf" aria-pressed="false">Arus ETF</button>
@@ -600,7 +610,6 @@ details.wac-fut .plan { margin-top: 8px; }
       <select id="hFrom" aria-label="Dari jam"></select>
       <select id="hTo" aria-label="Sampai jam"></select>
       <select id="hType" aria-label="Jenis"><option value="all">Semua jenis</option><option value="whale">Whale</option><option value="liq">Likuidasi</option><option value="signal">Pump / Dump</option></select>
-      <select id="hVerdict" aria-label="Saran"><option value="all">Semua saran</option><option value="IKUT">IKUT</option><option value="TUNGGU">TUNGGU</option><option value="HINDARI">HINDARI</option><option value="INFO">INFO</option></select>
       <select id="hEx" aria-label="Exchange"><option value="all">Semua exchange</option><option value="BF">Binance Futures</option><option value="BS">Binance Spot</option><option value="OF">OKX Futures</option><option value="OS">OKX Spot</option></select>
       <input type="search" id="hCoin" placeholder="Cari coin" autocomplete="off" aria-label="Cari coin">
     </div>
@@ -615,13 +624,6 @@ details.wac-fut .plan { margin-top: 8px; }
     <div id="wacStats"><div class="empty">Memuat…</div></div>
     <div class="sec-h"><h2>Backtest WAC vs pembanding</h2><small>12 bulan · train / validasi / test</small></div>
     <div id="btBox"><div class="empty">Memuat…</div></div>
-    <article class="panel" id="sumNote"><div class="empty">Memuat ringkasan…</div></article>
-    <div class="sec-h"><h2>Saran lama (sebelum WAC)</h2><small>arsip aturan v1/v2</small></div>
-    <div class="acc" id="accBox"></div>
-    <div class="sec-h"><h2>Kenapa saran IKUT bisa meleset?</h2><small>analisa otomatis dari rekaman</small></div>
-    <div class="view" id="missBox"></div>
-    <div class="sec-h"><h2>Rekap per hari</h2><small>ketuk untuk lihat riwayat</small></div>
-    <div class="days" id="dayBox"></div>
   </section>
 </main>
 
@@ -699,6 +701,5 @@ details.wac-fut .plan { margin-top: 8px; }
 <script src="app.js"></script>
 <script src="wacui.js"></script>
 <script src="brief.js"></script>
-<script src="miss.js"></script>
 </body>
 </html>

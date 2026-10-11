@@ -35,14 +35,17 @@ Setiap sinyal punya **saran WAC untuk Adhi** (BELI SPOT / TUNGGU PULLBACK / HIND
 Catatan: Binance hanya mengirim maks 1 likuidasi per coin per detik, jadi total likuidasi bisa lebih kecil dari Coinglass.
 Sinyal mulai muncul setelah ±1 menit dashboard dibuka (butuh riwayat harga). Threshold bisa diatur lewat tombol ⚙ Threshold.
 
-### Menu ETF Brief (Crypto ETF Weekly Brief)
+### Menu ETF Brief (Crypto ETF Daily Brief)
 
-Isi brief mingguan dari artifact claude.ai (`data/brief.json`, disinkronkan tiap Sabtu pagi oleh Routine Claude
-lewat `recorder/brief-extract.cjs`) ditambah arus harian ETF spot BTC, ETH, SOL beserta harganya (CoinMarketCap) dan per penerbit BTC (bitbo.io)
-di `data/etf.json`, diambil perekam tiap jam lewat `recorder/etf.cjs`. Tiap coin diberi skor akumulasi 1–100
-(akumulasi / akumulasi tersembunyi / risiko distribusi / distribusi). Tab Altcoin memakai skor fundamental
-framework Adhi di `data/fundamental.json` (70%) + teknikal brief (30%) untuk saran MASUK / TAHAN / HINDARI 2 tahun. Sub-tab: Ringkasan, Arus ETF, Event, Pengingat,
-Teknikal BTC, Altcoin, Aksi.
+Brief harian **Senin–Jumat ±07.00 WIB** (siap ±07.15). Routine Claude "Crypto ETF Daily Brief" berjalan 07.02 WIB:
+`node recorder/brief-build.cjs draft` menghitung semua angka (harga, perubahan 7/30 hari, range 50 hari, EMA5/25/99,
+swing high/low) dari candle harian OKX, lalu Claude meriset berita, kalender makro, event token & arus ETF dan menulis
+narasinya saja. `node recorder/brief-build.cjs build narasi.json` menggabungkan, memvalidasi (zona harus dekat harga nyata,
+minimal 3 sumber, dst.) dan menulis `data/brief.json`. Angka tidak pernah diketik tangan. Bila brief tidak terbit,
+dashboard menampilkan peringatan "belum diperbarui".
+Arus harian ETF spot BTC, ETH, SOL (CoinMarketCap) dan per penerbit BTC (bitbo.io) ada di `data/etf.json`,
+diambil perekam tiap jam lewat `recorder/etf.cjs`. Tab Altcoin memakai skor fundamental framework Adhi
+di `data/fundamental.json` (70%) + teknikal brief (30%). Sub-tab: Ringkasan, Arus ETF, Event, Pengingat, Teknikal BTC, Altcoin, Aksi.
 
 ### Saran IKUT = strategi WAC (Whale Accumulation Confirmation)
 
@@ -82,18 +85,19 @@ futures sekunder. Hanya sinyal dan notifikasi, tidak pernah menempatkan order.
 (acak, buy & hold, CHASE, teknikal saja, WAC A, WAC B, WAC + rezim; train/validasi/test, biaya 2×). Bila kriteria
 (t-stat test ≥ 2, positif dengan biaya 2×, tidak bergantung satu coin/trade) gagal → **BELUM TERBUKTI**.
 
-Saran lama (IKUT v1/v2) tetap ada sebagai arsip di Riwayat & Rekap.
+Tab **IKUT** punya legend arti status (Watch, Terkonfirmasi, Entry ready, Posisi (virtual) = simulasi, bukan order, dst.);
+ketuk lingkaran skor untuk rincian bobot, skor per komponen, coverage dan filter. Tab **Rekap** berisi statistik WAC live dan backtest.
 
-### Rekaman 24 jam (Riwayat & Ringkasan harian)
+### Rekaman 24 jam (Riwayat)
 
 File `.github/workflows/recorder.yml` menjalankan `recorder/record.cjs` di GitHub Actions **setiap jam**.
 Perekam memakai aturan yang sama dengan dashboard (`engine.js`) dan menyimpan:
 
 - `data/days/YYYY-MM-DD.json`: semua sinyal per hari (tanggal WIB) + total likuidasi long/short hari itu
-- `data/index.json`: ringkasan per hari + akurasi saran (IKUT/TUNGGU/HINDARI)
+- `data/index.json`: ringkasan per hari
 
-Setiap sinyal diberi **hasil harga** 1, 4 dan 24 jam kemudian, supaya kelihatan apakah saran IKUT terbukti.
-Data lebih dari 30 hari dihapus otomatis. Di dashboard, buka tab **Riwayat** (pilih tanggal & jam) atau **Ringkasan harian**.
+Setiap sinyal diberi **hasil harga** 1, 4 dan 24 jam kemudian.
+Data lebih dari 30 hari dihapus otomatis. Di dashboard, buka tab **Riwayat** (pilih tanggal & jam, plus timeline sinyal WAC per nomor).
 
 Syarat:
 - Repo harus **public** (GitHub Actions gratis tanpa batas menit untuk repo public).
