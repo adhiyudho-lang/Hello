@@ -1,0 +1,6 @@
+{
+  "_doc": "Hot wallet exchange untuk Modul C (on-chain). Isi manual dari sumber publik (mis. label explorer resmi), satu daftar alamat per exchange per chain. Kosong = Modul C tidak mengklasifikasi apa pun. Jangan menebak alamat.",
+  "evm": { "Binance": [], "OKX": [], "Bybit": [], "Coinbase": [] },
+  "solana": { "Binance": [], "OKX": [] },
+  "starknet": { "Binance": [], "OKX": [] }
+}

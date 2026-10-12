@@ -35,7 +35,7 @@ const dateWIB = t => new Date(t + 7 * 3600e3).toISOString().slice(0, 10);
 const CFG = { ...W.DEFAULTS };
 let FNG = null, BTC = null;
 // journal of this run: new signals, outcome values found for older signals, liquidation totals
-const J = { items: [], outcomes: {}, liq: {}, fng: null, wac: null };
+const J = { items: [], outcomes: {}, liq: {}, fng: null, wac: null, flow: {}, flowLive: null };
 const stats = { whale: 0, liq: 0, signal: 0 };
 
 const E = W.create({
@@ -50,7 +50,7 @@ const E = W.create({
     if (s.mult != null) s.mult = +s.mult.toFixed(1);
     J.items.push(s);
     stats[feed]++;
-    if (s.kind !== "liq") wacQueue.push(s);
+    if (s.kind !== "liq") { wacQueue.push(s); FL.add(s); }
   },
   onLiqRaw: (mk, coin, pos, v, t) => {
     const a = J.liq[dateWIB(t)] || (J.liq[dateWIB(t)] = { L: 0, S: 0, nL: 0, nS: 0 });
@@ -194,6 +194,7 @@ const loadDay = d => readJSON(dayFile(d), { date: d, liq: { L: 0, S: 0, nL: 0, n
 
 function writeJournal() {
   if (FNG) J.fng = FNG.value;
+  J.flowLive = FL.live([...recentItems, ...J.items]);
   fs.writeFileSync(JOURNAL, JSON.stringify(J));
   log(`journal: ${J.items.length} signals, ${Object.keys(J.outcomes).length} outcome updates`);
 }
@@ -201,20 +202,25 @@ function writeJournal() {
 /* apply a journal onto data/ (idempotent for a fresh checkout) */
 function applyJournal(j) {
   if (j.wac) writeJSON(path.join(DATA, "wac.json"), j.wac);
+  if (j.flowLive) writeJSON(path.join(DATA, "flow-live.json"), j.flowLive);
+  const flowByDay = {};
+  for (const id in j.flow || {}) { const u = j.flow[id]; (flowByDay[u.d] = flowByDay[u.d] || {})[id] = u; }
   const byDay = {};
   for (const s of j.items) (byDay[dateWIB(s.t)] = byDay[dateWIB(s.t)] || []).push(s);
   const outByDay = {};
   for (const id in j.outcomes) { const u = j.outcomes[id]; (outByDay[u.d] = outByDay[u.d] || {})[id] = u.o; }
   const today = dateWIB(Date.now());
-  const dates = new Set([...Object.keys(byDay), ...Object.keys(j.liq), ...Object.keys(outByDay), today]);
+  const dates = new Set([...Object.keys(byDay), ...Object.keys(j.liq), ...Object.keys(outByDay), ...Object.keys(flowByDay), today]);
   for (const d of dates) {
     if (d === today && !byDay[d] && !j.liq[d] && !outByDay[d] && !fs.existsSync(dayFile(d))) continue;
     const day = loadDay(d);
     const seen = new Set(day.items.map(x => x.id));
     for (const s of byDay[d] || []) if (!seen.has(s.id)) day.items.push(s);
     day.items.sort((a, b) => a.t - b.t);
-    const outs = outByDay[d] || {};
+    const outs = outByDay[d] || {}, fls = flowByDay[d] || {};
     for (const s of day.items) {
+      const f = fls[s.id];
+      if (f) { if (f.fl && !s.fl) s.fl = f.fl; if (f.trk) s.trk = Object.assign({}, f.trk, s.trk || {}); }
       const o = outs[s.id]; if (!o) continue;
       s.o = s.o || {};
       for (const h in o) if (s.o[h] === undefined) s.o[h] = o[h];
@@ -312,11 +318,16 @@ function buildIndex() {
     const d = f.slice(0, 10);
     if (d < cutoff) { fs.unlinkSync(path.join(DAYS, f)); log("removed old", f); continue; }
     const day = loadDay(d);
-    const n = { whale: 0, liq: 0, signal: 0 }, coins = {}, acc = {};
+    const n = { whale: 0, liq: 0, signal: 0 }, coins = {}, acc = {}, flow = {};
     let ikut = 0;
     for (const s of day.items) {
       n[s.f] = (n[s.f] || 0) + 1;
       coins[s.coin] = (coins[s.coin] || 0) + 1;
+      if (s.fl && s.fl.label) {
+        const g = (flow[s.fl.label] = flow[s.fl.label] || { n: 0, cp: {} });
+        g.n++;
+        for (const c in s.trk || {}) { const st = s.trk[c].st; const h = (g.cp[c] = g.cp[c] || {}); h[st] = (h[st] || 0) + 1; }
+      }
       const v = s.reco && s.reco.verdict;
       if (v === "IKUT") ikut++;
       if (!v || !s.o || (s.dir !== "up" && s.dir !== "down")) continue;
@@ -328,9 +339,28 @@ function buildIndex() {
       }
     }
     const top = Object.entries(coins).sort((a, b) => b[1] - a[1]).slice(0, 5);
-    days.push({ date: d, fng: day.fng, liq: day.liq, n, ikut, top, acc });
+    days.push({ date: d, fng: day.fng, liq: day.liq, n, ikut, top, acc, flow });
   }
   writeJSON(path.join(DATA, "index.json"), { updated: Date.now(), keepDays: KEEP_DAYS, days: days.reverse() });
+}
+
+/* ---------- Signal Intelligence (flow label + T+5/15/60 tracker) ---------- */
+const FL = require("./flow.cjs")({ getJSON, sleep, log, E, J, dateWIB });
+const FLOWX = require("../flow.js");
+let recentItems = [];
+function loadRecentForFlow() {
+  const now = Date.now();
+  for (const d of new Set([dateWIB(now - 4 * 3600e3), dateWIB(now)])) {
+    if (!fs.existsSync(dayFile(d))) continue;
+    for (const s of loadDay(d).items) if (now - s.t < 4 * 3600e3) { recentItems.push(s); FL.add(s, d); }
+  }
+  log(`flow: ${FL.queue.size} sinyal dipantau dari rekaman sebelumnya`);
+}
+async function flowStatus(s, rec, cp, from, to) {
+  // Telegram only for the actionable labels and the two decisive statuses (no spam)
+  if (!["LONG_BARU", "SHORT_BARU"].includes(rec.fl.label) || !["FOLLOW_THROUGH", "SUDAH_KELUAR"].includes(to)) return;
+  const r = rec.trk[cp], L = FLOWX.LABELS[rec.fl.label], S = FLOWX.STATUS[to];
+  await tgSend(`${S.icon} ${s.coin} · T+${cp}: ${S.text} (${L.text})`, `${W.EX[s.mk]} · sinyal ${whenText(s.t)} · harga ${(r.dp * 100).toFixed(2)}%${r.doi == null ? "" : ` · OI ${(r.doi * 100).toFixed(1)}%`} · CVD ${W.usd(Math.abs(r.cvd))} ${r.cvd >= 0 ? "beli" : "jual"} · ${r.why}`);
 }
 
 /* ---------- WAC lifecycle (authoritative numbering + 24/7 zone monitoring) ---------- */
@@ -436,11 +466,12 @@ async function wacTick() {
 }
 function pushWac() {
   writeJSON(WAC_FILE, WS);
+  writeJSON(path.join(DATA, "flow-live.json"), FL.live([...recentItems, ...J.items]));
   const br = process.env.GITHUB_REF_NAME;
   if (!process.env.GITHUB_ACTIONS || !br) return;
   const sh = c => execSync(c, { cwd: path.join(__dirname, ".."), stdio: "pipe" });
   try {
-    sh("git add data/wac.json");
+    sh("git add data/wac.json data/flow-live.json");
     try { sh("git diff --cached --quiet"); return; } catch {}
     sh(`git commit -q -m "WAC state ${new Date().toISOString().slice(11, 16)} UTC"`);
     sh(`git pull -q --rebase --autostash origin ${br}`);
@@ -469,7 +500,9 @@ if (process.argv[2] === "merge") {
   setInterval(loadBtcTrend, 5 * 60000);
   setInterval(writeJournal, 5 * 60000);
   setInterval(wacTick, 60000); setTimeout(wacTick, 20000);
-  setInterval(pushWac, 10 * 60000);
+  setInterval(pushWac, 5 * 60000);
+  loadRecentForFlow();
+  setInterval(() => FL.tick(flowStatus).catch(e => log("flow tick", e.message)), 60000);
 
   const end = () => {
     stopping = true;
@@ -481,6 +514,7 @@ if (process.argv[2] === "merge") {
   end();
   E.flushBursts();
   await wacTick().catch(() => {});
+  await FL.tick(flowStatus).catch(() => {});
   writeJournal();
   await fillOutcomes(3 * 60000);
   writeJournal();

@@ -164,7 +164,7 @@ function create(opts) {
   /* liquidations */
   function onLiq(mk, coin, pos, price, value, t) {
     if (!coin || !(value > 0)) return;
-    liqWin.push({ t, pos, v: value });
+    liqWin.push({ t, pos, v: value, coin });
     if (opts.onLiqRaw) opts.onLiqRaw(mk, coin, pos, value, t);
     const now = Date.now();
     while (liqWin.length && liqWin[0].t < now - 3600000) liqWin.shift();

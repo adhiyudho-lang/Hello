@@ -508,6 +508,18 @@ details.wac-fut .plan { margin-top: 8px; }
 .stc[aria-pressed="true"] { opacity: 1; border-color: rgba(34,211,238,.45); color: var(--fg); }
 .stc b { font-family: var(--font-mono); font-size: 11.5px; }
 #ikF { flex-wrap: wrap; }
+.fi { display: grid; gap: 6px; }
+.fi:empty { display: none; }
+.fi-wait { font-size: 12px; color: var(--muted); }
+.fi-h { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; }
+.fi-h small { color: var(--muted); font-size: 11px; margin-left: auto; }
+.fi-l { font-family: var(--font-mono); font-size: 12px; color: var(--muted); }
+.fi-cps { display: flex; flex-wrap: wrap; gap: 6px; }
+.fi-cp { font-size: 11.5px; border-radius: 999px; padding: 3px 9px; background: rgba(138,155,184,.12); color: var(--muted); }
+.fi-cp.buy { background: var(--buy-bg); color: var(--buy); } .fi-cp.sell { background: var(--sell-bg); color: var(--sell); }
+.chip.fi-buy { background: var(--buy-bg); color: var(--buy); } .chip.fi-sell { background: var(--sell-bg); color: var(--sell); }
+.chip.fi-neu { background: var(--warn-bg); color: var(--warn); } .chip.fi-warn { background: rgba(240,136,61,.15); color: #f0883d; } .chip.fi-dim { background: rgba(138,155,184,.12); color: var(--muted); }
+.flgrid { display: contents; }
 .ik-new { position: fixed; bottom: calc(84px + env(safe-area-inset-bottom)); left: 50%; transform: translateX(-50%); z-index: 30; white-space: nowrap; border: 1px solid rgba(34,211,238,.5); background: #0c1526; color: var(--glow); border-radius: 999px; padding: 8px 16px; font: inherit; font-size: 13px; font-weight: 600; box-shadow: 0 8px 24px -8px rgba(34,211,238,.6); cursor: pointer; }
 .bf-stale { font-size: 12.5px; color: var(--warn); background: var(--warn-bg); border-radius: 9px; padding: 6px 9px; margin: 6px 0; }
 </style>
@@ -630,6 +642,8 @@ details.wac-fut .plan { margin-top: 8px; }
   <section class="view" id="v-rekap" hidden>
     <div class="sec-h"><h2>Statistik WAC live</h2><small>spot &amp; futures · per rezim</small></div>
     <div id="wacStats"><div class="empty">Memuat…</div></div>
+    <div class="sec-h"><h2>Hit-rate label arus</h2><small>T+15 / T+60 · bahan kalibrasi</small></div>
+    <div id="flowRekap"><div class="empty">Memuat…</div></div>
     <div class="sec-h"><h2>Backtest WAC vs pembanding</h2><small>12 bulan · train / validasi / test</small></div>
     <div id="btBox"><div class="empty">Memuat…</div></div>
   </section>
@@ -665,6 +679,10 @@ details.wac-fut .plan { margin-top: 8px; }
   <form class="sheet-in setform" id="setForm">
     <div class="grab"></div>
     <div class="sheet-h"><div class="id"><b id="setTitle">Pengaturan</b><small>Disimpan di browser ini. Berlaku untuk sinyal berikutnya.</small></div></div>
+    <fieldset>
+      <legend>Signal Intelligence (label arus &amp; T+5/15/60)</legend>
+      <div id="fl_fields" class="flgrid"></div>
+    </fieldset>
     <fieldset>
       <legend>Strategi WAC (saran IKUT)</legend>
       <label for="w_equity">Equity / modal ($)<input id="w_equity" type="number" min="0" step="100" placeholder="contoh 10000"></label>
@@ -706,8 +724,10 @@ details.wac-fut .plan { margin-top: 8px; }
 <script src="https://cdn.jsdelivr.net/npm/lightweight-charts@4.1.3/dist/lightweight-charts.standalone.production.js"></script>
 <script src="engine.js"></script>
 <script src="wac.js"></script>
+<script src="flow.js"></script>
 <script src="app.js"></script>
 <script src="wacui.js"></script>
+<script src="sigintel.js"></script>
 <script src="brief.js"></script>
 </body>
 </html>

@@ -139,6 +139,7 @@ function cardHTML(s, fresh, withOutcome) {
     <span class="chip ${d.flow ? "flow" : d.tone}">${d.chip}</span>
   </div>
   <div><div class="sc-title ${d.tone}">${d.title}</div><div class="sc-desc">${d.desc}</div></div>
+  ${s.kind === "liq" ? "" : `<div class="fi" data-fi="${s.id}">${typeof SIGI !== "undefined" ? SIGI.html(s) : ""}</div>`}
   <div class="sc-mid">
     <svg class="spark" data-spark="${s.mk}|${esc(s.coin)}|${s.t}" viewBox="0 0 120 54" preserveAspectRatio="none" aria-hidden="true"></svg>
     <div class="kv">${d.kv.map(([k, v]) => `<div><small>${k}</small><span>${v}</span></div>`).join("")}</div>
@@ -819,6 +820,7 @@ function showView(v, date) {
   if (v === "ikut") renderIkut();
   if (v === "hist") { openHist(date); if (typeof WACUI !== "undefined") WACUI.renderTimeline(); }
   if (v === "rekap" && typeof WACUI !== "undefined") WACUI.renderRekap();
+  if (v === "rekap" && typeof SIGI !== "undefined") SIGI.renderRekap();
   if (v === "brief" && typeof openBrief === "function") openBrief();
 }
 document.querySelectorAll(".nb").forEach(b => b.addEventListener("click", () => showView(b.dataset.view)));

@@ -1,0 +1,21 @@
+{
+  "_doc": "Signal Intelligence (spec Modul A/B). Browser settings can override these per device; the recorder uses this file.",
+  "windowMin": 5,
+  "buyRatio": 1.3,
+  "sellRatio": 0.77,
+  "oiPct": 0.01,
+  "fundingHigh": 0.0005,
+  "fundingLow": -0.0005,
+  "bounceDrop": 0.08,
+  "bounceHours": 3,
+  "liqShortShare": 0.3,
+  "checkpoints": [5, 15, 60],
+  "exitBurstShare": 0.5,
+  "oiGiveBack": 0.5,
+  "ftPrice": 0.01,
+  "ftOi": 0.005,
+  "flatPrice": 0.003,
+  "flatOi": 0.005,
+  "flatCvdShare": 0.1,
+  "weights": { "LONG_BARU": 2, "SHORT_COVER": 0, "SHORT_BARU": -2, "LONG_EXIT": -1, "NETRAL": 0, "SPOT_BELI": 1, "SPOT_JUAL": -1 }
+}

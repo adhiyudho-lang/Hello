@@ -88,6 +88,27 @@ futures sekunder. Hanya sinyal dan notifikasi, tidak pernah menempatkan order.
 Tab **IKUT** punya legend arti status (Watch, Terkonfirmasi, Entry ready, Posisi (virtual) = simulasi, bukan order, dst.);
 ketuk lingkaran skor untuk rincian bobot, skor per komponen, coverage dan filter. Tab **Rekap** berisi statistik WAC live dan backtest.
 
+### Signal Intelligence (tab Sinyal)
+
+Setiap kartu sinyal (bukan likuidasi) menjawab **siapa yang bergerak** dan **masih di dalam atau sudah keluar**
+(`flow.js`, ambang di `config/flow.json`, bisa diubah per perangkat di ⚙ tanpa redeploy):
+
+- **Label arus (Modul A)** dari window 5 menit: rasio taker beli/jual × perubahan open interest →
+  🟢 `LONG_BARU` · 🟡 `SHORT_COVER` · 🔴 `SHORT_BARU` · 🟠 `LONG_EXIT` · ⚪ `NETRAL` (spot tanpa OI: `SPOT_BELI` / `SPOT_JUAL`).
+  Tag konteks: `CROWDED_LONG` (funding > 0,05%), `SQUEEZE_POTENSIAL` (funding < −0,05% + short cover),
+  `BOUNCE_ZONE` (sinyal beli setelah turun > 8% dalam 3 jam), `LIQ_SHORT` (likuidasi short > 30% taker beli → short cover).
+  Baris kartu: `OI −2,4% · Funding −0,012% · Liq short $410rb · Taker 1,8×`.
+- **Tracker T+5 / T+15 / T+60 (Modul B)**: ✅ masih di dalam · ❌ sudah keluar (burst lawan ≥ 50% ukuran awal atau OI kembali
+  > 50% kenaikan awal) · ⏸️ tidak ada follow-through · 🚀 follow-through. Notifikasi hanya saat status berubah
+  (default untuk `LONG_BARU` & `SHORT_BARU`; Telegram perekam hanya untuk 🚀/❌).
+- **Sumber**: Binance Futures & Binance Spot dihitung langsung di browser. OKX memblokir endpoint historinya dari browser,
+  jadi OKX Futures/Spot dihitung **perekam 24/7** (`recorder/flow.cjs`) dan dikirim ke `data/flow-live.json` tiap 5 menit.
+  Hasil tersimpan di Riwayat (per sinyal) dan **Rekap → Hit-rate label arus** (bahan kalibrasi setelah ±2 minggu).
+- Label arus **tidak mengubah skor/aturan WAC** (sesuai keputusan Adhi). Arus taker & OI adalah agregat pasar, bukan identitas wallet.
+- **On-chain (Modul C)** belum aktif: kerangka di `recorder/adapters.cjs` + daftar hot wallet `data/exchange-wallets.json`
+  (diisi manual dari sumber publik). Aktif setelah `ETHERSCAN_API_KEY` / `HELIUS_API_KEY` diisi di GitHub Secrets dan adapter diimplementasi.
+- Tes: `node --test tests/flow.test.cjs` (satu tes per baris matriks A2, filter A3, status B3, Modul C).
+
 ### Rekaman 24 jam (Riwayat)
 
 File `.github/workflows/recorder.yml` menjalankan `recorder/record.cjs` di GitHub Actions **setiap jam**.
