@@ -89,14 +89,16 @@ module.exports = function createFlow({ getJSON, sleep, log, E, J, dateWIB }) {
       }
     } finally { busy = false; }
   }
-  // compact view of the last 3 hours for the browser (OKX labels it cannot compute itself)
+  // compact view for the browser (OKX labels it cannot compute itself)
   function live(items) {
-    const cut = Date.now() - 3 * 3600e3, out = [];
+    // only OKX (the browser computes Binance itself), last 90 minutes, without the tracker baseline
+    const cut = Date.now() - 90 * 60e3, out = [];
     for (const s of items) {
-      if (s.t < cut || s.kind === "liq") continue;
+      if (s.t < cut || s.kind === "liq" || (s.mk !== "OF" && s.mk !== "OS")) continue;
       const u = J.flow[s.id];
       if (!u || !u.fl) continue;
-      out.push({ id: s.id, coin: s.coin, mk: s.mk, t: s.t, dir: s.dir, price: s.price, fl: u.fl, trk: u.trk });
+      const { base, ...fl } = u.fl;
+      out.push({ coin: s.coin, mk: s.mk, t: s.t, fl, trk: u.trk });
     }
     return { updated: Date.now(), items: out };
   }
