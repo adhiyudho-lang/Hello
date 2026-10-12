@@ -1,0 +1,7 @@
+{
+  "_doc": "Notifikasi Telegram dari perekam (butuh secret TELEGRAM_BOT_TOKEN & TELEGRAM_CHAT_ID). true = dikirim.",
+  "wac": true,
+  "regime": true,
+  "flow": false,
+  "whale": true
+}

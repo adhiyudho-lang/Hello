@@ -362,11 +362,12 @@ async function flowStatus(s, rec, cp, from, to) {
   // Telegram only for the actionable labels and the two decisive statuses (no spam)
   if (!["LONG_BARU", "SHORT_BARU"].includes(rec.fl.label) || !["FOLLOW_THROUGH", "SUDAH_KELUAR"].includes(to)) return;
   const r = rec.trk[cp], L = FLOWX.LABELS[rec.fl.label], S = FLOWX.STATUS[to];
+  if (NOTIFY.flow === false) return;
   await tgSend(`${S.icon} ${s.coin} · T+${cp}: ${S.text} (${L.text})`, `${W.EX[s.mk]} · sinyal ${whenText(s.t)} · harga ${(r.dp * 100).toFixed(2)}%${r.doi == null ? "" : ` · OI ${(r.doi * 100).toFixed(1)}%`} · CVD ${W.usd(Math.abs(r.cvd))} ${r.cvd >= 0 ? "beli" : "jual"} · ${r.why}`);
 }
 
 /* ---------- Hyperliquid whale tracker ---------- */
-const HLR = require("./hl.cjs")({ sleep, log, tgSend: (...a) => tgSend(...a), usd: W.usd, wib: t => W.wib(t), DATA });
+const HLR = require("./hl.cjs")({ sleep, log, tgSend: (t, b, k) => tgSend(t, b, k), usd: W.usd, wib: t => W.wib(t), DATA });
 
 /* ---------- WAC lifecycle (authoritative numbering + 24/7 zone monitoring) ---------- */
 const WAC_FILE = path.join(DATA, "wac.json");
@@ -394,7 +395,7 @@ async function wacRegime() {
   const now = Date.now();
   const r = WAC.regime(d1 && WAC.closed(d1, "1d", now), h4 && WAC.closed(h4, "4h", now), now);
   if (r.state) {
-    if (REGIME && REGIME.state !== r.state) await tgSend(`🧭 Rezim BTC berubah: ${REGIME.state} → ${r.state}`, r.detail);
+    if (REGIME && REGIME.state !== r.state) await tgSend(`🧭 Rezim BTC berubah: ${REGIME.state} → ${r.state}`, r.detail, "regime");
     REGIME = r; regimeAt = now;
   }
   return REGIME;
@@ -411,9 +412,10 @@ function lastPrice(coin) {
 }
 const srcText = sig => { const s = sig.src || {}; return s.kind === "volume" ? `Volume tak biasa ${W.usd(s.value || 0)}/menit (${Math.round(s.mult || 0)}x)` : s.kind === "trade" ? `Order besar ${W.usd(s.value || 0)} (proxy)` : `Gerak harga ${((s.chg || 0) * 100).toFixed(1)}%`; };
 const whenText = t => W.wib(t).replace(" WIB", "") + " WIB";
-async function tgSend(title, body) {
+const NOTIFY = readJSON(path.join(__dirname, "../config/notify.json"), { wac: true, regime: true, flow: false, whale: true });
+async function tgSend(title, body, kind) {
   const tok = process.env.TELEGRAM_BOT_TOKEN, chat = process.env.TELEGRAM_CHAT_ID;
-  if (!tok || !chat) return;
+  if (!tok || !chat || (kind && NOTIFY[kind] === false)) return;
   try { await fetch(`https://api.telegram.org/bot${tok}/sendMessage`, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ chat_id: chat, text: title + "\n" + body }), signal: AbortSignal.timeout(10000) }); } catch {}
 }
 async function wacNotify(sig, kind) {
@@ -424,7 +426,7 @@ async function wacNotify(sig, kind) {
   const p = lastPrice(sig.coin);
   const extra = kind === "ENTRY_READY" ? WAC.entryTexts(sig, { regime: REGIME && REGIME.state, funding: E.funding.get(sig.coin) }) : {};
   const n = WAC.notifText(sig, kind, Object.assign({ when: whenText, srcText, price: p && p.p }, extra));
-  await tgSend(n.title, n.body);
+  await tgSend(n.title, n.body, "wac");
 }
 async function wacDetect(s) {
   const now = Date.now(), act = WAC.activeFor(WS, s.coin);

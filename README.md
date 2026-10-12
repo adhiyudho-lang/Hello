@@ -76,8 +76,9 @@ futures sekunder. Hanya sinyal dan notifikasi, tidak pernah menempatkan order.
 **Pengaturan (⚙):** equity, risiko 0,5–1%, batas leverage, ambang jangan-kejar, jeda pengingat, saklar notifikasi per tipe
 (disimpan di browser). Parameter lain di `config/wac.json` (mis. tambah aset ke `etfAssets` → profil ETF).
 
-**Telegram (opsional):** buat bot lewat @BotFather, lalu isi repo Settings → Secrets and variables → Actions:
-`TELEGRAM_BOT_TOKEN` dan `TELEGRAM_CHAT_ID` (lihat `.env.example`). Tanpa secret, perekam tetap jalan tanpa kirim pesan.
+**Telegram:** isi secret `TELEGRAM_BOT_TOKEN` dan `TELEGRAM_CHAT_ID` (repo Settings → Secrets and variables → Actions),
+lalu jalankan workflow **Tes Telegram**. Jenis notifikasi diatur di `config/notify.json` (default: sinyal WAC, rezim BTC,
+whale Hyperliquid posisi ≥ $1 jt / deposit-tarik ≥ $500 rb; label arus mati). Tanpa secret, perekam tetap jalan tanpa kirim pesan.
 
 **Data berbayar:** on-chain whale & ETF tambahan hanya berupa interface di `recorder/adapters.cjs` (belum terintegrasi).
 

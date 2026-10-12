@@ -9,5 +9,7 @@
   "pollSec": 90,
   "topRefreshMin": 60,
   "keepEventsDays": 7,
-  "maxEvents": 600
+  "maxEvents": 600,
+  "tgMinEventUsd": 1000000,
+  "tgMinFlowUsd": 500000
 }

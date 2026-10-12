@@ -112,7 +112,8 @@ module.exports = function createHL({ sleep, log, tgSend, usd, wib, DATA }) {
       ? `${e.who} ${HL.EVENT_TEXT[e.type]} ${usd(e.usd)} ke/dari Hyperliquid`
       : `${e.who} ${HL.EVENT_TEXT[e.type]} ${e.side} ${e.coin} ${usd(e.usd)}${e.lev ? ` · ${e.lev}x` : ""}${e.liq ? ` · likuidasi ${e.liq}` : ""}`;
     log("hl", txt);
-    await tgSend(`🐋 Hyperliquid: ${txt}`, `${HL.short(e.addr)} · ${wib(e.t)} · https://app.hyperliquid.xyz/explorer/address/${e.addr}`);
+    const flow = e.type === "DEPOSIT" || e.type === "WITHDRAW";
+    if (e.usd >= (flow ? C.tgMinFlowUsd : C.tgMinEventUsd)) await tgSend(`🐋 Hyperliquid: ${txt}`, `${HL.short(e.addr)} · ${wib(e.t)} · https://app.hyperliquid.xyz/explorer/address/${e.addr}`, "whale");
   }
   let busy = false;
   async function tick() {

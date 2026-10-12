@@ -108,9 +108,10 @@ const HLW = (() => {
         <div><small>Margin perp</small><span>${w.perpValue != null ? M(w.perpValue) : "--"}</span></div>
         <div><small>PnL 30 hari</small><span>${m ? pnlTxt(m.pnl) : "--"}${m && m.roi ? ` <small style="display:inline">(${(m.roi * 100).toFixed(1)}%)</small>` : ""}</span></div>
         <div><small>Total posisi</small><span>${M(pos.reduce((a, p) => a + p.ntl, 0))} · ${pos.length}</span></div>
+        <div><small>Long / Short</small><span><span class="up">${M(pos.filter(p => p.side === "LONG").reduce((a, p) => a + p.ntl, 0))}</span> / <span class="down">${M(pos.filter(p => p.side === "SHORT").reduce((a, p) => a + p.ntl, 0))}</span></span></div>
       </div>
-      ${pos.length ? `<div class="tblw"><table class="hl-pos"><thead><tr><th>Coin</th><th>Posisi</th><th>Entry</th><th>Lev</th><th>Likuidasi</th><th>uPnL</th></tr></thead><tbody>
-        ${shown.map(p => `<tr><td>${esc(p.coin)} <span class="${p.side === "LONG" ? "up" : "down"}">${p.side === "LONG" ? "▲" : "▼"}</span></td><td>${M(p.ntl)}</td><td>${px(p.entry)}</td><td>${p.lev || "--"}x</td><td>${p.liq ? px(p.liq) : "--"}</td><td>${pnlTxt(p.upnl)}</td></tr>`).join("")}
+      ${pos.length ? `<div class="tblw"><table class="hl-pos"><thead><tr><th>Coin</th><th>Arah</th><th>Posisi</th><th>Entry</th><th>Lev</th><th>Likuidasi</th><th>uPnL</th></tr></thead><tbody>
+        ${shown.map(p => `<tr><td>${esc(p.coin)}</td><td><span class="chip ${p.side === "LONG" ? "buy" : "sell"}">${p.side === "LONG" ? "▲ LONG" : "▼ SHORT"}</span></td><td>${M(p.ntl)}</td><td>${px(p.entry)}</td><td>${p.lev || "--"}x</td><td>${p.liq ? px(p.liq) : "--"}</td><td>${pnlTxt(p.upnl)}</td></tr>`).join("")}
       </tbody></table></div>${pos.length > 6 ? `<button type="button" class="btn ghost" data-hlmore="${addr}">${showAll ? "Ringkas" : `Lihat semua ${pos.length} posisi`}</button>` : ""}` : `<div class="wac-note">Tidak ada posisi terbuka${S.coin ? ` di ${esc(S.coin)}` : ""}.</div>`}
       <div class="acts">${c ? `<button type="button" data-hlname="${addr}">Ubah nama</button><button type="button" data-hlstop="${addr}">Berhenti pantau</button>` : `<button type="button" class="pri" data-hlwatch="${addr}">Pantau &amp; beri nama</button>`}</div>
     </article>`;
