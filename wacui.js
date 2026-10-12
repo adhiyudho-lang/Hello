@@ -230,13 +230,16 @@ const WACUI = (() => {
     </article>`;
   }
   /* IKUT list: filters (coin, number, status) and a frozen order so new signals never push cards away */
-  const F = Object.assign({ coin: "", no: "", st: "aktif" }, store.get("awt.ikF", {}));
+  const ALL_ST = ["WATCH", "CONFIRMED", "ENTRY_READY", "POSITION_OPEN", "TAKE_PROFIT_PARTIAL", "EXIT_WARNING", "EXIT_CONFIRMED", "ENTRY_INVALIDATED", "EXPIRED"];
+  const F = Object.assign({ coin: "", no: "", sts: null }, store.get("awt.ikF", {}));
+  if (!Array.isArray(F.sts)) F.sts = F.st === "semua" ? ALL_ST.slice() : WAC.ACTIVE.slice();
+  delete F.st;
   S.ikOrder = null; S.ikKey = "";
   function matches(sig) {
     const no = String(F.no || "").replace(/\D/g, "");
     if (no) return String(sig.no) === no;
     if (F.coin && !sig.coin.includes(F.coin.trim().toUpperCase())) return false;
-    return F.st === "semua" || WAC.ACTIVE.includes(sig.status);
+    return F.sts.includes(sig.status);
   }
   function orderNow() {
     const rank = x => (WAC.ACTIVE.includes(x.sig.status) ? 0 : 1);
@@ -248,10 +251,22 @@ const WACUI = (() => {
     $("ikF").dataset.ready = 1;
     $("ikF").innerHTML = `<input type="search" id="ikCoin" placeholder="Cari coin (mis. TIA)" autocomplete="off" aria-label="Cari coin" value="${esc(F.coin)}">
       <input type="search" id="ikNo" inputmode="numeric" placeholder="No. sinyal (#12)" autocomplete="off" aria-label="Nomor sinyal" value="${esc(F.no)}">
-      <select id="ikSt" aria-label="Status"><option value="aktif">Dipantau</option><option value="semua">Semua (termasuk selesai/batal)</option></select>`;
-    $("ikSt").value = F.st;
-    const upd = () => { F.coin = $("ikCoin").value; F.no = $("ikNo").value; F.st = $("ikSt").value; store.set("awt.ikF", F); S.ikOrder = null; renderIkut(); };
-    $("ikCoin").addEventListener("input", upd); $("ikNo").addEventListener("input", upd); $("ikSt").addEventListener("change", upd);
+      <div class="stf" id="ikSt" role="group" aria-label="Filter status"></div>`;
+    const upd = () => { F.coin = $("ikCoin").value; F.no = $("ikNo").value; store.set("awt.ikF", F); S.ikOrder = null; renderIkut(); };
+    $("ikCoin").addEventListener("input", upd); $("ikNo").addEventListener("input", upd);
+    $("ikSt").addEventListener("click", e => {
+      const b = e.target.closest("button[data-st]"); if (!b) return;
+      const k = b.dataset.st;
+      if (k === "ALL") F.sts = F.sts.length === ALL_ST.length ? WAC.ACTIVE.slice() : ALL_ST.slice();
+      else F.sts = F.sts.includes(k) ? F.sts.filter(x => x !== k) : [...F.sts, k];
+      upd();
+    });
+  }
+  // status chips in their status colours, with live counts
+  function stChips() {
+    const n = st => S.state ? S.state.signals.filter(x => x.status === st).length : 0, all = F.sts.length === ALL_ST.length;
+    $("ikSt").innerHTML = `<button type="button" class="stc" data-st="ALL" aria-pressed="${all}"><span class="chip dim">Semua</span><b>${S.state ? S.state.signals.length : 0}</b></button>` +
+      ALL_ST.map(st => `<button type="button" class="stc" data-st="${st}" aria-pressed="${F.sts.includes(st)}">${statusChip(st)}<b>${n(st)}</b></button>`).join("");
   }
   function renderIkut() {
     const list = zoneList(), ready = list.filter(x => x.sig.status === "ENTRY_READY").length;
@@ -271,7 +286,8 @@ const WACUI = (() => {
     $("ikNew").textContent = `${fresh.length} sinyal baru · ketuk untuk tampilkan`;
     const byNo = new Map(S.state.signals.map(x => [x.no, x]));
     const shown = S.ikOrder.map(n => byNo.get(n)).filter(Boolean).map(x => ({ sig: x, ...dist(x) }));
-    const filtered = F.coin || F.no || F.st !== "aktif";
+    stChips();
+    const filtered = F.coin || F.no || F.sts.length !== WAC.ACTIVE.length || !WAC.ACTIVE.every(x => F.sts.includes(x));
     $("ikList").innerHTML = shown.length ? shown.map(zoneCard).join("")
       : `<article class="panel"><div class="empty">${filtered ? "Tidak ada sinyal yang cocok dengan filter." : `Belum ada zona pullback yang dipantau. Aturan WAC konservatif: sinyal hanya dicatat bila lolos likuiditas dan arus taker beli. Update terakhir ${S.state.updated ? wib(S.state.updated) : "--"}.`}</div></article>`;
   }
