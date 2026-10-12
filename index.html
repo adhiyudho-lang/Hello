@@ -529,29 +529,29 @@ details.wac-fut .plan { margin-top: 8px; }
 .hl-ev { display: grid; grid-template-columns: 22px 1fr auto; gap: 8px; padding: 7px 0; border-bottom: 1px solid var(--line); font-size: 12.5px; align-items: start; }
 .hl-ev time { font-family: var(--font-mono); font-size: 11px; color: var(--muted); }
 .hl-ev .who { color: var(--glow); font-weight: 600; }
-.hl-evt { width: 100%; border-collapse: collapse; font-size: 12.5px; }
+.hl-evt { width: 100%; border-collapse: collapse; font-size: 12.5px; table-layout: auto; }
+.hl-evt col.c-desc { width: 50%; }
 .hl-evt th { text-align: left; font-size: 10.5px; text-transform: uppercase; letter-spacing: .08em; color: var(--muted); font-weight: 600; padding: 6px 8px; border-bottom: 1px solid var(--line); white-space: nowrap; }
 .hl-evt td { padding: 8px; border-bottom: 1px solid var(--line); vertical-align: middle; white-space: nowrap; }
 .hl-evt tbody tr:hover td { background: rgba(34,211,238,.05); }
-.hl-evt td.mono { font-family: var(--font-mono); font-size: 12px; }
-.hl-evt td small.live { display: block; color: var(--glow); font-size: 10px; letter-spacing: .06em; }
+.hl-evt td.when .hms { display: block; font-family: var(--font-mono); font-size: 12.5px; }
+.hl-evt td.when small { display: block; color: var(--muted); font-size: 10.5px; margin-top: 2px; }
+.hl-evt td.when b.live { color: var(--glow); font-weight: 600; }
 .hl-evt td.acct b { display: block; color: var(--glow); font-weight: 700; }
 .hl-evt td.acct small { display: block; color: var(--muted); font-size: 10.5px; }
 .hl-evt td .coin { display: inline-flex; align-items: center; gap: 6px; font-weight: 600; }
-.hl-evt td.desc { white-space: normal; min-width: 240px; line-height: 1.6; }
+.hl-evt td.desc { white-space: normal; min-width: 320px; line-height: 1.6; }
 .hl-evt td.desc .chip { margin-right: 4px; }
 #hlEvents, #hlCoins, #hlList { min-width: 0; max-width: 100%; }
 @media (max-width: 640px) {
-  .hl-evt thead { display: none; }
+  .hl-evt thead, .hl-evt colgroup { display: none; }
   .hl-evt, .hl-evt tbody { display: block; }
   .hl-evt tr { display: grid; grid-template-columns: auto auto 1fr; gap: 6px 12px; align-items: center; padding: 10px 2px; border-bottom: 1px solid var(--line); }
   .hl-evt td { border: 0; padding: 0; }
-  .hl-evt td:nth-child(1) { color: var(--muted); font-size: 11.5px; }
-  .hl-evt td:nth-child(3) { justify-self: end; text-align: right; }
+  .hl-evt td.when { grid-column: 1 / 3; } .hl-evt td.when .hms, .hl-evt td.when small { display: inline; } .hl-evt td.when small { margin-left: 6px; }
+  .hl-evt td.acct { justify-self: end; text-align: right; }
   .hl-evt td.acct b, .hl-evt td.acct small { display: inline; } .hl-evt td.acct small { margin-left: 4px; }
-  .hl-evt td:nth-child(5) { grid-column: 2 / -1; }
   .hl-evt td.desc { grid-column: 1 / -1; min-width: 0; }
-  .hl-evt td small.live { display: inline; margin-left: 4px; }
   .hl-evt td.na { display: none; }
 }
 .hl-w .addr { font-family: var(--font-mono); font-size: 11.5px; color: var(--muted); }

@@ -88,7 +88,7 @@ const HLW = (() => {
       if (e.type === "CLOSE" && e.pnl != null) bits.push(`PnL ${pnlTxt(e.pnl)}`);
       if (e.type === "FLIP" && e.from) bits.push(`dari ${e.from}`);
     } else bits.push(e.type === "DEPOSIT" ? "modal masuk untuk trading" : "modal ditarik keluar");
-    return `<tr><td>${DAY.format(d)}</td><td class="mono">${HMS.format(d).replace(/\./g, ":")}${e.live ? `<small class="live">live</small>` : ""}</td><td class="acct">${acct(e.addr)}</td><td${flow ? ' class="na"' : ""}>${side}</td><td${e.coin ? "" : ' class="na"'}>${e.coin ? `<span class="coin">${logo(e.coin, "sm")}${esc(e.coin)}</span>` : "—"}</td><td class="desc"><span class="chip ${tone}">${act}</span> ${bits.join(" · ")}</td></tr>`;
+    return `<tr><td class="when"><span class="hms">${HMS.format(d).replace(/\./g, ":")}</span><small>${DAY.format(d)}${e.live ? ` · <b class="live">live</b>` : ""}</small></td><td class="acct">${acct(e.addr)}</td><td${e.coin ? "" : ' class="na"'}>${e.coin ? `<span class="coin">${logo(e.coin, "sm")}${esc(e.coin)}</span>` : "—"}</td><td${flow ? ' class="na"' : ""}>${side}</td><td class="desc"><span class="chip ${tone}">${act}</span> ${bits.join(" · ")}</td></tr>`;
   }
 
   /* ---------- rendering ---------- */
@@ -110,7 +110,7 @@ const HLW = (() => {
     // events: recorder + live, newest first
     const evsAll = [...S.liveEv, ...((d && d.events) || []).slice().reverse()].filter(e => !S.coin || e.coin === S.coin);
     const evs = evsAll.slice(0, S.evShown || 30);
-    $("hlEvents").innerHTML = `<article class="panel">${evs.length ? `<div class="tblw"><table class="hl-evt"><thead><tr><th>Tanggal</th><th>Jam</th><th>Akun</th><th>Arah</th><th>Coin</th><th>Deskripsi</th></tr></thead><tbody>${evs.map(evRow).join("")}</tbody></table></div>
+    $("hlEvents").innerHTML = `<article class="panel">${evs.length ? `<div class="tblw"><table class="hl-evt"><colgroup><col class="c-when"><col class="c-acct"><col class="c-coin"><col class="c-side"><col class="c-desc"></colgroup><thead><tr><th>Waktu</th><th>Akun</th><th>Coin</th><th>Arah</th><th>Deskripsi</th></tr></thead><tbody>${evs.map(evRow).join("")}</tbody></table></div>
       ${evsAll.length > evs.length ? `<button type="button" class="btn ghost morebtn" data-hlevmore>Tampilkan lagi (${evsAll.length - evs.length})</button>` : ""}`
       : `<div class="empty">Belum ada aktivitas ≥ ${M((d && d.cfg && d.cfg.minEventUsd) || S.set.minUsd)}${S.coin ? ` untuk ${esc(S.coin)}` : ""}.</div>`}</article>`;
     for (const b of $("hlSeg").querySelectorAll("button")) b.setAttribute("aria-pressed", b.dataset.hl === S.seg);
