@@ -1,0 +1,13 @@
+{
+  "_doc": "Whale tracker Hyperliquid. Wallet pilihan Adhi ada di config/hl-watch/<alamat>.json ({\"address\":\"0x..\",\"name\":\"..\"}).",
+  "topSize": 10,
+  "topPnl": 10,
+  "pnlWindow": "month",
+  "scanMax": 80,
+  "minEventUsd": 250000,
+  "minFlowUsd": 100000,
+  "pollSec": 90,
+  "topRefreshMin": 60,
+  "keepEventsDays": 7,
+  "maxEvents": 600
+}

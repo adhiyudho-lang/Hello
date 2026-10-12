@@ -2,7 +2,7 @@
 
 ## Adhi Whale Terminal
 
-Tampilan mobile-first ala app exchange: menu bawah (Beranda, Sinyal, IKUT, ETF Brief, Riwayat, Rekap), logo coin,
+Tampilan mobile-first ala app exchange: menu bawah (Beranda, Sinyal, IKUT, ETF Brief, Riwayat + Rekap, Whale), logo coin,
 grafik mini 1 jam di tiap sinyal, heatmap pasar, gauge Fear & Greed, dan chart candle (TradingView
 Lightweight Charts) dengan garis Entry/SL/TP serta support & resistance. File: `index.html` (tampilan),
 `app.js` (logika browser), `engine.js` (deteksi sinyal), `wac.js` + `config/wac.json` (aturan WAC, dipakai juga oleh perekam), `wacui.js` (tampilan WAC).
@@ -108,6 +108,22 @@ Setiap kartu sinyal (bukan likuidasi) menjawab **siapa yang bergerak** dan **mas
 - **On-chain (Modul C)** belum aktif: kerangka di `recorder/adapters.cjs` + daftar hot wallet `data/exchange-wallets.json`
   (diisi manual dari sumber publik). Aktif setelah `ETHERSCAN_API_KEY` / `HELIUS_API_KEY` diisi di GitHub Secrets dan adapter diimplementasi.
 - Tes: `node --test tests/flow.test.cjs` (satu tes per baris matriks A2, filter A3, status B3, Modul C).
+
+### Tab Whale (Hyperliquid)
+
+Hyperliquid adalah exchange futures on-chain, jadi posisi tiap wallet publik (`hl.js`, `recorder/hl.cjs`, `whale.js`,
+API resmi gratis, tanpa key). Yang dipantau: **top 10 ukuran akun + top 10 PnL 30 hari** dari leaderboard (hanya wallet yang
+punya posisi futures terbuka; banyak akun terbesar hanya memegang spot) + wallet pilihanmu di `config/hl-watch/`.
+
+- **Posisi whale per coin**: total long vs short dari wallet yang dipantau (coin fokus di atas). Juga tampil singkat di kartu Sinyal.
+- **Aktivitas**: buka / tambah / kurangi / tutup / balik posisi ≥ $250 rb, serta deposit / tarik USDC ≥ $100 rb (logika Modul C:
+  modal masuk vs keluar). Perekam mengecek tiap 90 detik selama berjalan (Telegram bila diaktifkan); tab ini menyegarkan langsung tiap menit.
+- **Wallet**: nilai akun, PnL 30 hari, semua posisi (entry, leverage, harga likuidasi, uPnL), link explorer.
+  **Pantau & beri nama** membuka GitHub dengan file `config/hl-watch/<alamat>.json` sudah terisi → tekan *Commit* → dipantau 24/7.
+  Ubah nama / berhenti pantau membuka halaman edit / hapus file tersebut. Ambang di `config/hl.json`.
+- Batasan: hanya posisi di Hyperliquid (bukan Binance/OKX); alamat anonim.
+
+Tab **Rekap** sekarang sub-menu di dalam **Riwayat**.
 
 ### Rekaman 24 jam (Riwayat)
 

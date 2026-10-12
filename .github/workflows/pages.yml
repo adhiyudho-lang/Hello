@@ -28,7 +28,7 @@ jobs:
       - name: Siapkan file situs
         run: |
           mkdir -p _site
-          cp index.html engine.js wac.js wacui.js flow.js sigintel.js app.js brief.js .nojekyll _site/
+          cp index.html engine.js wac.js wacui.js flow.js sigintel.js hl.js whale.js app.js brief.js .nojekyll _site/
           cp -r data config _site/
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v3

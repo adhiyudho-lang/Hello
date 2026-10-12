@@ -35,7 +35,7 @@ const dateWIB = t => new Date(t + 7 * 3600e3).toISOString().slice(0, 10);
 const CFG = { ...W.DEFAULTS };
 let FNG = null, BTC = null;
 // journal of this run: new signals, outcome values found for older signals, liquidation totals
-const J = { items: [], outcomes: {}, liq: {}, fng: null, wac: null, flow: {}, flowLive: null };
+const J = { items: [], outcomes: {}, liq: {}, fng: null, wac: null, flow: {}, flowLive: null, hl: null };
 const stats = { whale: 0, liq: 0, signal: 0 };
 
 const E = W.create({
@@ -195,6 +195,7 @@ const loadDay = d => readJSON(dayFile(d), { date: d, liq: { L: 0, S: 0, nL: 0, n
 function writeJournal() {
   if (FNG) J.fng = FNG.value;
   J.flowLive = FL.live([...recentItems, ...J.items]);
+  J.hl = HLR.snapshot();
   fs.writeFileSync(JOURNAL, JSON.stringify(J));
   log(`journal: ${J.items.length} signals, ${Object.keys(J.outcomes).length} outcome updates`);
 }
@@ -203,6 +204,7 @@ function writeJournal() {
 function applyJournal(j) {
   if (j.wac) writeJSON(path.join(DATA, "wac.json"), j.wac);
   if (j.flowLive) writeJSON(path.join(DATA, "flow-live.json"), j.flowLive);
+  if (j.hl && j.hl.updated) writeJSON(path.join(DATA, "hl.json"), j.hl);
   const flowByDay = {};
   for (const id in j.flow || {}) { const u = j.flow[id]; (flowByDay[u.d] = flowByDay[u.d] || {})[id] = u; }
   const byDay = {};
@@ -363,6 +365,9 @@ async function flowStatus(s, rec, cp, from, to) {
   await tgSend(`${S.icon} ${s.coin} · T+${cp}: ${S.text} (${L.text})`, `${W.EX[s.mk]} · sinyal ${whenText(s.t)} · harga ${(r.dp * 100).toFixed(2)}%${r.doi == null ? "" : ` · OI ${(r.doi * 100).toFixed(1)}%`} · CVD ${W.usd(Math.abs(r.cvd))} ${r.cvd >= 0 ? "beli" : "jual"} · ${r.why}`);
 }
 
+/* ---------- Hyperliquid whale tracker ---------- */
+const HLR = require("./hl.cjs")({ sleep, log, tgSend: (...a) => tgSend(...a), usd: W.usd, wib: t => W.wib(t), DATA });
+
 /* ---------- WAC lifecycle (authoritative numbering + 24/7 zone monitoring) ---------- */
 const WAC_FILE = path.join(DATA, "wac.json");
 const WS = readJSON(WAC_FILE, { seq: 0, daily: {}, signals: [] });
@@ -467,11 +472,12 @@ async function wacTick() {
 function pushWac() {
   writeJSON(WAC_FILE, WS);
   writeJSON(path.join(DATA, "flow-live.json"), FL.live([...recentItems, ...J.items]));
+  if (HLR.S.updated) writeJSON(path.join(DATA, "hl.json"), HLR.snapshot());
   const br = process.env.GITHUB_REF_NAME;
   if (!process.env.GITHUB_ACTIONS || !br) return;
   const sh = c => execSync(c, { cwd: path.join(__dirname, ".."), stdio: "pipe" });
   try {
-    sh("git add data/wac.json data/flow-live.json");
+    sh("git add data/wac.json data/flow-live.json" + (HLR.S.updated ? " data/hl.json" : ""));
     try { sh("git diff --cached --quiet"); return; } catch {}
     sh(`git commit -q -m "WAC state ${new Date().toISOString().slice(11, 16)} UTC"`);
     sh(`git pull -q --rebase --autostash origin ${br}`);
@@ -503,6 +509,7 @@ if (process.argv[2] === "merge") {
   setInterval(pushWac, 5 * 60000);
   loadRecentForFlow();
   setInterval(() => FL.tick(flowStatus).catch(e => log("flow tick", e.message)), 60000);
+  HLR.tick(); setInterval(() => HLR.tick(), HLR.C.pollSec * 1000);
 
   const end = () => {
     stopping = true;

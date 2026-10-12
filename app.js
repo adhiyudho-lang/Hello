@@ -140,6 +140,7 @@ function cardHTML(s, fresh, withOutcome) {
   </div>
   <div><div class="sc-title ${d.tone}">${d.title}</div><div class="sc-desc">${d.desc}</div></div>
   ${s.kind === "liq" ? "" : `<div class="fi" data-fi="${s.id}">${typeof SIGI !== "undefined" ? SIGI.html(s) : ""}</div>`}
+  ${typeof HLW !== "undefined" ? HLW.cardLine(s.coin) : ""}
   <div class="sc-mid">
     <svg class="spark" data-spark="${s.mk}|${esc(s.coin)}|${s.t}" viewBox="0 0 120 54" preserveAspectRatio="none" aria-hidden="true"></svg>
     <div class="kv">${d.kv.map(([k, v]) => `<div><small>${k}</small><span>${v}</span></div>`).join("")}</div>
@@ -807,12 +808,14 @@ for (const id of ["hFrom", "hTo", "hType", "hEx"]) $(id).addEventListener("chang
 $("hCoin").addEventListener("input", () => { HIST.shown = 120; renderHist(); });
 
 /* ============ navigation ============ */
-const VIEWS = { home: "v-home", sig: "v-sig", ikut: "v-ikut", brief: "v-brief", hist: "v-hist", rekap: "v-rekap" };
-const HASH = { home: "", sig: "sinyal", ikut: "ikut", brief: "brief", hist: "riwayat", rekap: "ringkasan" };
+const VIEWS = { home: "v-home", sig: "v-sig", ikut: "v-ikut", brief: "v-brief", hist: "v-hist", rekap: "v-rekap", whale: "v-whale" };
+const HASH = { home: "", sig: "sinyal", ikut: "ikut", brief: "brief", hist: "riwayat", rekap: "ringkasan", whale: "whale" };
 function showView(v, date) {
   VIEW = v;
   for (const k in VIEWS) $(VIEWS[k]).hidden = k !== v;
-  for (const b of document.querySelectorAll(".nb")) { if (b.dataset.view === v) b.setAttribute("aria-current", "page"); else b.removeAttribute("aria-current"); }
+  // Rekap lives inside Riwayat (sub-menu): keep the Riwayat nav item highlighted
+  const navV = v === "rekap" ? "hist" : v;
+  for (const b of document.querySelectorAll(".nb")) { if (b.dataset.view === navV) b.setAttribute("aria-current", "page"); else b.removeAttribute("aria-current"); }
   try { history.replaceState(null, "", HASH[v] ? "#" + HASH[v] : location.pathname); } catch {}
   window.scrollTo(0, 0);
   if (v === "home") { renderHomeIk(); renderLatest(); heatAt = 0; renderHeat(); }
@@ -822,6 +825,7 @@ function showView(v, date) {
   if (v === "rekap" && typeof WACUI !== "undefined") WACUI.renderRekap();
   if (v === "rekap" && typeof SIGI !== "undefined") SIGI.renderRekap();
   if (v === "brief" && typeof openBrief === "function") openBrief();
+  if (v === "whale" && typeof HLW !== "undefined") HLW.open();
 }
 document.querySelectorAll(".nb").forEach(b => b.addEventListener("click", () => showView(b.dataset.view)));
 
