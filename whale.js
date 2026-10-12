@@ -66,6 +66,31 @@ const HLW = (() => {
   }
   const evText = e => e.type === "DEPOSIT" || e.type === "WITHDRAW" ? `${e.who} ${HL.EVENT_TEXT[e.type]} ${M(e.usd)}` : `${e.who} ${HL.EVENT_TEXT[e.type]} ${e.side} ${e.coin} ${M(e.usd)}${e.lev ? ` · ${e.lev}x` : ""}${e.liq ? ` · likuidasi ${px(e.liq)}` : ""}`;
 
+  /* one activity row: Tanggal | Jam | Akun | Arah | Coin | Deskripsi */
+  const DAY = new Intl.DateTimeFormat("id-ID", { timeZone: "Asia/Jakarta", weekday: "short", day: "2-digit", month: "short" });
+  const HMS = new Intl.DateTimeFormat("id-ID", { timeZone: "Asia/Jakarta", hour: "2-digit", minute: "2-digit", second: "2-digit", hour12: false });
+  const ACT = { OPEN: ["Buka", "buy"], ADD: ["Tambah", "buy"], REDUCE: ["Kurangi", "neu"], CLOSE: ["Tutup", "dim"], FLIP: ["Balik arah", "neu"], DEPOSIT: ["Deposit USDC", "buy"], WITHDRAW: ["Tarik USDC", "sell"] };
+  function acct(addr) {
+    const c = custom().get(addr), t = (S.data && S.data.top) || { size: [], pnl: [] }, i = t.size.indexOf(addr), j = t.pnl.indexOf(addr);
+    if (c && c.name) return `<b>${esc(c.name)}</b><small>${HL.short(addr)}</small>`;
+    if (i >= 0) return `<b>#${i + 1}</b><small>Top akun</small>`;
+    if (j >= 0) return `<b>#${j + 1}</b><small>Top PnL 30h</small>`;
+    return `<b>${HL.short(addr)}</b><small>wallet</small>`;
+  }
+  function evRow(e) {
+    const d = new Date(e.t), [act, tone] = ACT[e.type] || [e.type, "dim"], flow = e.type === "DEPOSIT" || e.type === "WITHDRAW";
+    const side = flow ? `<span class="chip dim">—</span>` : `<span class="chip ${e.side === "LONG" ? "buy" : "sell"}">${e.side === "LONG" ? "▲ LONG" : "▼ SHORT"}</span>`;
+    const bits = [`<b>${M(e.usd)}</b>`];
+    if (!flow) {
+      if (e.lev) bits.push(`${e.lev}x`);
+      if (e.price) bits.push(`harga ${px(e.price)}`);
+      if (e.liq) bits.push(`likuidasi ${px(e.liq)}`);
+      if (e.type === "CLOSE" && e.pnl != null) bits.push(`PnL ${pnlTxt(e.pnl)}`);
+      if (e.type === "FLIP" && e.from) bits.push(`dari ${e.from}`);
+    } else bits.push(e.type === "DEPOSIT" ? "modal masuk untuk trading" : "modal ditarik keluar");
+    return `<tr><td>${DAY.format(d)}</td><td class="mono">${HMS.format(d).replace(/\./g, ":")}${e.live ? `<small class="live">live</small>` : ""}</td><td class="acct">${acct(e.addr)}</td><td${flow ? ' class="na"' : ""}>${side}</td><td${e.coin ? "" : ' class="na"'}>${e.coin ? `<span class="coin">${logo(e.coin, "sm")}${esc(e.coin)}</span>` : "—"}</td><td class="desc"><span class="chip ${tone}">${act}</span> ${bits.join(" · ")}</td></tr>`;
+  }
+
   /* ---------- rendering ---------- */
   function render() {
     if (VIEW !== "whale") return;
@@ -83,11 +108,11 @@ const HLW = (() => {
         <small><span class="up">L ${M(x.long)} · ${x.nLong}</span><span class="down">S ${M(x.short)} · ${x.nShort}</span></small></div></button>`).join("")}</article>`
       : `<article class="panel"><div class="empty">Belum ada posisi whale. Data muncul setelah perekam jalan (tiap jam).</div></article>`;
     // events: recorder + live, newest first
-    const evs = [...S.liveEv, ...((d && d.events) || []).slice().reverse()].filter(e => !S.coin || e.coin === S.coin).slice(0, 30);
-    $("hlEvents").innerHTML = `<article class="panel">${evs.length ? evs.map(e => {
-      const icon = e.type === "DEPOSIT" ? "📥" : e.type === "WITHDRAW" ? "📤" : e.type === "CLOSE" ? "✖️" : e.type === "FLIP" ? "🔄" : e.side === "LONG" ? "🟢" : "🔴";
-      return `<div class="hl-ev"><span>${icon}</span><div><span class="who">${esc(e.who || label(e.addr))}</span> ${esc(HL.EVENT_TEXT[e.type])} ${e.side ? `<b class="${e.side === "LONG" ? "up" : "down"}">${e.side}</b> ${esc(e.coin)} ` : ""}<b>${M(e.usd)}</b>${e.lev ? ` · ${e.lev}x` : ""}${e.price ? ` · harga ${px(e.price)}` : ""}${e.liq ? ` · likuidasi ${px(e.liq)}` : ""}${e.type === "CLOSE" && e.pnl != null ? ` · PnL ${pnlTxt(e.pnl)}` : ""}${e.type === "DEPOSIT" ? " · modal masuk untuk trading" : e.type === "WITHDRAW" ? " · modal ditarik keluar" : ""}</div><time>${wib(e.t).replace(" WIB", "")}${e.live ? " · live" : ""}</time></div>`;
-    }).join("") : `<div class="empty">Belum ada aktivitas ≥ ${M((d && d.cfg && d.cfg.minEventUsd) || S.set.minUsd)}${S.coin ? ` untuk ${esc(S.coin)}` : ""}.</div>`}</article>`;
+    const evsAll = [...S.liveEv, ...((d && d.events) || []).slice().reverse()].filter(e => !S.coin || e.coin === S.coin);
+    const evs = evsAll.slice(0, S.evShown || 30);
+    $("hlEvents").innerHTML = `<article class="panel">${evs.length ? `<div class="tblw"><table class="hl-evt"><thead><tr><th>Tanggal</th><th>Jam</th><th>Akun</th><th>Arah</th><th>Coin</th><th>Deskripsi</th></tr></thead><tbody>${evs.map(evRow).join("")}</tbody></table></div>
+      ${evsAll.length > evs.length ? `<button type="button" class="btn ghost morebtn" data-hlevmore>Tampilkan lagi (${evsAll.length - evs.length})</button>` : ""}`
+      : `<div class="empty">Belum ada aktivitas ≥ ${M((d && d.cfg && d.cfg.minEventUsd) || S.set.minUsd)}${S.coin ? ` untuk ${esc(S.coin)}` : ""}.</div>`}</article>`;
     for (const b of $("hlSeg").querySelectorAll("button")) b.setAttribute("aria-pressed", b.dataset.hl === S.seg);
     $("hlFilt").innerHTML = S.coin ? `filter ${esc(S.coin)} · <a href="#" data-hlcoin="">hapus</a>` : "";
     const xs = list();
@@ -128,6 +153,7 @@ const HLW = (() => {
   }
   function ask(addr, cur) { const n = prompt(`Nama untuk wallet ${HL.short(addr)}`, cur || ""); return n == null ? null : n.trim().slice(0, 40) || HL.short(addr); }
   document.addEventListener("click", e => {
+    if (e.target.closest("[data-hlevmore]")) { S.evShown = (S.evShown || 30) + 50; render(); return; }
     const b = e.target.closest("[data-hlwatch],[data-hlname],[data-hlstop],[data-hlmore],[data-hlcoin],#hlSeg button,#hlAddBtn");
     if (!b) return;
     if (b.matches("#hlSeg button")) { S.seg = b.dataset.hl; store.set("awt.hlSeg", S.seg); render(); refreshLive(); return; }
