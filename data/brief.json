@@ -1,13 +1,13 @@
 {
  "kind": "daily",
- "period": "Senin, 19 Oktober 2026",
- "date": "2026-10-19",
- "snapshot": "Senin, 19 Okt 2026 · 07:05 WIB",
- "source": "Harga & EMA: OKX candle harian (close 2026-10-18 UTC = 07:00 WIB) · Narasi: Claude (riset web)",
+ "period": "Selasa, 20 Oktober 2026",
+ "date": "2026-10-20",
+ "snapshot": "Selasa, 20 Okt 2026 · 07:05 WIB",
+ "source": "Harga & EMA: OKX candle harian (close 2026-10-19 UTC = 07:00 WIB) · Narasi: Claude (riset web)",
  "bias": {
-  "score": -25,
+  "score": -20,
   "label": "Waspada",
-  "note": "Warsh tidak memberi sinyal hike dan odds hike 28 Okt turun ke ±13%, tapi hike Desember masih ±74%. BTC bertahan di atas low 15 Okt (79,8k) namun masih di bawah EMA25 yang kini menurun. Tambah posisi hanya di zona bawah."
+  "note": "Outflow ETF melambat dan odds hike 28 Okt hanya ±14%, BTC bertahan di atas cost basis ETF ±81,5k. Tapi harga masih tepat di bawah EMA5/25 dan hike Desember ±77%. Tunggu breakout dari range sempit sebelum menambah."
  },
  "coins": {
   "BTC": {
@@ -48,19 +48,19 @@
  },
  "summary": [
   {
-   "tone": "up",
-   "title": "Warsh tidak menutup, tapi juga tidak memberi sinyal hike",
-   "text": "Di Bangkok (16 Okt), Warsh menolak memprediksi keputusan rapat dan menyebut kenaikan suku bunga global sebagai 'synchronous tightening'. Odds hike FOMC 28 Okt turun dari ±27% ke ±15% (FT); prediction market kini ±13% hike / ±87% hold. Hike 9 Des masih ±74%."
-  },
-  {
    "tone": "flat",
-   "title": "Minggu sepi data, Fed blackout",
-   "text": "Fed sudah masuk masa blackout menjelang rapat 27–28 Okt. Data AS minggu ini ringan: housing starts (Selasa), klaim pengangguran (Kamis), PMI flash dan sentimen UMich final (Jumat). Fokus pasar bergeser ke laporan laba Meta dan Tesla (Rabu setelah penutupan)."
+   "title": "Outflow ETF melambat",
+   "text": "Minggu 12–16 Okt: ETF BTC −$229 juta (minggu kedua outflow) dan ETF ETH −$320 juta (minggu ketiga), turun dari total −$1,22 miliar minggu sebelumnya. 16 Okt: BTC −$82,4 juta, ETH −$69,7 juta. ETF ETH sudah ±−$955 juta di Oktober, terbesar tahun ini."
   },
   {
-   "tone": "down",
-   "title": "ETF ETH & SOL masih outflow",
-   "text": "15 Okt: ETF BTC +$5,1 juta (IBIT +$16,8 juta), ETF ETH −$60,3 juta (ETHA −$44,4 juta), ETF SOL −$9,8 juta. Periode 12–15 Okt: ETF BTC ±−$146 juta, ETF ETH ±−$250 juta. Altcoin tertinggal; INJ satu-satunya token kuat (high 50 hari baru)."
+   "tone": "up",
+   "title": "BTC pulih ke 83k Senin",
+   "text": "BTC sempat ke ±83,0k (range 24 jam 80,7–83,0k) saat Brent turun 1,3% ke $108,47 dan futures Nasdaq naik 1,1%. Harga di atas rata-rata beli ETF ±81,5k (Glassnode). Nexo: tembus 84k plus inflow ETF dua hari menandakan pembeli kembali; 80k sudah dibela tiga kali dalam seminggu."
+  },
+  {
+   "tone": "swing",
+   "title": "Fed blackout, fokus ke laba teknologi",
+   "text": "Odds hike FOMC 28 Okt ±14% (turun 5 poin seminggu), hike Desember ±77%. Data AS minggu ini ringan: housing starts hari ini, klaim pengangguran Kamis, UMich Jumat. Penggerak utama: laba Meta & Tesla Rabu setelah penutupan (Kamis dini hari WIB)."
   }
  ],
  "events": [
@@ -72,10 +72,10 @@
    "time": "03:00+",
    "scope": "Saham AS",
    "tone": "swing",
-   "title": "Laba kuartal III Meta, Tesla, IBM",
-   "detail": "Rilis Rabu setelah penutupan pasar AS (Kamis dini hari WIB). Ujian untuk perdagangan AI yang menopang sentimen risk-on.",
-   "up": "Laba dan capex kuat: Nasdaq naik, kripto ikut terangkat.",
-   "down": "Kecewa: tekanan jual di saham teknologi merembet ke BTC dan altcoin."
+   "title": "Laba kuartal III Meta & Tesla",
+   "detail": "Rilis Rabu setelah penutupan pasar AS (Kamis dini hari WIB). Estimasi EPS: Meta 6,31, Tesla 0,45.",
+   "up": "Laba dan capex AI kuat: Nasdaq naik, BTC berpeluang tembus 84k.",
+   "down": "Kecewa: tekanan jual saham teknologi merembet ke BTC; uji 80k lagi."
   },
   {
    "day": "2026-10-29",
@@ -87,9 +87,9 @@
    "tone": "swing",
    "upcoming": true,
    "title": "Keputusan FOMC",
-   "detail": "Rapat 27–28 Okt, pengumuman 14:00 ET (01:00 WIB). Prediction market: hold ±87%, hike ±13%; hike Desember ±74%.",
+   "detail": "Rapat 27–28 Okt, pengumuman 14:00 ET (01:00 WIB). Prediction market: hold ±85%, hike ±14%; hike Desember ±77%.",
    "up": "Tahan dan nada sabar: relief rally.",
-   "down": "Hike 25 bps (kejutan) atau sinyal kuat hike Desember: uji EMA99 dan support besar BTC 74,9–76,9k."
+   "down": "Hike kejutan atau sinyal kuat hike Desember: uji EMA99 dan support besar BTC 74,9–77,0k."
   },
   {
    "day": "2026-10-31",
@@ -101,7 +101,7 @@
    "tone": "down",
    "upcoming": true,
    "title": "Tenggat repayment Mt. Gox",
-   "detail": "Wallet terkait Mt. Gox memegang ±34.388 BTC (±$2,9 miliar, data Arkham). ±19.500 dari ±24.000 kreditor sudah dibayar.",
+   "detail": "Wallet terkait Mt. Gox memegang ±34.388 BTC (±$2,9 miliar, data Arkham). ±19.500 dari ±24.000 kreditor sudah dibayar; pantau transfer ke alamat exchange.",
    "down": "Transfer ke exchange bisa memicu FUD dan tekanan jual."
   },
   {
@@ -118,14 +118,14 @@
    "down": "Jangan menambah besar HYPE menjelang awal November."
   }
  ],
- "eventsNote": "Disembunyikan karena dampak sedang/rendah: housing starts (Sel 20 Okt), klaim pengangguran (Kam 22 Okt), PMI flash S&P Global & UMich final (Jum 23 Okt), Leading Economic Index, laba GM/RTX/Netflix/IBM. Tidak ada pidato pejabat Fed selama blackout.",
+ "eventsNote": "Disembunyikan karena dampak sedang/rendah: housing starts & permits (Sel 20 Okt), klaim pengangguran (Kam 22 Okt), sentimen UMich (Jum 23 Okt), laba GM/RTX/UAL/IBM. Fed dalam masa blackout sampai setelah FOMC.",
  "reminders": [
   {
    "title": "Trim INJ di 8,7–9,4",
-   "when": "Sen 19 Okt 2026",
+   "when": "Sel 20 Okt 2026",
    "alert": "08:00 WIB",
-   "note": "INJ di zona trim dekat high 50 hari. Jual 15–20% bertahap, sisanya hold dengan stop di bawah 7,1.",
-   "siri": "Ingatkan saya hari Senin 19 Oktober jam 8 pagi: cek trim INJ di 8,7 sampai 9,4"
+   "note": "INJ masih dekat high 16 Okt (9,41). Jual 15–20% bertahap jika belum, sisanya hold.",
+   "siri": "Ingatkan saya hari Selasa 20 Oktober jam 8 pagi: cek trim INJ di 8,7 sampai 9,4"
   },
   {
    "title": "Laba Meta & Tesla",
@@ -157,9 +157,9 @@
   }
  ],
  "btc": {
-  "price": 82109.3,
-  "d7": -1.97,
-  "d30": 1.49,
+  "price": 81943.8,
+  "d7": 0.11,
+  "d30": 0.83,
   "hi50": 87399,
   "lo50": 74955.5,
   "range": [
@@ -170,7 +170,7 @@
    {
     "side": "up",
     "lo": 74955,
-    "hi": 76890,
+    "hi": 77000,
     "label": "S3",
     "basis": "Low 15 Sep · EMA99"
    },
@@ -179,28 +179,28 @@
     "lo": 79700,
     "hi": 80400,
     "label": "S2",
-    "basis": "Low 15 Okt 79,8k · Fib 0,618 · low 8 Okt"
+    "basis": "Low 15 Okt · Fib 0,618 · 80k dibela 3x"
    },
    {
     "side": "up",
     "lo": 81170,
-    "hi": 82000,
+    "hi": 81500,
     "label": "S1",
-    "basis": "Fib 0,5 · EMA5"
+    "basis": "Fib 0,5 · rata-rata beli ETF ±81,5k"
    },
    {
     "side": "down",
-    "lo": 82480,
+    "lo": 81980,
     "hi": 82650,
     "label": "R1",
-    "basis": "EMA25 · Fib 0,382"
+    "basis": "EMA5/EMA25 · Fib 0,382"
    },
    {
     "side": "down",
-    "lo": 84360,
+    "lo": 84000,
     "hi": 84460,
     "label": "R2",
-    "basis": "High 12 Okt · Fib 0,236"
+    "basis": "High 12 Okt · Fib 0,236 · level uji Nexo"
    },
    {
     "side": "down",
@@ -213,24 +213,24 @@
   "ema": [
    {
     "name": "EMA5",
-    "value": "81.998",
+    "value": "81.980",
     "tone": "down",
-    "status": "Turun, harga tipis di atasnya"
+    "status": "Melandai turun, harga tepat di bawahnya"
    },
    {
     "name": "EMA25",
-    "value": "82.484",
-    "tone": "down",
-    "status": "Mulai menurun, harga di bawahnya"
+    "value": "82.443",
+    "tone": "flat",
+    "status": "Datar, harga di bawahnya"
    },
    {
     "name": "EMA99",
-    "value": "76.888",
+    "value": "76.996",
     "tone": "up",
     "status": "Naik, harga masih jauh di atasnya: tren menengah naik"
    }
   ],
-  "emaNote": "EMA dari candle harian OKX BTC-USDT (close 07:00 WIB). EMA5 di bawah EMA25 dan EMA25 kini ikut menurun: momentum pendek negatif. Tren menengah aman selama di atas EMA99.",
+  "emaNote": "EMA dari candle harian OKX BTC-USDT (close 07:00 WIB). Harga terjepit di bawah EMA5/25 dalam range sempit 80–84k; close di atas 82,7k memulihkan momentum pendek.",
   "main": {
    "title": "Skenario utama: W4 selesai di 79,8k, wave 5 menyusul",
    "tone": "up",
@@ -243,8 +243,8 @@
     1.1
    ],
    "items": [
-    "Hitungan: W3 berakhir 87.399 (21 Sep); W4 menyamping dengan low 79.775 (15 Okt), sedikit di bawah low 8 Okt.",
-    "Konfirmasi bertahap: close di atas 82,6k (EMA25), lalu 84,4k (high 12 Okt), lalu 87,4k.",
+    "Hitungan: W3 berakhir 87.399 (21 Sep); W4 menyamping dengan low 79.775 (15 Okt).",
+    "Konfirmasi bertahap: close di atas 82,7k (EMA25), lalu 84,4k (high 12 Okt), lalu 87,4k.",
     "Target W5: 89.473 (ext 1,272) lalu 92.111 (ext 1,618).",
     "Batal jika close harian < 74.900."
    ]
@@ -261,8 +261,8 @@
     0.3
    ],
    "items": [
-    "Lower high 84,4k dan lower low 79,8k membentuk tren turun pendek; tembus 79,7k membuka Fib 0,786 (77,6k) dan EMA99 ±76,9k.",
-    "Dipicu laba teknologi yang mengecewakan, outflow ETF lanjut, atau sinyal hike FOMC.",
+    "Lower high 84,4k dan lower low 79,8k membentuk tren turun pendek; tembus 79,7k membuka Fib 0,786 (77,6k) dan EMA99 ±77,0k.",
+    "Dipicu laba teknologi mengecewakan, outflow ETF lanjut, atau sinyal hike FOMC.",
     "Close harian < 74,9k membatalkan struktur naik dan membuka 72–69k."
    ]
   },
@@ -315,100 +315,100 @@
   {
    "sym": "ETH",
    "bucket": "Core",
-   "price": "2.411",
-   "p": 2410.51,
+   "price": "2.408",
+   "p": 2408.24,
    "lo50": 2317,
    "hi50": 2807.67,
-   "d7": -4.98,
-   "d30": -7.71,
-   "sup": "2.354 · 2.317",
-   "res": "2.427 · 2.524 · 2.580",
+   "d7": -1.59,
+   "d30": -8.53,
+   "sup": "2.356 · 2.317",
+   "res": "2.421 · 2.515 · 2.580",
    "tone": "down",
-   "trend": "Bearish (5: 2.427 < 25: 2.524)"
+   "trend": "Bearish (5: 2.421 < 25: 2.515)"
   },
   {
    "sym": "SOL",
    "bucket": "Core",
-   "price": "104,12",
-   "p": 104.12,
+   "price": "105,07",
+   "p": 105.07,
    "lo50": 95.79,
    "hi50": 124.96,
-   "d7": -6.48,
-   "d30": -7.64,
-   "sup": "99,5 · 95,8",
-   "res": "104,8 · 109,7 · 113,4",
+   "d7": -0.64,
+   "d30": -5.4,
+   "sup": "99,6 · 95,8",
+   "res": "105,7 · 109,4 · 113,4",
    "tone": "down",
-   "trend": "Bearish (5: 104,80 < 25: 109,74)"
+   "trend": "Bearish (5: 104,89 < 25: 109,38)"
   },
   {
    "sym": "HYPE",
    "bucket": "Satellite",
-   "price": "78,962",
-   "p": 78.962,
+   "price": "79,283",
+   "p": 79.283,
    "lo50": 75.19,
    "hi50": 98.041,
-   "d7": -8.95,
-   "d30": -14.74,
-   "sup": "77,0 · 75,2",
-   "res": "80,0 · 82,7 · 84,5",
+   "d7": -2.16,
+   "d30": -13.99,
+   "sup": "77,1 · 75,2",
+   "res": "79,8 · 84,1 · 88,1",
    "tone": "down",
-   "trend": "Bearish (5: 80,000 < 25: 84,459)"
+   "trend": "Bearish (5: 79,761 < 25: 84,061)"
   },
   {
    "sym": "LINK",
    "bucket": "Satellite",
-   "price": "12,040",
-   "p": 12.04,
+   "price": "12,060",
+   "p": 12.06,
    "lo50": 10.618,
    "hi50": 15.773,
-   "d7": -9.8,
-   "d30": -1.54,
-   "sup": "11,45 · 10,62",
-   "res": "12,09–12,27 · 12,86 · 13,51",
+   "d7": -4.48,
+   "d30": -2.9,
+   "sup": "11,46 · 10,62",
+   "res": "12,09–12,20 · 12,80 · 13,51",
    "tone": "down",
-   "trend": "Bearish (5: 12,265 < 25: 12,860)"
+   "trend": "Bearish (5: 12,197 < 25: 12,798)"
   },
   {
    "sym": "PENDLE",
    "bucket": "10x",
-   "price": "2,049",
-   "p": 2.049,
-   "lo50": 1.683,
+   "price": "2,101",
+   "p": 2.101,
+   "lo50": 1.697,
    "hi50": 2.8,
-   "d7": -7.24,
-   "d30": -20.8,
-   "sup": "1,96 · 1,90 · 1,68",
-   "res": "2,075 · 2,20–2,24",
+   "d7": 2.79,
+   "d30": -19.59,
+   "sup": "2,08 · 1,97 · 1,90",
+   "res": "2,19–2,24 · 2,60",
    "tone": "down",
-   "trend": "Bearish (5: 2,075 < 25: 2,200)"
+   "trend": "Bearish (5: 2,084 < 25: 2,192)"
   },
   {
    "sym": "INJ",
    "bucket": "10x",
-   "price": "8,724",
-   "p": 8.724,
+   "price": "8,595",
+   "p": 8.595,
    "lo50": 4.632,
    "hi50": 9.409,
-   "d7": 12.41,
-   "d30": 30.7,
-   "sup": "8,47 · 7,71 · 7,13",
+   "d7": 17.69,
+   "d30": 8.4,
+   "sup": "8,51 · 7,78 · 7,13",
    "res": "9,41",
    "tone": "up",
-   "trend": "Bullish (5: 8,469 > 25: 7,708)"
+   "trend": "Bullish (5: 8,511 > 25: 7,776)"
   },
   {
    "sym": "TAO",
    "bucket": "10x",
-   "price": "271,20",
-   "p": 271.2,
+   "price": "268,10",
+   "p": 268.1,
    "lo50": 213.5,
    "hi50": 341.2,
-   "d7": -8.16,
-   "d30": 8.39,
-   "sup": "254,4 · 250,0",
-   "res": "273,6 · 280,5–283 · 302",
+   "d7": -1.43,
+   "d30": 1.67,
+   "sup": "254,4 · 250,3",
+   "res": "271,8 · 279,6 · 291,5–302",
    "tone": "down",
-   "trend": "Bearish (5: 273,61 < 25: 280,54)"
+   "trend": "Bearish (5: 271,77 < 25: 279,58)"
   }
  ],
  "actions": [
@@ -417,7 +417,7 @@
    "sym": "BTC",
    "action": "HOLD + ADD",
    "tone": "up",
-   "long": "Bertahap: T1 79,7–80,4k (30%) · T2 77,6–78,5k (30%) · T3 74,9–76,9k (40%)",
+   "long": "Bertahap: T1 79,7–80,4k (30%) · T2 77,6–78,5k (30%) · T3 74,9–77,0k (40%)",
    "trim": "Opsional jual 10–15% jika ditolak lagi di 87,2–87,4k",
    "inval": "< 74.900"
   },
@@ -426,7 +426,7 @@
    "sym": "ETH",
    "action": "WAIT",
    "tone": "flat",
-   "long": "ADD kecil 2.320–2.355 (low 15 Okt–EMA99), atau saat close > 2.530",
+   "long": "ADD kecil 2.320–2.356 (low 15 Okt–EMA99), atau saat close > 2.520 (ETF ETH masih outflow)",
    "inval": "< 2.300"
   },
   {
@@ -434,7 +434,7 @@
    "sym": "SOL",
    "action": "HOLD",
    "tone": "flat",
-   "long": "ADD hanya di 96–99,5 (EMA99); close > 109,7 untuk konfirmasi pemulihan",
+   "long": "ADD hanya di 96–99,6 (EMA99); close > 109,4 untuk konfirmasi pemulihan",
    "inval": "< 95,0"
   },
   {
@@ -458,7 +458,7 @@
    "sym": "PENDLE",
    "action": "WAIT",
    "tone": "flat",
-   "long": "Hanya di 1,68–1,90 atau saat close > 2,24",
+   "long": "Hanya di 1,70–1,90 atau saat close > 2,24",
    "inval": "< 1,58"
   },
   {
@@ -466,8 +466,8 @@
    "sym": "INJ",
    "action": "TRIM · HOLD",
    "tone": "up",
-   "long": "Jangan kejar; ADD hanya di 7,7–8,0 (dekat EMA25)",
-   "trim": "Jual 15–20% di 8,7–9,4 (zona trim, dekat high 50 hari)",
+   "long": "Jangan kejar; ADD hanya di 7,8–8,0 (dekat EMA25)",
+   "trim": "Jual 15–20% di 8,7–9,4 (jika belum)",
    "inval": "< 6,40"
   },
   {
@@ -481,31 +481,31 @@
  ],
  "risk": [
   "Spot dulu, tanpa leverage, risiko maks 1% per trade. Tambah posisi hanya di zona bawah, bukan saat rebound.",
+  "Range BTC menyempit (80–84k): breakout bisa tajam ke dua arah. Tunggu close di luar range sebelum ikut.",
   "Close harian BTC di bawah 79,7k mengaktifkan skenario alternatif (uji 77,6k dan EMA99).",
-  "Laba Meta/Tesla Kamis pagi WIB bisa menggerakkan Nasdaq dan kripto; hindari posisi baru sebelum reaksi pasar jelas.",
-  "ETF ETH/SOL masih outflow dan altcoin lebih lemah dari BTC. Prioritaskan BTC; trim kekuatan INJ.",
+  "Laba Meta/Tesla Kamis pagi WIB bisa menggerakkan Nasdaq dan kripto.",
   "Akhir Oktober: FOMC 28 Okt dan wallet Mt. Gox menjelang 31 Okt."
  ],
  "sources": [
   [
-   "CryptoPotato: 4 poin pidato Warsh di Bangkok",
-   "https://cryptopotato.com/fed-chair-warshs-bangkok-speech-4-key-takeaways-and-what-they-mean-for-bitcoin/"
+   "Cointelegraph: ETF BTC & ETH −$549 juta seminggu",
+   "https://cointelegraph.com/markets/bitcoin-ether-etfs-549-million-weekly-outflows"
+  ],
+  [
+   "Crypto Briefing: ETF BTC −$82,4 juta, ETH −$69,7 juta 16 Okt",
+   "https://cryptobriefing.com/bitcoin-etfs-82-million-outflows-october-16/"
+  ],
+  [
+   "Unchained: BTC rebut 82k saat Brent turun",
+   "https://unchainedcrypto.com/bitcoin-reclaims-82000-as-brent-crude-slips-from-a-five-month-high-and-stock-futures-rise/"
   ],
   [
    "DeFiRate: Odds FOMC 28 Okt & Desember",
    "https://defirate.com/prediction-markets/fed-decision-odds/"
   ],
   [
-   "Phemex: Fed blackout & kalender minggu ini",
-   "https://phemex.com/news/article/fed-enters-blackout-ahead-of-october-meeting-as-us-earnings-season-accelerates-100277"
-  ],
-  [
    "MarketAlleys: Week Ahead 19 Okt 2026",
    "https://www.marketalleys.com/post/marketalleys-week-ahead-2026-10-19"
-  ],
-  [
-   "Coinpaper: Flow ETF BTC/ETH/SOL 15 Okt",
-   "https://coinpaper.com/37424/xrp-solana-and-ethereum-etfs-lose-71-million-as-bitcoin-funds-attract-51-million-in-one-day"
   ],
   [
    "Crypto Briefing: Saldo Mt. Gox & tenggat 31 Okt",
@@ -516,5 +516,5 @@
    "https://usethebitcoin.com/market-analysis/hyperliquid-price-october-6-2026/"
   ]
  ],
- "syncedAt": "2026-10-19T00:05:34.389Z"
+ "syncedAt": "2026-10-20T00:05:10.094Z"
 }
