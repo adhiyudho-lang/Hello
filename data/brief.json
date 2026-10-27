@@ -1,13 +1,13 @@
 {
  "kind": "daily",
- "period": "Senin, 26 Oktober 2026",
- "date": "2026-10-26",
- "snapshot": "Senin, 26 Okt 2026 · 07:06 WIB",
- "source": "Harga & EMA: OKX candle harian (close 2026-10-25 UTC = 07:00 WIB) · Narasi: Claude (riset web)",
+ "period": "Selasa, 27 Oktober 2026",
+ "date": "2026-10-27",
+ "snapshot": "Selasa, 27 Okt 2026 · 07:05 WIB",
+ "source": "Harga & EMA: OKX candle harian (close 2026-10-26 UTC = 07:00 WIB) · Narasi: Claude (riset web)",
  "bias": {
   "score": -35,
   "label": "Waspada",
-  "note": "BTC sempat tembus 80k ke ±79,1k akhir pekan setelah outflow ETF terbesar sejak Juni, kini di bawah EMA5/25 yang menurun. Minggu ini padat (FOMC, PCE, expiry opsi ±$11 miliar); tahan tranche baru sampai lewat FOMC."
+  "note": "BTC bertahan tipis di sekitar 80k menjelang FOMC, masih di bawah EMA5/25 yang menurun. Pasar mengurangi risiko sebelum Rabu malam; Brent ±$114–117 menjaga kekhawatiran inflasi. Tahan tranche baru sampai FOMC dan PCE lewat."
  },
  "coins": {
   "BTC": {
@@ -49,18 +49,18 @@
  "summary": [
   {
    "tone": "down",
-   "title": "Outflow ETF BTC terbesar sejak Juni",
-   "text": "22 Okt: ETF BTC −$635 juta (IBIT −$254 juta, FBTC −$217 juta, ARKB −$109 juta), lalu ±−$138 juta pada 23 Okt. ETF ETH −$111 juta. Oktober kembali merah: BTC ±−$176 juta, ETH ±−$1,18 miliar. Harga menguji cost basis ETF ±81,5k (Glassnode)."
-  },
-  {
-   "tone": "down",
-   "title": "Akhir pekan: tembus 80k, likuidasi $810 juta",
-   "text": "Sabtu BTC turun ke ±79.146, terendah lebih dari sebulan, dengan likuidasi >$810 juta (±$689 juta long), lalu kembali ke ±80k. Brent di atas $117 karena ketegangan Timur Tengah. Glassnode: close di bawah 80k membuka True Market Mean ±77,6k."
+   "title": "Pasar kurangi risiko sebelum FOMC",
+   "text": "Senin BTC turun tipis ke ±79,8k, ETH ±2.314, SOL ±100,3; saham ETF IBIT −1,6%, FBTC −1,7%, ETHA −3,2%. Pelaku pasar memangkas eksposur menjelang keputusan Fed 28 Okt dan mengambil untung setelah reli kuartal III."
   },
   {
    "tone": "swing",
-   "title": "Minggu tersibuk: FOMC, PCE, expiry opsi",
-   "text": "FOMC Kamis 01:00 WIB: 94 dari 100 ekonom (Reuters) memperkirakan tahan di 3,75–4,00%; odds hike ±6%, hike Desember ±76%. PCE September (konsensus core +0,3% MoM / 3,1% YoY) & GDP Q3 Kamis 19:30 WIB. Expiry opsi BTC ±$11 miliar Jumat. Tenggat Mt. Gox mundur ke 31 Okt 2027."
+   "title": "FOMC: tahan, fokus ke Desember",
+   "text": "94 dari 100 ekonom (Reuters) memperkirakan tahan di 3,75–4,00%; prediction market hike ±7%, hike Desember ±74%. Pimco: tahan dengan tightening bias, hike Desember. Pantau dissent Hammack, Logan, Kashkari. ±60% ekonom melihat puncak suku bunga di 4,00–4,25%."
+  },
+  {
+   "tone": "down",
+   "title": "ETF masih merah di Oktober",
+   "text": "Setelah outflow −$635 juta pada 22 Okt (terbesar sejak Juni), ETF BTC ±−$176 juta dan ETF ETH ±−$1,18 miliar bulan ini. Harga di bawah cost basis ETF ±81,5k (Glassnode); di bawah 80k, acuan berikutnya True Market Mean ±77,6k."
   }
  ],
  "events": [
@@ -73,9 +73,9 @@
    "scope": "The Fed",
    "tone": "swing",
    "title": "Keputusan FOMC & konferensi pers Warsh",
-   "detail": "Rapat 27–28 Okt, pengumuman 14:00 ET (01:00 WIB), konferensi pers 01:30 WIB. Tanpa dot plot. Konsensus tahan di 3,75–4,00%; pantau dissent (Hammack, Logan, Kashkari) dan sinyal Desember.",
-   "up": "Tahan dengan nada sabar soal Desember: relief rally, BTC rebut 81,1–81,8k.",
-   "down": "Tightening bias tegas / dissent hike: tekanan ke 77,6k (EMA99) lalu 75k."
+   "detail": "Pengumuman 14:00 ET (01:00 WIB), konferensi pers 01:30 WIB. Konsensus tahan 3,75–4,00%; pantau dissent hawkish dan sinyal hike Desember.",
+   "up": "Tahan dengan nada sabar: relief rally, BTC rebut 80,8–81,8k.",
+   "down": "Tightening bias tegas atau dissent: tekanan ke 79,1k lalu 77,6k (EMA99)."
   },
   {
    "day": "2026-10-29",
@@ -86,9 +86,9 @@
    "scope": "Makro AS",
    "tone": "swing",
    "title": "GDP Q3 (advance) & PCE September",
-   "detail": "Konsensus GDP ±3,0% (GDPNow 3,5%). PCE headline +0,5% MoM / 3,6% YoY, core +0,3% MoM / 3,1% YoY.",
+   "detail": "Konsensus GDP 3,0% (GDPNow 3,5%). PCE headline +0,5% MoM / 3,6% YoY, core +0,3% MoM / 3,1% YoY (BofA: core 0,34%).",
    "up": "Core PCE ≤0,2%: odds hike Desember turun.",
-   "down": "Core PCE ≥0,4%: yield naik, BTC uji ulang 79k."
+   "down": "Core PCE ≥0,4%: yield naik, BTC uji 77,6k."
   },
   {
    "day": "2026-10-30",
@@ -99,9 +99,9 @@
    "scope": "BTC · Jepang",
    "tone": "swing",
    "title": "Expiry opsi BTC ±$11 miliar & keputusan BoJ",
-   "detail": "Expiry opsi bulanan bernilai ±$11 miliar. BoJ diperkirakan menahan; hike kejutan bisa menguatkan yen dan menekan aset berisiko.",
+   "detail": "Expiry opsi bulanan ±$11 miliar. BoJ diperkirakan menahan di 1,25%; pasar melihat Desember lebih mungkin untuk hike.",
    "up": "Volatilitas mereda setelah expiry.",
-   "down": "Hike kejutan BoJ: unwinding carry trade, kripto tertekan."
+   "down": "Hike kejutan BoJ: yen menguat, aset berisiko tertekan."
   },
   {
    "day": "2026-11-06",
@@ -117,7 +117,7 @@
    "down": "Jangan menambah besar HYPE menjelang awal November."
   }
  ],
- "eventsNote": "Dihapus: tenggat Mt. Gox 31 Okt 2026 sudah diperpanjang ke 31 Okt 2027 (notice 16 Okt, izin pengadilan); wallet masih memegang ±34.000 BTC. Disembunyikan karena dampak sedang/rendah: durable goods (Sel 27 Okt), keputusan BoC/ECB, laba Microsoft, Alphabet, Amazon.",
+ "eventsNote": "Disembunyikan karena dampak sedang/rendah: durable goods (Sel 27 Okt), BoC & RBNZ (diperkirakan hike), ECB (Kam), laba Microsoft, Alphabet, Amazon. Tenggat Mt. Gox sudah mundur ke 31 Okt 2027 (±34.400 BTC masih di wallet estate).",
  "reminders": [
   {
    "title": "FOMC besok dini hari: cek leverage",
@@ -130,7 +130,7 @@
    "title": "Cek hasil FOMC",
    "when": "Kam 29 Okt 2026",
    "alert": "06:00 WIB",
-   "note": "Baca pernyataan dan nada Warsh soal Desember sebelum menjalankan tranche ADD.",
+   "note": "Baca pernyataan, dissent, dan nada Warsh soal Desember sebelum menjalankan tranche ADD.",
    "siri": "Ingatkan saya hari Kamis 29 Oktober jam 6 pagi: cek hasil FOMC dan reaksi BTC"
   },
   {
@@ -149,9 +149,9 @@
   }
  ],
  "btc": {
-  "price": 80157,
-  "d7": -2.38,
-  "d30": -4.69,
+  "price": 80146,
+  "d7": -2.19,
+  "d30": -5.09,
   "hi50": 87399,
   "lo50": 74955.5,
   "range": [
@@ -182,14 +182,14 @@
    },
    {
     "side": "down",
-    "lo": 81140,
+    "lo": 80810,
     "hi": 81800,
     "label": "R1",
-    "basis": "EMA5 · cost basis ETF ±81,5k · MA50 ±81,7k"
+    "basis": "EMA5 · cost basis ETF ±81,5k · MA50"
    },
    {
     "side": "down",
-    "lo": 82130,
+    "lo": 81980,
     "hi": 82650,
     "label": "R2",
     "basis": "EMA25 · Fib 0,382"
@@ -205,24 +205,24 @@
   "ema": [
    {
     "name": "EMA5",
-    "value": "81.141",
+    "value": "80.809",
     "tone": "down",
     "status": "Turun, harga di bawahnya"
    },
    {
     "name": "EMA25",
-    "value": "82.134",
+    "value": "81.981",
     "tone": "down",
-    "status": "Mulai menurun, harga di bawahnya"
+    "status": "Turun, harga di bawahnya"
    },
    {
     "name": "EMA99",
-    "value": "77.635",
+    "value": "77.687",
     "tone": "up",
     "status": "Masih naik, harga tinggal sedikit di atasnya"
    }
   ],
-  "emaNote": "EMA dari candle harian OKX BTC-USDT (close 07:00 WIB). EMA5 dan EMA25 sama-sama menurun dan harga di bawah keduanya; EMA99 ±77,6k kini jadi penyangga tren menengah.",
+  "emaNote": "EMA dari candle harian OKX BTC-USDT (close 07:00 WIB). EMA5 dan EMA25 menurun dengan harga di bawah keduanya; EMA99 ±77,7k adalah penyangga tren menengah.",
   "main": {
    "title": "Skenario utama: W4 lebih panjang, bertahan di atas 77,6k",
    "tone": "up",
@@ -235,8 +235,8 @@
     1.1
    ],
    "items": [
-    "Hitungan: W3 berakhir 87.399 (21 Sep); W4 meluas sebagai flat/segitiga dengan low 79,1k dan atap 84,9k.",
-    "Syarat bertahan: close harian di atas EMA99 ±77,6k; rebut 81,8k untuk kembali ke tengah range.",
+    "Hitungan: W3 berakhir 87.399 (21 Sep); W4 meluas (flat/segitiga) dengan low 79,1k dan atap 84,9k.",
+    "Syarat bertahan: close harian di atas EMA99 ±77,7k; rebut 81,8k untuk kembali ke tengah range.",
     "Target W5 setelah tembus 84,9k: 89.473 lalu 92.111.",
     "Batal jika close harian < 74.900."
    ]
@@ -254,7 +254,7 @@
    ],
    "items": [
     "Close harian di bawah 79k mengonfirmasi lower low; target 77,6k (EMA99) lalu 75,0–75,5k.",
-    "Dipicu tightening bias di FOMC, core PCE panas, outflow ETF lanjut, atau minyak di atas $117.",
+    "Dipicu tightening bias di FOMC, core PCE panas, outflow ETF lanjut, atau minyak naik lagi.",
     "Close harian < 74,9k membatalkan struktur naik dan membuka 72,5k."
    ]
   },
@@ -263,19 +263,19 @@
     "name": "0,382 leg 74,9k→87,4k",
     "lv": "82.646",
     "role": "down",
-    "fn": "Resistance (bersama EMA25)"
+    "fn": "Resistance (dekat EMA25)"
    },
    {
     "name": "0,5",
     "lv": "81.177",
     "role": "down",
-    "fn": "Resistance (bersama EMA5)"
+    "fn": "Resistance (zona EMA5/cost basis ETF)"
    },
    {
     "name": "0,618",
     "lv": "79.709",
     "role": "up",
-    "fn": "Support S1 (sudah ditembus intraday)"
+    "fn": "Support S1"
    },
    {
     "name": "0,786",
@@ -307,100 +307,100 @@
   {
    "sym": "ETH",
    "bucket": "Core",
-   "price": "2.330",
-   "p": 2329.79,
+   "price": "2.325",
+   "p": 2324.57,
    "lo50": 2282.85,
    "hi50": 2807.67,
-   "d7": -3.35,
-   "d30": -13.45,
+   "d7": -3.47,
+   "d30": -13.78,
    "sup": "2.283",
-   "res": "2.363–2.373 · 2.468 · 2.526",
+   "res": "2.357–2.363 · 2.457 · 2.526",
    "tone": "down",
-   "trend": "Bearish (5: 2.373 < 25: 2.468)"
+   "trend": "Bearish (5: 2.357 < 25: 2.457)"
   },
   {
    "sym": "SOL",
    "bucket": "Core",
-   "price": "101,37",
-   "p": 101.37,
+   "price": "100,95",
+   "p": 100.95,
    "lo50": 95.79,
    "hi50": 124.96,
-   "d7": -2.64,
-   "d30": -17.02,
+   "d7": -3.92,
+   "d30": -16.85,
    "sup": "100,2 · 95,8",
-   "res": "102,9 · 107,2 · 109,2",
+   "res": "102,3 · 106,7 · 109,2",
    "tone": "down",
-   "trend": "Bearish (5: 102,94 < 25: 107,21)"
+   "trend": "Bearish (5: 102,28 < 25: 106,73)"
   },
   {
    "sym": "HYPE",
    "bucket": "Satellite",
-   "price": "76,343",
-   "p": 76.343,
+   "price": "78,356",
+   "p": 78.356,
    "lo50": 74.465,
    "hi50": 98.041,
-   "d7": -3.32,
-   "d30": -17.4,
-   "sup": "74,5",
-   "res": "77,3–77,4 · 81,7 · 82,5",
+   "d7": -1.17,
+   "d30": -15.37,
+   "sup": "77,3–77,7 · 74,5",
+   "res": "81,5 · 82,5",
    "tone": "down",
-   "trend": "Bearish (5: 77,411 < 25: 81,713)"
+   "trend": "Bearish (5: 77,726 < 25: 81,455)"
   },
   {
    "sym": "LINK",
    "bucket": "Satellite",
-   "price": "11,456",
-   "p": 11.456,
+   "price": "11,408",
+   "p": 11.408,
    "lo50": 10.618,
    "hi50": 15.773,
-   "d7": -4.85,
-   "d30": -17.74,
+   "d7": -5.41,
+   "d30": -19.38,
    "sup": "10,62",
-   "res": "11,52–11,54 · 11,77 · 12,46 · 12,81",
+   "res": "11,52 · 11,65 · 12,38 · 12,81",
    "tone": "down",
-   "trend": "Bearish (5: 11,771 < 25: 12,457)"
+   "trend": "Bearish (5: 11,650 < 25: 12,376)"
   },
   {
    "sym": "PENDLE",
    "bucket": "10x",
-   "price": "1,964",
-   "p": 1.964,
+   "price": "1,951",
+   "p": 1.951,
    "lo50": 1.904,
    "hi50": 2.8,
-   "d7": -4.15,
-   "d30": -23.01,
+   "d7": -7.14,
+   "d30": -24.06,
    "sup": "1,904",
-   "res": "1,98–2,02 · 2,14 · 2,22",
+   "res": "1,98–2,00 · 2,12 · 2,22",
    "tone": "down",
-   "trend": "Bearish (5: 2,024 < 25: 2,138)"
+   "trend": "Bearish (5: 2,000 < 25: 2,124)"
   },
   {
    "sym": "INJ",
    "bucket": "10x",
-   "price": "7,883",
-   "p": 7.883,
-   "lo50": 4.941,
+   "price": "8,054",
+   "p": 8.054,
+   "lo50": 5.155,
    "hi50": 9.414,
-   "d7": -9.64,
-   "d30": -3.72,
-   "sup": "7,13–7,17 · 6,55 · 6,42",
-   "res": "7,90–7,98 · 9,41",
+   "d7": -6.29,
+   "d30": 3.48,
+   "sup": "7,91–8,01 · 7,13 · 6,58",
+   "res": "9,41",
    "tone": "up",
-   "trend": "Bullish (5: 7,984 > 25: 7,896)"
+   "trend": "Bullish (5: 8,007 > 25: 7,908)"
   },
   {
    "sym": "TAO",
    "bucket": "10x",
-   "price": "252,60",
-   "p": 252.6,
+   "price": "251,46",
+   "p": 251.46,
    "lo50": 213.5,
    "hi50": 341.2,
-   "d7": -6.86,
-   "d30": -20.54,
+   "d7": -6.21,
+   "d30": -21.81,
    "sup": "251,4 · 213,5",
-   "res": "254,3–257,1 · 271,8 · 281,4",
+   "res": "254,3–255,2 · 270,3 · 281,4",
    "tone": "down",
-   "trend": "Bearish (5: 257,05 < 25: 271,84)"
+   "trend": "Bearish (5: 255,19 < 25: 270,27)"
   }
  ],
  "actions": [
@@ -418,7 +418,7 @@
    "sym": "ETH",
    "action": "WAIT",
    "tone": "down",
-   "long": "ADD kecil hanya saat close > 2.375 (EMA99); ETF ETH −$1,18 miliar Oktober",
+   "long": "ADD kecil hanya saat close > 2.365 (EMA99); ETF ETH −$1,18 miliar Oktober",
    "inval": "< 2.280"
   },
   {
@@ -432,9 +432,9 @@
   {
    "bucket": "Satellite",
    "sym": "HYPE",
-   "action": "WAIT",
-   "tone": "down",
-   "long": "Sudah di bawah EMA99; tunggu close > 77,4 atau setelah unlock ±6 Nov",
+   "action": "HOLD",
+   "tone": "flat",
+   "long": "Kembali di atas EMA99; ADD kecil hanya setelah unlock ±6 Nov",
    "inval": "< 74,4"
   },
   {
@@ -450,14 +450,14 @@
    "sym": "PENDLE",
    "action": "WAIT",
    "tone": "down",
-   "long": "Hanya di 1,75–1,90 atau saat close > 2,15",
+   "long": "Hanya di 1,75–1,90 atau saat close > 2,12",
    "inval": "< 1,58"
   },
   {
    "bucket": "10x",
    "sym": "INJ",
    "action": "HOLD",
-   "tone": "flat",
+   "tone": "up",
    "long": "Trim sudah di 8,7–9,4; ADD ulang hanya di 7,13–7,20",
    "inval": "< 6,40"
   },
@@ -466,32 +466,32 @@
    "sym": "TAO",
    "action": "HOLD",
    "tone": "flat",
-   "long": "Double bottom 254 ditembus; ADD kecil hanya di 240–251 setelah FOMC",
+   "long": "Di EMA99; ADD kecil hanya di 240–251 setelah FOMC",
    "inval": "< 238"
   }
  ],
  "risk": [
   "Spot dulu, tanpa leverage, risiko maks 1% per trade. Jangan buka tranche baru sebelum FOMC Kamis 01:00 WIB.",
   "Close harian BTC di bawah 79k mengonfirmasi breakdown menuju 77,6k lalu 75k.",
-  "Minggu volatil: FOMC, PCE & GDP, expiry opsi ±$11 miliar, BoJ — semuanya dalam 3 hari.",
-  "Brent di atas $117: risiko inflasi dan hike Desember tetap tinggi.",
-  "Altcoin (ETH, HYPE, LINK, TAO) sudah di bawah atau di EMA99; prioritaskan BTC."
+  "Tiga hari volatil: FOMC, PCE & GDP, expiry opsi ±$11 miliar, BoJ.",
+  "Brent ±$114–117: risiko inflasi dan hike Desember tetap tinggi.",
+  "Altcoin (ETH, LINK, TAO) di atau di bawah EMA99; prioritaskan BTC."
  ],
  "sources": [
   [
-   "CryptoSlate: ETF BTC −$635 juta, cost basis ±81,5k",
-   "https://cryptoslate.com/bitcoin-etf-outflows-holdings-cost-basis/"
+   "Motley Fool: Crypto market 26 Okt",
+   "https://www.fool.com/coverage/stock-market-today/2026/10/26/crypto-market-today-oct-26-bitcoin-slips-below-usd80-000-as-fed-decision-looms/"
   ],
   [
-   "Bitcoin.com: BTC turun ke 79.146, likuidasi akhir pekan",
-   "https://news.bitcoin.com/market-updates/bitcoin-price-sinks-to-79146-as-liquidations-rock-weekend-trading/"
-  ],
-  [
-   "Newsquawk: Week in Focus 26–30 Okt (FOMC, PCE, GDP)",
+   "Newsquawk: Week in Focus 26–30 Okt",
    "https://www.newsquawk.com/headlines/week-in-focus-26-30th-october-2026-fomc-boc-rbnz-ecb-boj-policy-decisions-us-pce"
   ],
   [
-   "Blockonomi: Fed, GDP & expiry opsi BTC minggu ini",
+   "CryptoSlate: ETF BTC −$635 juta, cost basis & True Market Mean",
+   "https://cryptoslate.com/bitcoin-etf-outflows-holdings-cost-basis/"
+  ],
+  [
+   "Blockonomi: Fed, GDP & expiry opsi BTC",
    "https://blockonomi.com/busiest-crypto-week-of-the-year-fed-gdp-and-bitcoin-options-expiry-hit-at-once"
   ],
   [
@@ -511,5 +511,5 @@
    "https://usethebitcoin.com/market-analysis/hyperliquid-price-october-6-2026/"
   ]
  ],
- "syncedAt": "2026-10-26T00:06:03.946Z"
+ "syncedAt": "2026-10-27T00:05:54.272Z"
 }
