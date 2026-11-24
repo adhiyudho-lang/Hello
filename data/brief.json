@@ -1,13 +1,13 @@
 {
  "kind": "daily",
- "period": "Senin, 23 November 2026",
- "date": "2026-11-23",
- "snapshot": "Senin, 23 Nov 2026 · 07:04 WIB",
- "source": "Harga & EMA: OKX candle harian (close 2026-11-22 UTC = 07:00 WIB) · Narasi: Claude (riset web)",
+ "period": "Selasa, 24 November 2026",
+ "date": "2026-11-24",
+ "snapshot": "Selasa, 24 Nov 2026 · 07:04 WIB",
+ "source": "Harga & EMA: OKX candle harian (close 2026-11-23 UTC = 07:00 WIB) · Narasi: Claude (riset web)",
  "bias": {
-  "score": -68,
-  "label": "Risk-off · kapitulasi",
-  "note": "Sabtu BTC jatuh ke ±55,1k (terendah sejak Sept 2024), likuidasi ±$2,7 miliar, lalu memantul ke 60–61k. Funding Binance kembali positif. Close mingguan masih di atas 58,5k sehingga tidak ada trim BTC baru. ETF outflow ±$1,25 miliar sepekan. Pantulan belum berarti dasar; tetap tanpa ADD."
+  "score": -62,
+  "label": "Risk-off",
+  "note": "Wall Street reli bersejarah (Nasdaq +6,5%) setelah Huang kembali ke Nvidia, tapi BTC hanya ±61k: sempat 64,5k lalu turun lagi. ETF BTC −$1,79 miliar sepekan (terbesar sejak Juni), November ±−$4,14 miliar. PCE besok 20:30 WIB; tetap tanpa ADD."
  },
  "coins": {
   "BTC": {
@@ -48,19 +48,19 @@
  },
  "summary": [
   {
-   "tone": "down",
-   "title": "Flush ke 55,1k, likuidasi ±$2,7 miliar",
-   "text": "Sabtu 21 Nov BTC menembus low musim panas ±57,7k dan jatuh ke ±55,1k; turun ±18% dalam tujuh hari. Likuidasi 24 jam ±$2,7 miliar, peristiwa terbesar ke-11 dalam sejarah kripto; ±$650 juta dalam satu jam. Holder jangka pendek mengirim 92.100 BTC ke bursa dalam kondisi rugi."
-  },
-  {
-   "tone": "down",
-   "title": "Pemicu: saham, Fed, ETF",
-   "text": "Jumat Nasdaq −5,3% dan S&P 500 −3,7%; Anthropic ditutup $88,91 setelah dibuka $111,50. Yield 2 tahun ±4,7%, hike 8–9 Des diperhitungkan. Farside: ETF BTC −$1,25 miliar (16–20 Nov), termasuk −$582 juta pada 19 Nov; November ±−$3,59 miliar. ETF ETH −$221,7 juta. Saham Strategy −30% sepekan."
-  },
-  {
    "tone": "swing",
-   "title": "Pantulan short squeeze, belum dasar",
-   "text": "BTC kembali ke 60k+; short likuidasi $68,8 juta vs long $1,6 juta dalam satu jam. Funding Binance kembali positif (0,0077%). Open interest turun $2,54 miliar dalam 30 hari. Van de Poppe: ini pantulan, bukan sinyal dasar; target 72k dekat beberapa MA. RSI ±21."
+   "title": "Saham melonjak, BTC tertinggal",
+   "text": "Senin Nasdaq +6,5% dan S&P 500 +4,7% setelah dewan Nvidia memanggil kembali Jensen Huang (saham ±+32%). BTC sempat naik ke ±64,5k lalu turun ke ±60,8k dan ditutup ±61,2k. Saham kripto naik (MSTR +9%, COIN +7%), tapi BTC sendiri datar; DXY naik ke ±104,4."
+  },
+  {
+   "tone": "down",
+   "title": "ETF: outflow mingguan terbesar sejak Juni",
+   "text": "Pekan lalu ETF BTC −$1,79 miliar (IBIT −$1,37 miliar); empat minggu beruntun outflow, total ±$4,34 miliar. November ±−$4,14 miliar, mendekati rekor Juni $4,51 miliar. ETF ETH −$314 juta, minggu negatif kedelapan. Aset bersih ETF BTC ±$71,35 miliar."
+  },
+  {
+   "tone": "down",
+   "title": "PCE besok, hike Desember jadi base case",
+   "text": "Nowcast Oxford Economics: PCE headline Oktober naik ke 3,8% YoY dari 3,6%; tekanan energi merembet ke core. Hike 25 bp 8–9 Des menjadi base case; Oxford menilai pasar terlalu tinggi menghargai peluang 50 bp. Analis menandai 70–75k sebagai zona resistance besar."
   }
  ],
  "events": [
@@ -73,9 +73,9 @@
    "scope": "Makro AS",
    "tone": "swing",
    "title": "GDP Q3 (estimasi kedua) dan PCE Oktober",
-   "detail": "Rilis 8:30 ET (20:30 WIB). PCE adalah ukuran inflasi pilihan Fed sebelum rapat 8–9 Desember.",
-   "up": "PCE melandai: wacana 50 bp mereda, pantulan ke 64k.",
-   "down": "PCE panas: 50 bp makin mungkin, uji ulang 55–57,7k."
+   "detail": "Rilis 8:30 ET (20:30 WIB). Nowcast Oxford: PCE headline 3,8% YoY (September 3,6%).",
+   "up": "PCE di bawah nowcast: wacana 50 bp mereda, peluang uji 64–64,5k.",
+   "down": "PCE panas: 50 bp makin mungkin, uji ulang 58k lalu 55k."
   },
   {
    "day": "2026-11-26",
@@ -86,32 +86,32 @@
    "scope": "Pasar AS",
    "tone": "flat",
    "title": "Bursa AS libur Thanksgiving",
-   "detail": "NYSE/Nasdaq dan pasar obligasi tutup Kamis; Jumat 27 Nov saham tutup lebih awal 13:00 ET (Sabtu 01:00 WIB). ETF spot tidak diperdagangkan Kamis.",
+   "detail": "NYSE/Nasdaq dan pasar obligasi tutup Kamis; Jumat 27 Nov saham tutup lebih awal 13:00 ET (Sabtu 01:00 WIB).",
    "up": "Likuiditas tipis bisa memperpanjang pantulan.",
    "down": "Likuiditas tipis bisa memicu gerakan tajam ke bawah."
   }
  ],
- "eventsNote": "Tidak ada rilis makro besar lain hingga 30 Nov menurut FedRateCalc. MSCI mengeluarkan Strategy dari indeks setelah close 30 Nov.",
+ "eventsNote": "MSCI mengeluarkan Strategy dari indeks setelah close 30 Nov. Rapat FOMC 8–9 Desember.",
  "reminders": [
   {
    "title": "GDP dan PCE rilis 20:30",
    "when": "Rab 25 Nov 2026",
    "alert": "20:00 WIB",
-   "note": "Data inflasi pilihan Fed sebelum rapat Desember.",
+   "note": "Tidak ada ADD sebelum data keluar.",
    "siri": "Ingatkan saya hari Rabu 25 November jam 8 malam: data PCE Amerika rilis"
   },
   {
    "title": "Review posisi mingguan",
    "when": "Sen 30 Nov 2026",
    "alert": "07:00 WIB",
-   "note": "Close mingguan < 58,5k: kurangi 20% lagi; > 64k: pantulan menguat.",
+   "note": "Close mingguan < 58,5k: kurangi 20% lagi; > 64,5k: pantulan menguat.",
    "siri": "Ingatkan saya hari Senin 30 November jam 7 pagi: review posisi kripto mingguan"
   }
  ],
  "btc": {
-  "price": 61268.8,
-  "d7": -6.24,
-  "d30": -24.53,
+  "price": 61272.8,
+  "d7": -5.56,
+  "d30": -24.24,
   "hi50": 86994.3,
   "lo50": 55134,
   "range": [
@@ -122,99 +122,99 @@
    {
     "side": "up",
     "lo": 54800,
-    "hi": 55200,
+    "hi": 55130,
     "label": "S3",
-    "basis": "Low 21 Nov / low 50 hari ±55,1k · Fib ext 2,618 ±54,8k"
+    "basis": "Low 50 hari / low akhir pekan ±55,1k · Fib ext 2,618"
    },
    {
     "side": "up",
-    "lo": 57700,
-    "hi": 57800,
+    "lo": 57800,
+    "hi": 58000,
     "label": "S2",
-    "basis": "Low musim panas ±57,7k · support 57,8k"
+    "basis": "Low Jumat ±58k"
    },
    {
     "side": "up",
     "lo": 60000,
-    "hi": 60350,
+    "hi": 60800,
     "label": "S1",
-    "basis": "Resistance 60–60,35k yang direbut"
+    "basis": "Low 23 Nov ±60,8k · level 60k"
    },
    {
     "side": "down",
-    "lo": 61540,
+    "lo": 61450,
     "hi": 62510,
     "label": "R1",
-    "basis": "EMA5 · Fib ext 2,0 ±62,5k"
+    "basis": "EMA5 · Fib ext 2,0"
    },
    {
     "side": "down",
-    "lo": 63900,
-    "hi": 64100,
+    "lo": 64000,
+    "hi": 64500,
     "label": "R2",
-    "basis": "Batas bawah rentang pemulihan 64k (van de Poppe)"
+    "basis": "High 23 Nov ±64,5k"
    },
    {
     "side": "down",
-    "lo": 69390,
-    "hi": 72000,
+    "lo": 68770,
+    "hi": 75000,
     "label": "R3",
-    "basis": "EMA25 · target 72k (klaster MA)"
+    "basis": "EMA25 · zona resistance 70–75k"
    }
   ],
   "ema": [
    {
     "name": "EMA5",
-    "value": "61.541",
+    "value": "61.452",
     "tone": "down",
     "status": "Menurun, harga tepat di bawah"
    },
    {
     "name": "EMA25",
-    "value": "69.391",
+    "value": "68.767",
     "tone": "down",
     "status": "Menurun, jauh di atas harga"
    },
    {
     "name": "EMA99",
-    "value": "74.866",
+    "value": "74.603",
     "tone": "down",
     "status": "Menurun, di atas EMA25"
    }
   ],
-  "emaNote": "EMA dari candle harian OKX BTC-USDT (close 07:00 WIB). Ketiga EMA menurun; harga sudah kembali mendekati EMA5 setelah pantulan. Tren menengah negatif.",
+  "emaNote": "EMA dari candle harian OKX BTC-USDT (close 07:00 WIB). Ketiga EMA menurun; harga berimpit dengan EMA5. Tren menengah negatif.",
   "main": {
-   "title": "Skenario utama: pantulan gelombang 4 ke 62–64k, lalu uji ulang",
+   "title": "Skenario utama: range 58–64,5k, risiko uji ulang",
    "tone": "down",
    "path": [
     0,
-    0.2,
-    0,
-    0.45,
-    0.35,
-    0.15
+    0.25,
+    0.05,
+    0.4,
+    0.3,
+    0.1
    ],
    "items": [
-    "Flush ke 55,1k mungkin mengakhiri gelombang 5 kecil; pantulan saat ini dibaca korektif.",
-    "Resistance 61,5–62,5k (EMA5/Fib 2,0) lalu 64k; gagal di sana membuka uji ulang 57,7k.",
-    "PCE 25 Nov dan likuiditas tipis Thanksgiving menambah volatilitas."
+    "BTC gagal ikut reli saham, tanda permintaan spot lemah; ETF masih outflow.",
+    "Pantulan tertahan di 64–64,5k; PCE panas bisa membawa uji ulang 58k lalu 55k.",
+    "Konfirmasi turun: close < 60k."
    ]
   },
   "alt": {
-   "title": "Skenario alternatif: dasar kapitulasi, relief ke 69–72k",
+   "title": "Skenario alternatif: dasar terbentuk, relief ke 68,8–70k",
    "tone": "up",
    "path": [
     0,
     0.1,
     0,
-    0.55,
-    0.45,
-    0.9
+    0.5,
+    0.4,
+    0.85
    ],
    "items": [
-    "Likuidasi $2,7 miliar, funding negatif lalu positif, dan RSI ±21 khas kapitulasi.",
-    "Syarat: close di atas 62,5k lalu 64k dengan ETF berhenti outflow.",
-    "Target relief: 69,4–72k (EMA25/klaster MA); tetap zona jual."
+    "Reli saham dan kembalinya Huang memulihkan selera risiko.",
+    "Syarat: PCE jinak dan close di atas 64,5k.",
+    "Target relief: EMA25 ±68,8k lalu 70k; zona 70–75k tetap resistance besar."
    ]
   },
   "fib": [
@@ -240,7 +240,7 @@
     "name": "Ext 2,618",
     "lv": "54.821",
     "role": "up",
-    "fn": "Tersentuh 21 Nov (zona S3)"
+    "fn": "Tersentuh akhir pekan (zona S3)"
    }
   ]
  },
@@ -248,100 +248,100 @@
   {
    "sym": "ETH",
    "bucket": "Core",
-   "price": "1.724",
-   "p": 1724.44,
+   "price": "1.711",
+   "p": 1710.71,
    "lo50": 1536.59,
-   "hi50": 2740,
-   "d7": -6.05,
-   "d30": -27.78,
-   "sup": "1.711 · 1.537",
-   "res": "1.726 · 1.983–2.220",
+   "hi50": 2737.83,
+   "d7": -6.04,
+   "d30": -27.47,
+   "sup": "1.537",
+   "res": "1.721 · 1.962–2.210",
    "tone": "down",
-   "trend": "Bearish (5: 1.726 < 25: 1.983)"
+   "trend": "Bearish (5: 1.721 < 25: 1.962)"
   },
   {
    "sym": "SOL",
    "bucket": "Core",
-   "price": "70,730",
-   "p": 70.73,
+   "price": "72,030",
+   "p": 72.03,
    "lo50": 64.84,
-   "hi50": 122.3,
-   "d7": -2.8,
-   "d30": -31.24,
-   "sup": "67,4 · 64,8",
-   "res": "71,3 · 81,9–93,1",
+   "hi50": 122.07,
+   "d7": 0.66,
+   "d30": -29.63,
+   "sup": "71,6 · 64,8",
+   "res": "81,1–92,7",
    "tone": "down",
-   "trend": "Bearish (5: 71,348 < 25: 81,898)"
+   "trend": "Bearish (5: 71,575 < 25: 81,139)"
   },
   {
    "sym": "HYPE",
    "bucket": "Satellite",
-   "price": "63,131",
-   "p": 63.131,
+   "price": "63,774",
+   "p": 63.774,
    "lo50": 55.832,
    "hi50": 97.088,
-   "d7": -7.38,
-   "d30": -18.17,
+   "d7": -8.64,
+   "d30": -16.83,
    "sup": "60,1 · 55,8",
-   "res": "63,9 · 71,9–75,9",
+   "res": "63,9 · 71,2–75,7",
    "tone": "down",
-   "trend": "Bearish (5: 63,927 < 25: 71,858)"
+   "trend": "Bearish (5: 63,876 < 25: 71,236)"
   },
   {
    "sym": "LINK",
    "bucket": "Satellite",
-   "price": "8,824",
-   "p": 8.824,
+   "price": "9,018",
+   "p": 9.018,
    "lo50": 7.969,
-   "hi50": 14.329,
-   "d7": -5.09,
-   "d30": -25.42,
-   "sup": "8,57 · 7,97",
-   "res": "8,85 · 9,98–10,94",
+   "hi50": 14.282,
+   "d7": -1.36,
+   "d30": -22.43,
+   "sup": "8,90 · 7,97",
+   "res": "9,91–10,91",
    "tone": "down",
-   "trend": "Bearish (5: 8,848 < 25: 9,982)"
+   "trend": "Bearish (5: 8,905 < 25: 9,908)"
   },
   {
    "sym": "PENDLE",
    "bucket": "10x",
-   "price": "1,295",
-   "p": 1.295,
+   "price": "1,312",
+   "p": 1.312,
    "lo50": 1.19,
    "hi50": 2.595,
-   "d7": -11.54,
-   "d30": -36.43,
+   "d7": -8.7,
+   "d30": -34.63,
    "sup": "1,19",
-   "res": "1,33 · 1,56–1,82",
+   "res": "1,32 · 1,54–1,81",
    "tone": "down",
-   "trend": "Bearish (5: 1,328 < 25: 1,562)"
+   "trend": "Bearish (5: 1,323 < 25: 1,543)"
   },
   {
    "sym": "INJ",
    "bucket": "10x",
-   "price": "6,227",
-   "p": 6.227,
+   "price": "6,296",
+   "p": 6.296,
    "lo50": 5.843,
    "hi50": 9.414,
-   "d7": -10.98,
-   "d30": -20,
+   "d7": -8.83,
+   "d30": -18.4,
    "sup": "5,84",
-   "res": "6,47 · 6,93–7,24",
+   "res": "6,41 · 6,91–7,17",
    "tone": "down",
-   "trend": "Bearish (5: 6,470 < 25: 7,244)"
+   "trend": "Bearish (5: 6,412 < 25: 7,171)"
   },
   {
    "sym": "TAO",
    "bucket": "10x",
-   "price": "191,02",
-   "p": 191.02,
+   "price": "190,81",
+   "p": 190.81,
    "lo50": 165.62,
-   "hi50": 310.5,
-   "d7": -2.04,
-   "d30": -25.15,
+   "hi50": 309.7,
+   "d7": -0.57,
+   "d30": -24.04,
    "sup": "165,6",
-   "res": "189,6 · 211,8–235,0",
+   "res": "190,0 · 210,2–234,1",
    "tone": "down",
-   "trend": "Bearish (5: 189,61 < 25: 211,77)"
+   "trend": "Bearish (5: 190,01 < 25: 210,15)"
   }
  ],
  "actions": [
@@ -350,25 +350,24 @@
    "sym": "BTC",
    "action": "HOLD sisa · WAIT",
    "tone": "down",
-   "long": "Close mingguan ±61,3k > 58,5k: tidak ada trim baru. Tidak ada ADD; re-entry bertahap hanya setelah close > 64k",
+   "long": "Tidak ada ADD sebelum PCE; re-entry bertahap hanya setelah close > 64,5k",
    "trim": "Kurangi lagi 20% bila close mingguan < 58,5k",
    "inval": "< 58.500"
   },
   {
    "bucket": "Core",
    "sym": "ETH",
-   "action": "HOLD sisa · WAIT",
+   "action": "TRIM · HOLD sisa",
    "tone": "down",
-   "long": "Close tipis di atas 1.711 meski intraday ke ±1.537; tidak ada ADD sampai close > 1.983 (EMA25)",
-   "trim": "Kurangi 20% bila close < 1.711",
-   "inval": "< 1.711"
+   "long": "Close tipis di bawah 1.711 memicu trim 20% sesuai rencana. Tidak ada ADD sampai close > 1.962 (EMA25)",
+   "inval": "< 1.537"
   },
   {
    "bucket": "Core",
    "sym": "SOL",
-   "action": "HOLD sisa · WAIT",
-   "tone": "down",
-   "long": "Tunggu close > 71,3 (EMA5)",
+   "action": "HOLD sisa",
+   "tone": "flat",
+   "long": "Kembali di atas EMA5; ADD hanya bila close > 81,1 (EMA25)",
    "inval": "< 67,4"
   },
   {
@@ -382,25 +381,25 @@
   {
    "bucket": "Satellite",
    "sym": "LINK",
-   "action": "HOLD sisa · WAIT",
-   "tone": "down",
-   "long": "Dekat batas 8,57; tidak ada ADD",
+   "action": "HOLD sisa",
+   "tone": "flat",
+   "long": "Kembali di atas EMA5; ADD hanya bila close > 9,91 (EMA25)",
    "inval": "< 8,57"
   },
   {
    "bucket": "10x",
    "sym": "PENDLE",
-   "action": "EXIT",
+   "action": "EXIT · WAIT",
    "tone": "down",
-   "long": "Close < 1,33 memicu jual sisa sesuai rencana",
-   "inval": "Sudah tembus"
+   "long": "Posisi sudah keluar. Pantau ulang hanya bila close > 1,54 (EMA25)",
+   "inval": "—"
   },
   {
    "bucket": "10x",
    "sym": "INJ",
-   "action": "TRIM",
+   "action": "HOLD sisa",
    "tone": "down",
-   "long": "Close < 6,80 memicu jual 50% sesuai rencana; sisa dipegang dengan batas baru",
+   "long": "Sisa 50% setelah trim; tidak ada ADD",
    "inval": "< 5,84"
   },
   {
@@ -408,38 +407,34 @@
    "sym": "TAO",
    "action": "EXIT · WAIT",
    "tone": "flat",
-   "long": "Posisi sudah keluar. Kembali di atas EMA5; pantau ulang hanya bila close > 212 (EMA25)",
+   "long": "Posisi sudah keluar. EMA5 mulai mendatar; pantau ulang hanya bila close > 210 (EMA25)",
    "inval": "—"
   }
  ],
  "risk": [
-  "Spot saja, tanpa leverage; risiko 1% per trade. Jalankan trim PENDLE dan INJ yang sudah terpicu.",
-  "Pantulan setelah likuidasi besar sering gagal; tunggu close > 64k sebelum menambah.",
-  "ETF BTC outflow November ±$3,59 miliar; tanpa pembalikan arus, uji ulang 55k tetap terbuka.",
-  "PCE 25 Nov dan rapat Fed 8–9 Des: risiko hike 50 bp.",
-  "Libur Thanksgiving: likuiditas tipis, gerakan bisa tajam ke dua arah."
+  "Spot saja, tanpa leverage; risiko 1% per trade. Jalankan trim ETH yang sudah terpicu.",
+  "BTC tidak ikut reli saham: permintaan spot lemah, ETF outflow empat minggu beruntun.",
+  "PCE besok: hasil panas bisa memicu wacana 50 bp di rapat 8–9 Des.",
+  "Libur Thanksgiving: likuiditas tipis, gerakan bisa tajam ke dua arah.",
+  "Jangan mengejar pantulan; tunggu close > 64,5k sebelum menambah."
  ],
  "sources": [
   [
-   "crypto.news: 7 alasan BTC jatuh ke 55k",
-   "https://crypto.news/bitcoin-price-crash-seven-market-pressures-altcoins/"
+   "Motley Fool: Crypto market 23 Nov",
+   "https://www.fool.com/coverage/stock-market-today/2026/11/23/crypto-market-today-nov-23-bitcoin-sits-out-wall-street-s-historic-rally-as-usd1-8-billion-etf-exodus-weighs-on-prices/"
   ],
   [
-   "crypto.news: Rebound dari 55k, likuidasi $2,7 miliar",
-   "https://crypto.news/bitcoin-price-rebounds-55k-2-7b-liquidations/"
+   "Bitcoin Magazine: BTC ±61k saat Huang kembali",
+   "https://bitcoinmagazine.com/markets/bitcoin-price-fades-61000-huang"
   ],
   [
-   "Analytics Insight: Funding Binance kembali positif",
-   "https://www.analyticsinsight.net/news/bitcoin-funding-turns-positive-on-binance-after-btc-rebounds-from-usd-55000"
+   "The Cryptonomist: Outflow ETF tertinggi sejak Juni",
+   "https://en.cryptonomist.ch/2026/11/23/bitcoin-etf-outflows-highest-june/"
   ],
   [
-   "FedRateCalc: Kalender November 2026",
-   "https://fedratecalc.com/us-economic-calendar/november-2026/"
-  ],
-  [
-   "FedRateCalc: Libur pasar AS",
-   "https://fedratecalc.com/stock-market-holidays/"
+   "Oxford Economics: Nowcast PCE Oktober",
+   "https://www.oxfordeconomics.com/resource/us-pce-nowcast-broadening-pressures-lock-in-december-rate-hike/"
   ]
  ],
- "syncedAt": "2026-11-23T00:04:25.731Z"
+ "syncedAt": "2026-11-24T00:04:03.400Z"
 }
