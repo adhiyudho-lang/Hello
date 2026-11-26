@@ -82,11 +82,11 @@
    "short": "Expiry opsi",
    "icon": "chart",
    "date": "Jum 27 Nov",
-   "time": "15:00",
+   "time": "—",
    "scope": "Kripto",
    "tone": "swing",
    "title": "Expiry opsi bulanan Deribit (±$6,8 miliar)",
-   "detail": "Expiry 08:00 UTC (15:00 WIB). Bursa AS tutup lebih awal 13:00 ET.",
+   "detail": "Expiry bulanan Deribit Jumat 27 Nov. Bursa AS tutup lebih awal 13:00 ET.",
    "up": "Setelah expiry, tekanan hedging berkurang.",
    "down": "Volatilitas di sekitar expiry bisa menyapu 58k."
   },
@@ -288,7 +288,7 @@
    "hi50": 120.72,
    "d7": -4.28,
    "d30": -30.18,
-   "sup": "64,8",
+   "sup": "67,4 · 64,8",
    "res": "70,8 · 79,5–91,8",
    "tone": "down",
    "trend": "Bearish (5: 70,793 < 25: 79,507)"
@@ -388,7 +388,7 @@
    "action": "HOLD sisa · WAIT",
    "tone": "down",
    "long": "Tunggu close > 70,8 (EMA5)",
-   "inval": "< 64,8"
+   "inval": "< 67,4"
   },
   {
    "bucket": "Satellite",
@@ -457,5 +457,5 @@
    "https://fedratecalc.com/stock-market-holidays/"
   ]
  ],
- "syncedAt": "2026-11-26T00:04:18.029Z"
+ "syncedAt": "2026-11-26T00:04:29.681Z"
 }
